@@ -63,10 +63,9 @@ defineOptions({ name: 'ImgUpload' })
 const { copy, copied } = useClipboard()
 
 const imgList = reactive([
-  { url: 'https://cdn.isme.top/images/5c23d52f880511ebb6edd017c2d2eca2.jpg' },
-  { url: 'https://cdn.isme.top/images/5c23d52f880511ebb6edd017c2d2eca2.jpg' },
-  { url: 'https://cdn.isme.top/images/5c23d52f880511ebb6edd017c2d2eca2.jpg' },
-  { url: 'https://cdn.isme.top/images/5c23d52f880511ebb6edd017c2d2eca2.jpg' },
+  { url: 'https://img.isme.top/isme/67208863145ef.jpg' },
+  { url: 'https://img.isme.top/isme/67208ab2a9de0.jpg' },
+  { url: 'https://img.isme.top/isme/67208ab4c6596.jpg' },
 ])
 
 watch(copied, (val) => {
