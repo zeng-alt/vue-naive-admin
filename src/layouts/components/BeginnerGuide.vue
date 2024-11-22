@@ -12,7 +12,6 @@
   <Vue3IntroStep
     ref="myIntroStep"
     v-model:show="show"
-    class="beginner-guide"
     :config="config"
   >
     <template #prev="{ tipItem, index }">
