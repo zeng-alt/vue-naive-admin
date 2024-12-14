@@ -163,31 +163,31 @@ const columns = [
     render(row) {
       return row.roles?.some(item => item.id === +route.params.roleId)
         ? h(
-          NButton,
-          {
-            size: 'small',
-            type: 'error',
-            secondary: true,
-            onClick: () => handleBatchRemove([row.id]),
-          },
-          {
-            default: () => '取消授权',
-            icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' }),
-          },
-        )
+            NButton,
+            {
+              size: 'small',
+              type: 'error',
+              secondary: true,
+              onClick: () => handleBatchRemove([row.id]),
+            },
+            {
+              default: () => '取消授权',
+              icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' }),
+            },
+          )
         : h(
-          NButton,
-          {
-            size: 'small',
-            type: 'primary',
-            secondary: true,
-            onClick: () => handleBatchAdd([row.id]),
-          },
-          {
-            default: () => '授权',
-            icon: () => h('i', { class: 'i-line-md:confirm-circle text-14' }),
-          },
-        )
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              secondary: true,
+              onClick: () => handleBatchAdd([row.id]),
+            },
+            {
+              default: () => '授权',
+              icon: () => h('i', { class: 'i-line-md:confirm-circle text-14' }),
+            },
+          )
     },
   },
 ]
