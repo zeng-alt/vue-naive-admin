@@ -63,7 +63,7 @@
             alt="验证码"
             height="40"
             class="ml-12 w-80 cursor-pointer"
-            @click="initCaptcha"
+            @click="getCaptcha"
           >
         </div>
 
@@ -102,7 +102,7 @@
 
 <script setup>
 import { useAuthStore } from '@/store'
-import { lStorage, throttle } from '@/utils'
+import { lStorage, request, throttle } from '@/utils'
 import { useStorage } from '@vueuse/core'
 import api from './api'
 
@@ -118,15 +118,31 @@ const loginInfo = ref({
 
 const captchaUrl = ref('')
 const initCaptcha = throttle(() => {
-  captchaUrl.value = `${import.meta.env.VITE_AXIOS_BASE_URL}/auth/captcha?${Date.now()}`
+  const response = `/auth/v1/captcha?${Date.now()}`
+  captchaUrl.value = response
 }, 500)
+
+/**
+ * 获取验证码
+ */
+async function getCaptcha() {
+  // throttle(() => {
+  initCaptcha()
+  const res = await request.get(captchaUrl.value)
+  const { data } = res
+
+  captchaUrl.value = `data:image/gif;base64,${data.captchaImg}`
+  loginInfo.value.captchaKey = data.captchaKey
+  // }, 500)
+}
 
 const localLoginInfo = lStorage.get('loginInfo')
 if (localLoginInfo) {
   loginInfo.value.username = localLoginInfo.username || ''
   loginInfo.value.password = localLoginInfo.password || ''
 }
-initCaptcha()
+
+getCaptcha()
 
 function quickLogin() {
   loginInfo.value.username = 'admin'
@@ -137,7 +153,7 @@ function quickLogin() {
 const isRemember = useStorage('isRemember', true)
 const loading = ref(false)
 async function handleLogin(isQuick) {
-  const { username, password, captcha } = loginInfo.value
+  const { username, password, captcha, captchaKey } = loginInfo.value
   if (!username || !password)
     return $message.warning('请输入用户名和密码')
   if (!isQuick && !captcha)
@@ -145,7 +161,7 @@ async function handleLogin(isQuick) {
   try {
     loading.value = true
     $message.loading('正在验证，请稍后...', { key: 'login' })
-    const { data } = await api.login({ username, password: password.toString(), captcha, isQuick })
+    const { data } = await api.login({ username, password: password.toString(), captchaKey, captcha, isQuick })
     if (isRemember.value) {
       lStorage.set('loginInfo', { username, password })
     }
@@ -158,7 +174,7 @@ async function handleLogin(isQuick) {
     // 10003为验证码错误专属业务码
     if (error?.code === 10003) {
       // 为防止爆破，验证码错误则刷新验证码
-      initCaptcha()
+      getCaptcha()
     }
     $message.destroy('login')
     console.error(error)

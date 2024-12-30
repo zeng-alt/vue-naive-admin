@@ -14,11 +14,11 @@ export function setupInterceptors(axiosInstance) {
   const SUCCESS_CODES = [0, 200]
   function resResolve(response) {
     const { data, status, config, statusText, headers } = response
+    const code = Number(data?.code ?? status)
     if (headers['content-type']?.includes('json')) {
-      if (SUCCESS_CODES.includes(data?.code)) {
+      if (SUCCESS_CODES.includes(code)) {
         return Promise.resolve(data)
       }
-      const code = data?.code ?? status
 
       const needTip = config?.needTip !== false
 
