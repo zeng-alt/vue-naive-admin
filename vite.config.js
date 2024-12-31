@@ -67,6 +67,28 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
+        '/main': {
+          target: VITE_PROXY_TARGET + "/main/graphql",
+          changeOrigin: true,
+          secure: false,
+          configure: (proxy, options) => {
+            // 配置此项可在响应头中看到请求的真实地址
+            proxy.on('proxyRes', (proxyRes, req) => {
+              proxyRes.headers['x-real-url'] = new URL(req.url || '', options.target)?.href || ''
+            })
+          },
+        },
+        '/tenant': {
+          target: VITE_PROXY_TARGET + "/tenant/graphql",
+          changeOrigin: true,
+          secure: false,
+          configure: (proxy, options) => {
+            // 配置此项可在响应头中看到请求的真实地址
+            proxy.on('proxyRes', (proxyRes, req) => {
+              proxyRes.headers['x-real-url'] = new URL(req.url || '', options.target)?.href || ''
+            })
+          },
+        },
       },
     },
     build: {

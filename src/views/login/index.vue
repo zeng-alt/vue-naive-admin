@@ -105,12 +105,21 @@ import { useAuthStore } from '@/store'
 import { lStorage, request, throttle } from '@/utils'
 import { useStorage } from '@vueuse/core'
 import api from './api'
+import gql from 'graphql-tag'
+import { useQuery, useResult } from "@vue/apollo-composable";
 
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const title = import.meta.env.VITE_TITLE
 
+const HELLO = gql`query {
+  hello
+}`
+authStore.setToken("12345656")
+const hello = useQuery(HELLO)
+
+console.log(hello.value)
 const loginInfo = ref({
   username: '',
   password: '',
