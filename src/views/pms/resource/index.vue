@@ -109,7 +109,7 @@ async function initData(data) {
   }
   treeLoading.value = true
   const res = await api.getMenuTree()
-  treeData.value = res?.data || []
+  treeData.value = res || []
   treeLoading.value = false
 
   if (data)

@@ -20,10 +20,10 @@ export const useUserStore = defineStore('user', {
       return this.userInfo?.username
     },
     nickName() {
-      return this.userInfo?.nickName
+      return this.userInfo?.profile.nickName
     },
     avatar() {
-      return this.userInfo?.avatar
+      return this.userInfo?.profile.avatar
     },
     currentRole() {
       return this.userInfo?.currentRole || {}

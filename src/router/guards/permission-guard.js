@@ -44,6 +44,8 @@ export function createPermissionGuard(router) {
     }
 
     const routes = router.getRoutes()
+    // return routes.find(route => route.name === to.name)
+
     if (routes.find(route => route.name === to.name))
       return true
 

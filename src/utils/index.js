@@ -8,8 +8,8 @@
  **********************************/
 
 export * from './common'
+export * from './graphql'
 export * from './http'
 export * from './is'
 export * from './naiveTools'
 export * from './storage'
-export * from './graphql'

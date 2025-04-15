@@ -38,15 +38,24 @@ export const usePermissionStore = defineStore('permission', {
         originPath: route.meta.originPath,
         icon: () => h('i', { class: `${route.meta.icon} text-16` }),
         order: item.order ?? 0,
+        menuStyle: item.menuStyle || 'default',
       }
       const children = item.children?.filter(item => item.type === 'MENU') || []
       if (children.length) {
-        menuItem.children = children
-          .map(child => this.getMenuItem(child, menuItem))
-          .filter(item => !!item)
-          .sort((a, b) => a.order - b.order)
-        if (!menuItem.children.length)
-          delete menuItem.children
+        if (menuItem.menuStyle === 'list') {
+          menuItem.children = undefined
+          children.forEach((child) => {
+            this.getMenuItem(child, menuItem)
+          })
+        }
+        else {
+          menuItem.children = children
+            .map(child => this.getMenuItem(child, menuItem))
+            .filter(item => !!item)
+            .sort((a, b) => a.order - b.order)
+          if (!menuItem.children.length)
+            delete menuItem.children
+        }
       }
       return menuItem
     },
@@ -56,6 +65,24 @@ export const usePermissionStore = defineStore('permission', {
         originPath = item.path
         item.component = '/src/views/iframe/index.vue'
         item.path = `/iframe/${hyphenate(item.code)}`
+      }
+      if (item.menuStyle === 'list') {
+        item.component = '/src/views/system/index.vue'
+        if (!item.path) {
+          item.path = `/${hyphenate(item.code)}`
+        }
+      }
+      if (item.children?.length) {
+        item.children.forEach((child) => {
+          if (child.type === 'MENU') {
+            if (!child.path) {
+              child.path = `/${hyphenate(child.code)}`
+            }
+            if (!child.code) {
+              child.code = hyphenate(child.name)
+            }
+          }
+        })
       }
       return {
         name: item.code,
@@ -69,6 +96,7 @@ export const usePermissionStore = defineStore('permission', {
           layout: item.layout,
           keepAlive: !!item.keepAlive,
           parentKey,
+          menuStyle: item.menuStyle || 'default',
           btns: item.children
             ?.filter(item => item.type === 'BUTTON')
             .map(item => ({ code: item.code, name: item.name })),

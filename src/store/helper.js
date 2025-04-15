@@ -3,7 +3,7 @@ import { basePermissions } from '@/settings'
 
 export async function getUserInfo() {
   const res = await api.getUser()
-  return res.data || {}
+  return res || {}
   // const { id, username, avatar, nickName, gender, address, email, roles, currentRole } = res.data || {}
   // return {
   //   id,
@@ -22,7 +22,7 @@ export async function getPermissions() {
   let asyncPermissions = []
   try {
     const res = await api.getRolePermissions()
-    asyncPermissions = res?.data || []
+    asyncPermissions = res || []
   }
   catch (error) {
     console.error(error)

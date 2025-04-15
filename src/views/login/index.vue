@@ -20,16 +20,31 @@
           <img src="@/assets/images/logo.png" class="mr-12 h-50">
           {{ title }}
         </h2>
+
+        <div v-if="tenantEnabled" class="mt-32 flex items-center">
+          <i class="i-fe:building mr-12 text-16px opacity-60" />
+          <n-select
+            v-model:value="selectedTenant"
+            class="h-40 flex-1 items-center"
+            :options="tenants"
+            label-field="companyName"
+            value-field="tenantKey"
+            placeholder="请选择租户"
+          />
+        </div>
+
         <n-input
           v-model:value="loginInfo.username"
           autofocus
-          class="mt-32 h-40 items-center"
+          :class="tenantEnabled ? 'mt-20' : 'mt-32'"
+          class="h-40 items-center"
           placeholder="请输入用户名"
           :maxlength="20"
         >
           <template #prefix>
             <i class="i-fe:user mr-12 opacity-20" />
           </template>
+          <template #separator />
         </n-input>
         <n-input
           v-model:value="loginInfo.password"
@@ -45,7 +60,7 @@
           </template>
         </n-input>
 
-        <div class="mt-20 flex items-center">
+        <div v-if="captchaEnabled" class="mt-20 flex items-center">
           <n-input
             v-model:value="loginInfo.captcha"
             class="h-40 items-center"
@@ -101,28 +116,59 @@
 </template>
 
 <script setup>
+import { GET_PARAMETER, GET_TENANTS } from '@/apollo'
 import { useAuthStore } from '@/store'
 import { lStorage, request, throttle } from '@/utils'
+import { useQuery } from '@vue/apollo-composable'
 import { useStorage } from '@vueuse/core'
 import api from './api'
-import gql from 'graphql-tag'
-import { useQuery, useResult } from "@vue/apollo-composable";
 
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const title = import.meta.env.VITE_TITLE
 
-const HELLO = gql`query {
-  hello
-}`
-authStore.setToken("12345656")
-const hello = useQuery(HELLO)
+// 获取租户显示配置
+const { result: tenantConfigResult } = useQuery(GET_PARAMETER, {
+  parameterInput: { parameterKey: 'tenant' },
+})
 
-console.log(hello.value)
+const tenantEnabled = computed(() => {
+  const config = tenantConfigResult.value?.findParameter
+  return config?.parameterValue === 'true'
+})
+
+// 获取租户列表
+const { result: tenantsResult } = useQuery(GET_TENANTS, {}, {
+  clientId: 'tenant',
+})
+
+const tenants = computed(() => {
+  const list = tenantsResult.value?.queryTenant || []
+  // 添加默认的总部租户
+  return [
+    { tenantKey: 'master', companyName: '总部' },
+    ...list,
+  ]
+})
+
+// 当前选中的租户
+const selectedTenant = ref('master')
+
+const { result: captchaConfigResult } = useQuery(GET_PARAMETER, {
+  parameterInput: { parameterKey: 'captcha' },
+})
+
+const captchaEnabled = computed(() => {
+  const config = captchaConfigResult.value?.findParameter
+  return config?.parameterValue === 'true'
+})
+
 const loginInfo = ref({
   username: '',
   password: '',
+  captcha: '',
+  captchaKey: '',
 })
 
 const captchaUrl = ref('')
@@ -135,14 +181,12 @@ const initCaptcha = throttle(() => {
  * 获取验证码
  */
 async function getCaptcha() {
-  // throttle(() => {
+  if (!captchaEnabled.value)
+    return
   initCaptcha()
-  const res = await request.get(captchaUrl.value)
-  const { data } = res
-
+  const data = await request.get(captchaUrl.value)
   captchaUrl.value = `data:image/gif;base64,${data.captchaImg}`
   loginInfo.value.captchaKey = data.captchaKey
-  // }, 500)
 }
 
 const localLoginInfo = lStorage.get('loginInfo')
@@ -151,7 +195,12 @@ if (localLoginInfo) {
   loginInfo.value.password = localLoginInfo.password || ''
 }
 
-getCaptcha()
+// 监听验证码配置变化，当启用时获取验证码
+watch(captchaEnabled, (enabled) => {
+  if (enabled) {
+    getCaptcha()
+  }
+}, { immediate: true })
 
 function quickLogin() {
   loginInfo.value.username = 'admin'
@@ -165,19 +214,29 @@ async function handleLogin(isQuick) {
   const { username, password, captcha, captchaKey } = loginInfo.value
   if (!username || !password)
     return $message.warning('请输入用户名和密码')
-  if (!isQuick && !captcha)
+  if (captchaEnabled.value && !isQuick && !captcha)
     return $message.warning('请输入验证码')
   try {
     loading.value = true
     $message.loading('正在验证，请稍后...', { key: 'login' })
-    const { data } = await api.login({ username, password: password.toString(), captchaKey, captcha, isQuick })
+    const { accessToken } = await api.login({
+      username,
+      password: password.toString(),
+      captchaKey: captchaEnabled.value ? captchaKey : undefined,
+      captcha: captchaEnabled.value ? captcha : undefined,
+      isQuick,
+    }, {
+      headers: {
+        'X-TENANT-ID': selectedTenant.value,
+      },
+    })
     if (isRemember.value) {
       lStorage.set('loginInfo', { username, password })
     }
     else {
       lStorage.remove('loginInfo')
     }
-    onLoginSuccess(data)
+    onLoginSuccess(accessToken)
   }
   catch (error) {
     // 10003为验证码错误专属业务码

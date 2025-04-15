@@ -27,6 +27,7 @@ export default defineConfig({
       collections: {
         me: FileSystemIconLoader('./src/assets/icons/isme'),
         fe: FileSystemIconLoader('./src/assets/icons/feather'),
+        carbon: FileSystemIconLoader('./src/assets/icons/carbon'),
       },
     }),
     presetRemToPx({ baseFontSize: 4 }),

@@ -14,9 +14,9 @@
     :indent="18"
     :collapsed-icon-size="22"
     :collapsed-width="64"
-    :collapsed="appStore.collapsed"
-    :options="permissionStore.menus"
-    :value="activeKey"
+    :collapsed="appStore.sidebarCollapsed"
+    :options="menuOptions"
+    :value="route.name"
     @update:value="handleMenuSelect"
   />
 </template>
@@ -24,13 +24,27 @@
 <script setup>
 import { useAppStore, usePermissionStore } from '@/store'
 import { isExternal } from '@/utils'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
 const appStore = useAppStore()
 const permissionStore = usePermissionStore()
 
-const activeKey = computed(() => route.meta?.parentKey || route.name)
+const menuOptions = computed(() => {
+  const processMenu = (menu) => {
+    if (!menu)
+      return null
+
+    return {
+      ...menu,
+      children: menu.children?.map(processMenu).filter(Boolean),
+    }
+  }
+
+  return permissionStore.menus.map(processMenu).filter(Boolean)
+})
 
 const menu = ref(null)
 watch(route, async () => {
@@ -49,11 +63,14 @@ function handleMenuSelect(key, item) {
         window.open(item.originPath)
       },
       cancel: () => {
-        router.push(item.path)
+        router.push({ name: item.key, path: item.path })
       },
     })
   }
   else {
+    // 直接跳转到对应页面
+    if (!item.path)
+      return
     router.push(item.path)
   }
 }

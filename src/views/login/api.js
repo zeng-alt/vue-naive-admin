@@ -10,7 +10,7 @@ import { request } from '@/utils'
 
 export default {
   toggleRole: data => request.post('/auth/role/toggle', data),
-  login: params => request.postForm('/auth/login/username', params, { needToken: false }),
+  login: (params, config) => request.postForm('/auth/login/username', params, { needToken: false, ...config }),
   getUser: () => request.get('/main/user/detail'),
   getCaptchaImg: () => request.get('/auth/captcha/img', {}, { needToken: false }),
 }
