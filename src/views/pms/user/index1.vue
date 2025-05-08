@@ -15,39 +15,37 @@
       </NButton>
     </template>
 
-    <GraphqlCrud
+    <MeCrud
       ref="$table"
-      v-model:filters="queryItems"
-      :condition="true"
-      :expand="true"
+      v-model:query-items="queryItems"
       :scroll-x="1200"
       :columns="columns"
-      :get-data="PAGE_USER"
+      :get-data="api.read"
     >
-      <ConditionItem v-model:value="queryItems.username" label="用户名" type="string" :label-width="50">
+      <MeQueryItem label="用户名" :label-width="50">
         <n-input
-          v-model:value="queryItems.username.value"
+          v-model:value="queryItems.username"
           type="text"
           placeholder="请输入用户名"
           clearable
         />
-      </ConditionItem>
+      </MeQueryItem>
 
-      <ConditionItem v-model:value="queryItems.gender" label="性别" type="string" :label-width="50">
-        <n-select v-model:value="queryItems.gender.value" clearable :options="genders" />
-      </ConditionItem>
+      <MeQueryItem label="性别" :label-width="50">
+        <n-select v-model:value="queryItems.gender" clearable :options="genders" />
+      </MeQueryItem>
 
-      <ConditionItem v-model:value="queryItems.status" label="状态" type="string" :label-width="50">
+      <MeQueryItem label="状态" :label-width="50">
         <n-select
-          v-model:value="queryItems.status.value"
+          v-model:value="queryItems.enable"
           clearable
           :options="[
-            { label: '启用', value: '1' },
-            { label: '停用', value: '0' },
+            { label: '启用', value: 1 },
+            { label: '停用', value: 0 },
           ]"
         />
-      </ConditionItem>
-    </GraphqlCrud>
+      </MeQueryItem>
+    </MeCrud>
 
     <MeModal ref="modalRef" width="520px">
       <n-form
@@ -112,78 +110,28 @@
 </template>
 
 <script setup>
-import { ConditionItem, GraphqlCrud, MeCrud, MeModal, MeQueryItem } from '@/components'
+import { MeCrud, MeModal, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils'
-import gql from 'graphql-tag'
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import api from './api'
-import { queryRoleByEnable } from './apollo'
 
 defineOptions({ name: 'UserMgt' })
 
-const PAGE_USER = gql`
-  query MyQuery($filter: UserCondition, $pageQuery: PageQuery) {
-    conditionPageUser(
-      filter: $filter,
-      pageQuery: $pageQuery,
-      sort: {direction: ASC, property: "id"}
-    ) {
-      pageInfo {
-        endCursor
-        hasNextPage
-        hasPreviousPage
-        startCursor
-      }
-      edges {
-        cursor
-        node {
-          avatar
-          createdBy
-          createdDate
-          email
-          gender
-          lastModifiedBy
-          lastModifiedDate
-          deleted
-          id
-          nickName
-          password
-          phoneNumber
-          status
-          tenantBy
-          username,
-          userRoles {
-            role {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`
-
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
-const queryItems = ref({
-  username: {},
-  gender: {},
-  status: {},
-})
+const queryItems = ref({})
 
 onMounted(() => {
   $table.value?.handleSearch()
 })
 
 const genders = [
-  { label: '男', value: '1' },
-  { label: '女', value: '2' },
+  { label: '男', value: 1 },
+  { label: '女', value: 2 },
 ]
-// const roles = ref([])
-// api.getAllRoles().then(({ data = [] }) => (roles.value = data))
-const { result } = queryRoleByEnable(true)
-const roles = computed(() => result.value?.queryRole ?? [])
+const roles = ref([])
+api.getAllRoles().then(({ data = [] }) => (roles.value = data))
 
 const {
   modalRef,
@@ -214,33 +162,15 @@ const columns = [
         src: avatar,
       }),
   },
-  {
-    title: '用户名',
-    key: 'username',
-    width: 150,
-    sorter: true,
-    filter: true,
-    filterOptionValues: [],
-    filterOptions: [
-      {
-        label: 'Value1',
-        value: 1,
-      },
-      {
-        label: 'Value2',
-        value: 2,
-      },
-    ],
-    ellipsis: { tooltip: true },
-  },
+  { title: '用户名', key: 'username', width: 150, ellipsis: { tooltip: true } },
   {
     title: '角色',
-    key: 'userRoles',
+    key: 'roles',
     width: 200,
     ellipsis: { tooltip: true },
-    render: ({ userRoles }) => {
-      if (userRoles?.length) {
-        return userRoles.map(roles => roles.role).map((item, index) =>
+    render: ({ roles }) => {
+      if (roles?.length) {
+        return roles.map((item, index) =>
           h(
             NTag,
             { type: 'success', style: index > 0 ? 'margin-left: 8px;' : '' },
@@ -255,9 +185,7 @@ const columns = [
     title: '性别',
     key: 'gender',
     width: 80,
-    render: ({ gender }) => {
-      return genders.find(item => gender === item.value)?.label ?? ''
-    },
+    render: ({ gender }) => genders.find(item => gender === item.value)?.label ?? '',
   },
   { title: '邮箱', key: 'email', width: 150, ellipsis: { tooltip: true } },
   {

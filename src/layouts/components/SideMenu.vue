@@ -14,9 +14,9 @@
     :indent="18"
     :collapsed-icon-size="22"
     :collapsed-width="64"
-    :collapsed="appStore.sidebarCollapsed"
-    :options="menuOptions"
-    :value="route.name"
+    :collapsed="appStore.collapsed"
+    :options="permissionStore.menus"
+    :value="activeKey"
     @update:value="handleMenuSelect"
   />
 </template>
@@ -32,19 +32,7 @@ const router = useRouter()
 const appStore = useAppStore()
 const permissionStore = usePermissionStore()
 
-const menuOptions = computed(() => {
-  const processMenu = (menu) => {
-    if (!menu)
-      return null
-
-    return {
-      ...menu,
-      children: menu.children?.map(processMenu).filter(Boolean),
-    }
-  }
-
-  return permissionStore.menus.map(processMenu).filter(Boolean)
-})
+const activeKey = computed(() => route.meta?.parentKey || route.name)
 
 const menu = ref(null)
 watch(route, async () => {
@@ -63,12 +51,11 @@ function handleMenuSelect(key, item) {
         window.open(item.originPath)
       },
       cancel: () => {
-        router.push({ name: item.key, path: item.path })
+        router.push(item.path)
       },
     })
   }
   else {
-    // 直接跳转到对应页面
     if (!item.path)
       return
     router.push(item.path)

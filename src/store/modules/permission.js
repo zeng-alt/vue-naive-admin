@@ -53,8 +53,9 @@ export const usePermissionStore = defineStore('permission', {
             .map(child => this.getMenuItem(child, menuItem))
             .filter(item => !!item)
             .sort((a, b) => a.order - b.order)
-          if (!menuItem.children.length)
+          if (!menuItem.children.length) {
             delete menuItem.children
+          }
         }
       }
       return menuItem
@@ -71,18 +72,6 @@ export const usePermissionStore = defineStore('permission', {
         if (!item.path) {
           item.path = `/${hyphenate(item.code)}`
         }
-      }
-      if (item.children?.length) {
-        item.children.forEach((child) => {
-          if (child.type === 'MENU') {
-            if (!child.path) {
-              child.path = `/${hyphenate(child.code)}`
-            }
-            if (!child.code) {
-              child.code = hyphenate(child.name)
-            }
-          }
-        })
       }
       return {
         name: item.code,

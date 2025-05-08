@@ -8,7 +8,9 @@
 
 export const defaultLayout = 'normal'
 
-export const defaultPrimaryColor = '#316C72'
+// export const defaultPrimaryColor = '#316C72'
+
+export const defaultPrimaryColor = '#722ED1FF'
 
 // 控制 LayoutSetting 组件是否可见
 export const layoutSettingVisible = true

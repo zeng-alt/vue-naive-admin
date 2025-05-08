@@ -15,7 +15,6 @@ export function createPermissionGuard(router) {
   router.beforeEach(async (to) => {
     const authStore = useAuthStore()
     const token = authStore.accessToken
-
     /** 没有token */
     if (!token) {
       if (WHITE_LIST.includes(to.path))

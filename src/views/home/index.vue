@@ -160,7 +160,9 @@
 </template>
 
 <script setup>
+import { GET_PARAMETER, GET_TENANTS } from '@/apollo'
 import { useUserStore } from '@/store'
+import { useQuery } from '@vue/apollo-composable'
 import { BarChart, LineChart, PieChart } from 'echarts/charts'
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import * as echarts from 'echarts/core'
@@ -169,6 +171,14 @@ import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
 
 const userStore = useUserStore()
+
+const { result: tenantConfigResult } = useQuery(GET_PARAMETER, {
+  parameterInput: { parameterKey: 'tenant' },
+})
+
+const { result: tenantsResult, refetch } = useQuery(GET_TENANTS, {}, {
+  clientId: 'tenant',
+})
 
 echarts.use([
   TooltipComponent,

@@ -7,12 +7,16 @@
  **********************************/
 
 import { router } from '@/router'
+import { useUserStore } from '@/store'
 
 const permission = {
   mounted(el, binding) {
     const currentRoute = unref(router.currentRoute)
     const btns = currentRoute.meta?.btns?.map(item => item.code) || []
-    if (!btns.includes(binding.value)) {
+    const { username } = useUserStore()
+    const isSuperAdmin = username === 'superAdmin'
+
+    if (!isSuperAdmin && !btns.includes(binding.value)) {
       el.remove()
     }
   },

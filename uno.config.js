@@ -28,6 +28,8 @@ export default defineConfig({
         me: FileSystemIconLoader('./src/assets/icons/isme'),
         fe: FileSystemIconLoader('./src/assets/icons/feather'),
         carbon: FileSystemIconLoader('./src/assets/icons/carbon'),
+        ali: FileSystemIconLoader('./src/assets/icons/alibaba'),
+        fa: FileSystemIconLoader('./src/assets/icons/fa'),
       },
     }),
     presetRemToPx({ baseFontSize: 4 }),
