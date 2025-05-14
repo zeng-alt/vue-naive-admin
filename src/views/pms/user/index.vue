@@ -79,7 +79,7 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <n-input v-model:value="modalForm.password" />
+          <n-input v-model:value="modalForm.password" type="password" show-password-on="mousedown" />
         </n-form-item>
 
         <n-form-item v-if="['add', 'setRole'].includes(modalAction)" label="角色" path="roleIds">
@@ -114,6 +114,7 @@
 <script setup>
 import { ConditionItem, GraphqlCrud, MeModal } from '@/components'
 import { useCrud } from '@/composables'
+import { withPermission } from '@/directives'
 import { formatDateTime } from '@/utils'
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import api from './api'
@@ -254,11 +255,23 @@ const columns = [
     hideInExcel: true,
     render(row) {
       return [
+        withPermission(
+          h(NButton, {
+            size: 'small',
+            type: 'primary',
+            secondary: true,
+          }, {
+            default: () => '超管专属',
+            icon: () => h('i', { class: 'i-carbon:user-role text-14' }),
+          }),
+          'SuperAdmin',
+        ),
         h(
           NButton,
           {
             size: 'small',
             type: 'primary',
+            class: 'ml-12px',
             secondary: true,
             onClick: () => handleOpenRolesSet(row),
           },

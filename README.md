@@ -7,6 +7,10 @@
   <a href="./LICENSE"><img alt="MIT License" src="https://badgen.net/github/license/zclzone/vue-naive-admin"/></a>
 </p>
 
+---
+
+<a href="https://hellogithub.com/repository/54f19ba1f9ae4238b3cbd111f3c428b0" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=54f19ba1f9ae4238b3cbd111f3c428b0&claim_uid=jXGayRdJZScqMNr" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 ## 简介
 
 Vue Naive Admin 是一款极简风格的后台管理模板，包含前后端解决方案，前端使用 Vite + Vue3 + Pinia + Unocss，后端使用 Nestjs + TypeOrm + MySql，简单易用，赏心悦目，历经十几次重构和细节打磨，诚意满满！！

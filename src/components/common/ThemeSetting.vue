@@ -1,17 +1,19 @@
 <template>
-  <n-tooltip trigger="hover">
-    <template #trigger>
-      <n-color-picker
-        id="theme-setting"
-        class="mr-16 h-32 w-32"
-        :value="appStore.primaryColor"
-        :swatches="primaryColors"
-        :on-update:value="(v) => appStore.setPrimaryColor(v)"
-        :render-label="() => ''"
-      />
-    </template>
-    设置主题色
-  </n-tooltip>
+  <div class="f-c-c">
+    <n-tooltip trigger="hover" placement="bottom">
+      <template #trigger>
+        <n-color-picker
+          id="theme-setting"
+          class="h-32 w-32"
+          :value="appStore.primaryColor"
+          :swatches="primaryColors"
+          :on-update:value="(v) => appStore.setPrimaryColor(v)"
+          :render-label="() => ''"
+        />
+      </template>
+      设置主题色
+    </n-tooltip>
+  </div>
 </template>
 
 <script setup>
