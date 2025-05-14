@@ -171,7 +171,7 @@ function handleOperatorSelect(key) {
 // 双向同步
 watch(() => props.value, (val) => {
   if (val) {
-    selectedOperator.value = val.operator || 'EQ'
+    selectedOperator.value = val.option || 'EQ'
   }
 }, { deep: true, immediate: true })
 

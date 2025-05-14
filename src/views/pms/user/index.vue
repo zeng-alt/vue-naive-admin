@@ -112,57 +112,14 @@
 </template>
 
 <script setup>
-import { ConditionItem, GraphqlCrud, MeCrud, MeModal, MeQueryItem } from '@/components'
+import { ConditionItem, GraphqlCrud, MeModal } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils'
-import gql from 'graphql-tag'
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import api from './api'
-import { queryRoleByEnable } from './apollo'
+import { PAGE_USER, queryRoleByEnable } from './apollo'
 
 defineOptions({ name: 'UserMgt' })
-
-const PAGE_USER = gql`
-  query MyQuery($filter: UserCondition, $pageQuery: PageQuery) {
-    conditionPageUser(
-      filter: $filter,
-      pageQuery: $pageQuery,
-      sort: {direction: ASC, property: "id"}
-    ) {
-      pageInfo {
-        endCursor
-        hasNextPage
-        hasPreviousPage
-        startCursor
-      }
-      edges {
-        cursor
-        node {
-          avatar
-          createdBy
-          createdDate
-          email
-          gender
-          lastModifiedBy
-          lastModifiedDate
-          deleted
-          id
-          nickName
-          password
-          phoneNumber
-          status
-          tenantBy
-          username,
-          userRoles {
-            role {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`
 
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */

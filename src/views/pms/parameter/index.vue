@@ -1,130 +1,237 @@
 <template>
-  <GraphqlCrud
-    title="角色管理"
-    :gql-operations="roleGql"
-    :columns="roleColumns"
-    :form-preset="roleFormPreset"
-    row-key="id"
-    :get-extra-query-variables="getRoleFilters"
-  >
-    <!-- Optional: Customize Action Button Area -->
-    <!-- <template #action> -->
-    <!-- <NButton type="warning" @click="customAction">Custom Button</NButton> -->
-    <!-- </template> -->
-
-    <!-- Define Form Items using the provided slot scope -->
-    <template #form-items="{ form, rules }">
-      <NFormItem label="角色名称" path="name" :rule="rules.name">
-        <NInput v-model:value="form.name" placeholder="请输入角色名称" />
-      </NFormItem>
-      <NFormItem label="角色编码" path="code" :rule="rules.code">
-        <NInput v-model:value="form.code" placeholder="请输入角色编码 (例如 ROLE_ADMIN)" />
-      </NFormItem>
-      <NFormItem label="描述" path="description">
-        <NInput v-model:value="form.description" type="textarea" placeholder="请输入角色描述" />
-      </NFormItem>
-      <NFormItem label="状态" path="status" :rule="rules.status">
-        <NRadioGroup v-model:value="form.status">
-          <NSpace>
-            <NRadio value="active">
-              启用
-            </NRadio>
-            <NRadio value="inactive">
-              禁用
-            </NRadio>
-          </NSpace>
-        </NRadioGroup>
-      </NFormItem>
+  <CommonPage>
+    <template #action>
+      <NButton v-permission="'AddUser'" type="primary" @click="handleAdd()">
+        <i class="i-material-symbols:add mr-4 text-18" />
+        创建新参数
+      </NButton>
     </template>
-  </GraphqlCrud>
+
+    <GraphqlCrud
+      ref="$table"
+      v-model:filters="queryItems"
+      :condition="true"
+      :scroll-x="1200"
+      :columns="columns"
+      :get-data="PAGE_PARAMETER"
+    >
+      <ConditionItem v-model:value="queryItems.parameterName" label="参数名" type="string" :label-width="50">
+        <NInput
+          v-model:value="queryItems.parameterName.value"
+          type="text"
+          placeholder="请输入参数名称"
+          clearable
+        />
+      </ConditionItem>
+      <ConditionItem v-model:value="queryItems.parameterKey" label="参数键" type="string" :label-width="50">
+        <NInput
+          v-model:value="queryItems.parameterKey.value"
+          type="text"
+          placeholder="请输入参数键"
+          clearable
+        />
+      </ConditionItem>
+    </GraphqlCrud>
+    <MeModal ref="modalRef" width="520px">
+      <n-form
+        ref="modalFormRef"
+        label-placement="left"
+        label-align="left"
+        :label-width="80"
+        :model="modalForm"
+        :disabled="modalAction === 'view'"
+      >
+        <NFormItem
+          label="参数键"
+          path="parameterKey"
+          :rule="{
+            required: true,
+            message: '请输入参数键',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <NInput v-model:value="modalForm.parameterKey" :disabled="modalAction !== 'add'" />
+        </NFormItem>
+        <NFormItem
+          label="参数名"
+          path="parameterName"
+          :rule="{
+            required: true,
+            message: '请输入参数名',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <NInput v-model:value="modalForm.parameterName" :disabled="modalAction !== 'add'" />
+        </NFormItem>
+        <NFormItem
+          label="参数值"
+          path="parameterValue"
+          :rule="{
+            required: true,
+            message: '请输入参数值',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <NInput v-model:value="modalForm.parameterValue" :disabled="modalAction !== 'add'" />
+        </NFormItem>
+        <NFormItem
+          label="参数类型"
+          path="parameterType"
+          :rule="{
+            required: true,
+            message: '请输入参数类型',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <NInput v-model:value="modalForm.parameterType" :disabled="modalAction !== 'add'" />
+        </NFormItem>
+        <NFormItem
+          label="备注"
+          path="remark"
+        >
+          <NInput v-model:value="modalForm.remark" :disabled="modalAction !== 'add'" />
+        </NFormItem>
+      </n-form>
+    </MeModal>
+  </CommonPage>
 </template>
 
 <script setup>
 import { GraphqlCrud, MeCrud, MeModal, MeQueryItem } from '@/components'
-import gql from 'graphql-tag'
-import { NFormItem, NInput, NRadio, NRadioGroup, NSpace } from 'naive-ui'
+import { useCrud } from '@/composables'
+import { formatDateTime } from '@/utils'
+import { NButton, NFormItem, NInput, NRadio, NRadioGroup, NSpace, NTooltip } from 'naive-ui'
 import { reactive, ref } from 'vue'
+import { PAGE_PARAMETER, remove, save, saveParameter } from './apollo'
 
-// 1. Define GraphQL Operations
-const roleGql = {
-  queryKey: 'roles', // Key in the query result containing { items, total }
-  query: gql`
-    query GetRoles($page: Int!, $limit: Int!, $filter: RoleFilterInput) {
-      roles(page: $page, limit: $limit, filter: $filter) {
-        items {
-          id
-          name
-          code
-          description
-          status
-        }
-        total
-      }
-    }
-  `,
-  createKey: 'createRole',
-  create: gql`
-    mutation CreateRole($name: String!, $code: String!, $description: String, $status: String!) {
-      createRole(input: { name: $name, code: $code, description: $description, status: $status }) {
-        id # Must return at least the id
-        name
-      }
-    }
-  `,
-  updateKey: 'updateRole',
-  update: gql`
-    mutation UpdateRole($id: ID!, $name: String, $code: String, $description: String, $status: String) {
-      updateRole(id: $id, input: { name: $name, code: $code, description: $description, status: $status }) {
-        id # Must return at least the id
-        name
-      }
-    }
-  `,
-  deleteKey: 'deleteRole', // Can be null if mutation just returns boolean/status
-  delete: gql`
-    mutation DeleteRole($id: ID!) {
-      deleteRole(id: $id) # Or return boolean/status
-    }
-  `,
-}
+defineOptions({ name: 'ParameterMgt' })
 
-// 2. Define Table Columns
-const roleColumns = [
-  { title: 'ID', key: 'id', width: 80 },
-  { title: '角色名称', key: 'name' },
-  { title: '角色编码', key: 'code' },
-  { title: '状态', key: 'status', render: row => row.status === 'active' ? '启用' : '禁用' },
-  // Action column is added automatically by GraphqlCrud unless overridden
+const $table = ref(null)
+/** QueryBar筛选参数（可选） */
+const queryItems = ref({
+  parameterKey: {},
+  parameterName: {},
+})
+
+const {
+  modalRef,
+  modalFormRef,
+  modalForm,
+  modalAction,
+  handleAdd,
+  handleDelete,
+  handleEdit,
+  handleOpen,
+  handleSave,
+} = useCrud({
+  name: '参数',
+  initForm: { enable: true },
+  doCreate: saveParameter,
+  doDelete: remove,
+  doUpdate: saveParameter,
+  refresh: () => $table.value?.handleSearch(),
+})
+
+const columns = [
+  {
+    title: '参数键',
+    key: 'parameterKey',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '参数名',
+    key: 'parameterName',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '参数值',
+    key: 'parameterValue',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '参数类型',
+    key: 'parameterType',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '备注',
+    key: 'remark',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '创建时间',
+    key: 'createDate',
+    width: 180,
+    render(row) {
+      return h('span', formatDateTime(row.createTime))
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 320,
+    align: 'right',
+    fixed: 'right',
+    hideInExcel: true,
+    render(row) {
+      return [
+      h(
+          NTooltip,
+          { trigger: 'hover' },
+          {
+            trigger: () =>
+              h(
+                NButton,
+                {
+                  text: true,
+                  size: 'large',
+                  style: 'margin-left: 12px;',
+                  type: 'info',
+                  onClick: () => handleEdit(row),
+                },
+                {
+                  icon: () => h('i', {
+                    class: 'i-material-symbols:edit-outline text-14',
+                  }),
+                },
+              ),
+            default: () => '修改', // 这是提示的内容
+          },
+        ),
+        h(
+          NTooltip,
+          { trigger: 'hover' },
+          {
+            trigger: () =>
+              h(
+                NButton,
+                {
+                  text: true,
+                  size: 'large',
+                  style: 'margin-left: 12px;',
+                  type: 'error',
+                  onClick: () => handleDelete(row.id),
+                },
+                {
+                  icon: () => h('i', {
+                    class: 'i-material-symbols:delete-outline text-14',
+                  }),
+                },
+              ),
+            default: () => '删除', // 这是提示的内容
+          },
+        )
+      ]
+    },
+  },
 ]
 
-// 3. Define Form Preset (Initial values and validation rules)
-const roleFormPreset = {
-  fields: {
-    // id: null, // Handled automatically by rowKey prop
-    name: '',
-    code: '',
-    description: '',
-    status: 'active', // Default value
-  },
-  rules: {
-    name: { required: true, message: '请输入角色名称', trigger: ['input', 'blur'] },
-    code: { required: true, message: '请输入角色编码', trigger: ['input', 'blur'] },
-    status: { required: true, message: '请选择状态', trigger: 'change' },
-  },
-}
-
-// 4. Optional: Define Filter Logic
-const roleFilters = reactive({
-  // Example filter structure, adjust based on your GQL schema
-  // search: '',
-  // status: null,
+onMounted(() => {
+  $table.value?.handleSearch()
 })
-function getRoleFilters() {
-  // Return only non-empty filters
-  const activeFilters = {}
-  // if (roleFilters.search) activeFilters.name_contains = roleFilters.search;
-  // if (roleFilters.status) activeFilters.status_eq = roleFilters.status;
-  // return activeFilters;
-  return null // Return null or {} if no filters
-}
 </script>
