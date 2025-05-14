@@ -32,6 +32,8 @@
         />
       </ConditionItem>
     </GraphqlCrud>
+
+
     <MeModal ref="modalRef" width="520px">
       <n-form
         ref="modalFormRef"
@@ -53,6 +55,7 @@
           <NInput v-model:value="modalForm.parameterKey" :disabled="modalAction !== 'add'" />
         </NFormItem>
         <NFormItem
+          v-if="['add', 'edit'].includes(modalAction)"
           label="参数名"
           path="parameterName"
           :rule="{
@@ -61,9 +64,10 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <NInput v-model:value="modalForm.parameterName" :disabled="modalAction !== 'add'" />
+          <NInput v-model:value="modalForm.parameterName" />
         </NFormItem>
         <NFormItem
+          v-if="['add', 'edit'].includes(modalAction)"
           label="参数值"
           path="parameterValue"
           :rule="{
@@ -72,7 +76,7 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <NInput v-model:value="modalForm.parameterValue" :disabled="modalAction !== 'add'" />
+          <NInput v-model:value="modalForm.parameterValue" />
         </NFormItem>
         <NFormItem
           label="参数类型"
@@ -89,7 +93,7 @@
           label="备注"
           path="remark"
         >
-          <NInput v-model:value="modalForm.remark" :disabled="modalAction !== 'add'" />
+          <NInput v-model:value="modalForm.remark" />
         </NFormItem>
       </n-form>
     </MeModal>
@@ -101,8 +105,8 @@ import { GraphqlCrud, MeCrud, MeModal, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils'
 import { NButton, NFormItem, NInput, NRadio, NRadioGroup, NSpace, NTooltip } from 'naive-ui'
-import { reactive, ref } from 'vue'
-import { PAGE_PARAMETER, remove, save, saveParameter } from './apollo'
+import { ref } from 'vue'
+import { PAGE_PARAMETER, deleteParameter, saveParameter } from './apollo'
 
 defineOptions({ name: 'ParameterMgt' })
 
@@ -125,9 +129,9 @@ const {
   handleSave,
 } = useCrud({
   name: '参数',
-  initForm: { enable: true },
+  initForm: {},
   doCreate: saveParameter,
-  doDelete: remove,
+  doDelete: deleteParameter,
   doUpdate: saveParameter,
   refresh: () => $table.value?.handleSearch(),
 })

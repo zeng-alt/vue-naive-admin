@@ -1,4 +1,5 @@
 import { useMutation } from '@vue/apollo-composable'
+import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
 
 export const SAVE_PARAMETER = gql`
@@ -10,10 +11,8 @@ export const SAVE_PARAMETER = gql`
 `
 
 export const DELETE_PARAMETER = gql`
-  mutation DeleteParameters($ids: [Long]) {
-    deleteParameters(id: $ids) {
-      id,
-    }
+  mutation DeleteParameterIds($ids: [Long]) {
+    deleteParameterIds(id: $ids)
   }
 `
 
@@ -54,9 +53,21 @@ export const { mutate: save } = data => useMutation(SAVE_PARAMETER, {
 })
 
 export function saveParameter(data) {
-  const { mutate } = useMutation(SAVE_PARAMETER)
+  return apolloClients.main.mutate({
+    mutation: SAVE_PARAMETER,
+    variables: {
+      parameterInput: data
+    }
+  })
+}
 
-  return mutate
+export function deleteParameter(ids) {
+  return apolloClients.main.mutate({
+    mutation: DELETE_PARAMETER,
+    variables: {
+      ids,
+    },
+  })
 }
 
 export const { mutate: remove } = ids => useMutation(DELETE_PARAMETER, {

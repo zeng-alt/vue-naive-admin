@@ -27,6 +27,41 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 
+// 移除 mutation variables 中的 __typename
+const removeTypename = (obj) => {
+  if (obj === null || obj === undefined) {
+    return obj
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => removeTypename(item))
+  }
+
+  if (typeof obj === 'object') {
+    const newObj = {}
+    for (const key in obj) {
+      if (key !== '__typename') {
+        const value = obj[key]
+        // 递归处理对象类型的字段
+        newObj[key] = removeTypename(value)
+      }
+    }
+    return newObj
+  }
+
+  // 处理基本类型（string, number, boolean 等）
+  return obj
+}
+
+// 创建转换链接
+const transformLink = new ApolloLink((operation, forward) => {
+  if (operation.query.definitions[0].operation.startsWith('mutation')) {
+    operation.variables = removeTypename(operation.variables)
+  }
+  return forward(operation)
+})
+
+
 let isConfirming = false
 
 // ——— 3. 网络错误拦截：拿到 HTTP status ———
@@ -142,6 +177,7 @@ function createApolloClient(name) {
   // 按执行顺序依次是：认证 → 响应拦截 → HTTP 请求
   const link = ApolloLink.from([
     authLink,
+    transformLink,  // 添加转换链接
     errorLink,
     // responseInterceptorLink,
     httpLink,
@@ -160,18 +196,23 @@ function createApolloClient(name) {
   // })
 }
 
+export const apolloClients = {
+  main: createApolloClient('main'),
+  tenant: createApolloClient('tenant'),
+}
+
 // 创建 Vue 插件
 export function createApolloProvider() {
   return {
     install(app) {
       // 设置默认客户端（例如使用用户服务作为默认）
-      const defaultClient = createApolloClient('main')
+      const defaultClient = apolloClients.main
       app.provide(DefaultApolloClient, defaultClient)
 
       // 提供其他服务的客户端
       app.provide(ApolloClients, {
         default: defaultClient,
-        tenant: createApolloClient('tenant'),
+        tenant: apolloClients.tenant,
       })
     },
   }
