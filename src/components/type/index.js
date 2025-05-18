@@ -1,0 +1,1 @@
+export { default as TypeInput } from './input/index.vue'

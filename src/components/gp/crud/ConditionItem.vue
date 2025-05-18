@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-2" :class="sizeClass">
     <label v-if="label || label === 0" class="flex-shrink-0" :style="{ width: `${labelWidth}px` }">
       {{ label }}
     </label>
@@ -12,7 +12,7 @@
           @select="handleOperatorSelect"
         >
           <NButton text class="px-2">
-            <i :class="getOperatorIcon(selectedOperator)" class="text-16" />
+            <i :class="[getOperatorIcon(selectedOperator), iconSizeClass]" />
           </NButton>
         </NDropdown>
       </div>
@@ -26,6 +26,7 @@
 </template>
 
 <script setup>
+import { size } from 'lodash-es'
 import { NButton, NDropdown } from 'naive-ui'
 import { computed, h, onMounted, ref, watch } from 'vue'
 
@@ -37,6 +38,11 @@ const props = defineProps({
   labelWidth: {
     type: Number,
     default: 80,
+  },
+  size: {
+    type: String,
+    default: 'medium',
+    validator: (value) => ['tiny', 'small', 'medium', 'large'].includes(value)
   },
   contentWidth: {
     type: Number,
@@ -62,6 +68,26 @@ const props = defineProps({
 const emit = defineEmits(['update:value'])
 
 const selectedOperator = ref(props.value?.operator || 'EQ')
+
+const sizeClass = computed(() => {
+  const sizeMap = {
+    tiny: 'text-xs',
+    small: 'text-sm',
+    medium: 'text-base',
+    large: 'text-lg'
+  }
+  return sizeMap[props.size] || 'text-base'
+})
+
+const iconSizeClass = computed(() => {
+  const sizeMap = {
+    tiny: 'text-14',
+    small: 'text-16',
+    medium: 'text-18',
+    large: 'text-20'
+  }
+  return sizeMap[props.size] || 'text-16'
+})
 
 // 根据字段类型，动态给出可选条件
 const operatorOptions = computed(() => {
@@ -199,5 +225,41 @@ onMounted(() => {
 
 :deep(.n-dropdown-menu) {
   min-width: 100px !important;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-14 {
+  font-size: 14px;
+}
+
+.text-16 {
+  font-size: 16px;
+}
+
+.text-18 {
+  font-size: 18px;
+}
+
+.text-20 {
+  font-size: 20px;
 }
 </style>

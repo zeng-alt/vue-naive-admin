@@ -46,12 +46,6 @@ export const PAGE_PARAMETER = gql`
   }
 `
 
-export const { mutate: save } = data => useMutation(SAVE_PARAMETER, {
-  variables: {
-    parameterInput: data,
-  },
-})
-
 export function saveParameter(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_PARAMETER,
@@ -70,8 +64,3 @@ export function deleteParameter(ids) {
   })
 }
 
-export const { mutate: remove } = ids => useMutation(DELETE_PARAMETER, {
-  variables: {
-    ids,
-  },
-})

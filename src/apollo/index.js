@@ -1,4 +1,5 @@
 import gql from 'graphql-tag'
+import { apolloClients } from '@/utils/graphql'
 
 // 获取系统参数配置
 export const GET_PARAMETER = gql`
@@ -35,3 +36,31 @@ export const GET_TENANTS = gql`
     }
   }
 `
+
+export const GET_DICT_DATA = `
+queryDictType(dictDataInput: $dictDataInput) {
+  dictDatas {
+    dictLabel
+    dictValue
+  }
+}
+`
+
+
+// 获取枚举列表
+export function fetchDictData(dictCode) {
+  const {data} = apolloClients.main.query({
+    query: gql`
+      query GetDictData($dictDataInput: DictDataInput) {
+        ${GET_DICT_DATA}
+      }
+    `,
+    variables: {
+      dictDataInput: {
+        dictCode
+      }
+    }
+  })
+
+  return data.queryDictType.dictDatas
+}
