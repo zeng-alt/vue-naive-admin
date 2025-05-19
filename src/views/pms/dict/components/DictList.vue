@@ -4,6 +4,7 @@
       <div class="flex justify-between items-center">
         <h3>字典</h3>
         <div class="flex gap-2">
+
           <n-tooltip trigger="hover">
             <template #trigger>
               <n-button type="warning" @click="refresh()" quaternary>
@@ -53,37 +54,96 @@
           hoverable
           clickable
         >
+          <template #header>
+            <div class="flex items-center gap-2">
+              <n-tag
+                size="medium"
+                class="w-32"
+                type="primary"
+              >
+                字典键
+              </n-tag>
+              <div class="flex-1">
+                <n-tag
+                  size="medium"
+                  class="w-full"
+                  type="primary"
+                >
+                  字典名
+                </n-tag>
+              </div>
+              <div class="flex-1">
+                <n-tag
+                  size="medium"
+                  class="w-full"
+                  type="primary"
+                >
+                  备注
+                </n-tag>
+              </div>
+              <div class="w-20 text-right">
+                <span class="whitespace-nowrap">操作</span>
+              </div>
+            </div>
+          </template>
           <n-list-item
             v-for="item in dataList"
+            clickable
             :key="item.id"
-            @click="handleRowClick(item)"
             :class="{ 'selected-item': selectedRowId === item.id }"
           >
             <div class="flex items-center gap-2">
-              <n-tag
-                size="small"
+              <n-button
+                @click="handleRowClick(item)"
+                size="tiny"
                 class="w-32 cursor-pointer"
               >
                 {{ item.dictCode }}
-              </n-tag>
-              <n-input
-                size="tiny"
-                v-model:value="item.dictName"
-                type="text"
-                placeholder="字典名"
-                clearable
-                class="flex-1"
-                @blur="handleUpdate(item, 'dictName')"
-              />
-              <n-input
-                size="tiny"
-                v-model:value="item.remark"
-                type="text"
-                placeholder="备注"
-                clearable
-                class="flex-1"
-                @blur="handleUpdate(item, 'remark')"
-              />
+              </n-button>
+              <div
+                class="flex-1 cursor-pointer"
+                @dblclick="item.isEditingDictName = true"
+              >
+                <n-input
+                  v-if="item.isEditingDictName"
+                  size="tiny"
+                  v-model:value="item.dictName"
+                  type="text"
+                  placeholder="字典名"
+                  clearable
+                  class="flex-1"
+                  @blur="handleUpdate(item, 'dictName'); item.isEditingDictName = false"
+                />
+                <div v-else class="text">{{ item.dictName || '--' }}</div>
+              </div>
+              <div
+                class="flex-1 cursor-pointer"
+                @dblclick="item.isEditingRemark = true"
+              >
+                <n-input
+                  v-if="item.isEditingRemark"
+                  size="tiny"
+                  v-model:value="item.remark"
+                  type="textarea"
+                  placeholder="备注"
+                  clearable
+                  class="flex-1"
+                  @blur="handleUpdate(item, 'remark'); item.isEditingRemark = false"
+                />
+                <n-ellipsis style="max-width: 150px" v-else class="text" :tooltip="{ placement: 'top' }">
+                  {{ item.remark || '--' }}
+                </n-ellipsis>
+              </div>
+              <div class="w-20 text-right">
+                <n-tooltip trigger="hover">
+                  <template #trigger>
+                    <n-button type="primary" size="tiny" quaternary @click="handleDelete(item)">
+                      <i class="i-fe:x" />
+                    </n-button>
+                  </template>
+                  删除
+                </n-tooltip>
+              </div>
             </div>
           </n-list-item>
         </n-list>
@@ -94,14 +154,18 @@
 </template>
 
 <script setup>
-import { CONDITION_PAGE_DICT_TYPE } from '../apollo'
-import { ref, watch, computed } from 'vue'
+import { CONDITION_PAGE_DICT_TYPE, deleteDictType, saveDictType } from '../apollo'
+import { ref, watch, computed, nextTick } from 'vue'
 import { ConditionItem } from '@/components'
-import { NButton, NSpace, NInput, NTooltip, NList, NListItem, NTag, useMessage } from 'naive-ui'
+import { NButton, NSpace, NInput, NTooltip, NList, NListItem, NTag } from 'naive-ui'
 import { useQuery } from '@vue/apollo-composable'
 import { defaultPrimaryColor } from '@/settings'
+import { useAppStore } from '@/store'
 
-const emit = defineEmits(['click'])
+const appStore = useAppStore()
+const isDark = computed(() => appStore.isDark)
+
+const emit = defineEmits(['click', 'refresh'])
 
 let scrollTimer = null
 let lastScrollTop = 0
@@ -153,10 +217,18 @@ watch(edges, (newEdges) => {
   if (newEdges) {
     if (variables.value.pageQuery.after) {
       // 加载更多数据时，追加到现有数据
-      dataList.value = [...dataList.value, ...newEdges.map(e => ({ ...e.node }))]
+      dataList.value = [...dataList.value, ...newEdges.map(e => ({
+        ...e.node,
+        isEditingDictName: false,
+        isEditingRemark: false
+      }))]
     } else {
       // 首次加载或重置时，替换数据
-      dataList.value = newEdges.map(e => ({ ...e.node }))
+      dataList.value = newEdges.map(e => ({
+        ...e.node,
+        isEditingDictName: false,
+        isEditingRemark: false
+      }))
     }
     hasNextPage.value = !!pageInfo.value.hasNextPage
   }
@@ -177,21 +249,54 @@ const refresh = async () => {
       option: 'EQ'
     }
   }
+  // 先重置 after
   after.value = null
-  // 重置分页
+  // 等待下一个 tick，确保 variables 更新
+  await nextTick()
+  emit('refresh')
+  selectedRowId.value = null
   // 重置滚动位置
   lastScrollTop = 0
-  refetch()
+  refetch(variables.value)
   console.log('refresh')
 }
 
-const handleUpdate = (item, key) => {
+const handleUpdate = (data, key) => {
   // TODO: 处理更新逻辑
-  console.log('更新数据:', item, key)
+  console.log('更新数据:', data, key)
+  saveDictType({
+    id: data.id,
+    [key]: data[key]
+  })
 }
 
 const handleAdd = () => {
   // TODO: 处理新增逻辑
+}
+
+const handleDelete = (data) => {
+  // TODO: 处理删除逻辑
+  console.log('删除数据:', data)
+  const d = $dialog.warning({
+    content: '确定删除？',
+    title: '提示',
+    positiveText: '确定',
+    negativeText: '取消',
+    async onPositiveClick() {
+      try {
+        d.loading = true
+        await deleteDictType(data.id)
+        $message.success('删除成功')
+        after.value = null
+        refetch()
+        d.loading = false
+      }
+      catch (error) {
+        console.error(error)
+        d.loading = false
+      }
+    },
+  })
 }
 
 const handleRowClick = (row) => {
@@ -280,12 +385,11 @@ const loadMore = async () => {
 }
 
 .selected-item {
-  background-color: v-bind(defaultPrimaryColor) !important;
-  color: white !important;
+  background-color: v-bind('isDark ? "#292038" : "#F1EAFA"') !important;
 }
 
 .selected-item:hover {
-  background-color: v-bind(defaultPrimaryColor) !important;
+  background-color: v-bind('isDark ? "#292038" : "#F1EAFA"') !important;
 }
 
 .flex {

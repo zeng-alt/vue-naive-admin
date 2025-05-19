@@ -19,14 +19,13 @@
 
       <!-- 输入区域 -->
       <div class="flex flex-1 items-center">
-        <slot />
+        <slot :size="size" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { size } from 'lodash-es'
 import { NButton, NDropdown } from 'naive-ui'
 import { computed, h, onMounted, ref, watch } from 'vue'
 

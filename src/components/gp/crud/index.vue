@@ -4,25 +4,25 @@
       <form class="flex justify-between p-16" @submit.prevent="handleSearch()">
         <NScrollbar x-scrollable>
           <NSpace :wrap="!expand || isExpanded" :size="[32, 16]" class="p-10">
-            <slot />
+            <slot :size="size" />
           </NSpace>
         </NScrollbar>
         <div class="flex-shrink-0 p-10">
-          <NButton ghost type="primary" @click="resetFilters">
+          <NButton ghost type="primary" @click="handleReset" :size="size">
             <i class="i-fe:rotate-ccw mr-4" />
             重置
           </NButton>
-          <NButton class="ml-20" type="primary" attr-type="submit" @click="handleSearch(true)">
+          <NButton class="ml-20" type="primary" attr-type="submit" :size="size" @click="handleSearch(true)">
             <i class="i-fe:search mr-4" />
             搜索
           </NButton>
 
           <template v-if="expand">
-            <NButton v-if="!isExpanded" type="primary" text @click="toggleExpand">
+            <NButton v-if="!isExpanded" type="primary" :size="size" text @click="toggleExpand">
               <i class="i-fe:chevrons-down ml-4" />
               展开
             </NButton>
-            <NButton v-else text type="primary" @click="toggleExpand">
+            <NButton v-else text type="primary" :size="size" @click="toggleExpand">
               <i class="i-fe:chevrons-up ml-4" />
               收起
             </NButton>
@@ -38,9 +38,9 @@
       :loading="loading"
       :scroll-x="scrollX"
       :remote="true"
+      :size="size"
       :pagination="paginationConfig"
       @update:checked-row-keys="onChecked"
-      @update:filters="handleFiltersChange"
     />
   </div>
 </template>
@@ -61,6 +61,12 @@ const props = defineProps({
   filters: { type: Object, default: () => ({}) },
   /** @type {import('graphql').DocumentNode} */
   getData: { type: Object, required: true },
+  pageSize: { type: Number, default: 5 },
+  size: {
+    type: String,
+    default: 'medium',
+    validator: (value) => ['tiny', 'small', 'medium', 'large'].includes(value)
+  },
   /** 查询结果的字段名 */
 })
 const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange'])
@@ -68,36 +74,14 @@ const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange'])
 const queryFunction = props.getData.definitions[0].selectionSet.selections[0].name.alias || props.getData.definitions[0].selectionSet.selections[0].name.value
 // cursor-based pagination state
 const after = ref(null)
-const first = ref(5)
 const pageNumber = ref(1)
 const cursorHistory = ref([])
-
-// GraphQL query using Relay style pagination
-// const PAGE_USER = gql`
-//   query PageUser($after: String, $first: Int!, $filters: FilterInput) {
-//     pageUser(after: $after, first: $first, filters: $filters) {
-//       edges {
-//         cursor
-//         node {
-//           id
-//           # ... other fields
-//         }
-//       }
-//       pageInfo {
-//         hasNextPage
-//         hasPreviousPage
-//         startCursor
-//         endCursor
-//       }
-//     }
-//   }
-// `
 
 // reactive variables for query
 const variables = computed(() => ({
   pageQuery: {
     after: after.value,
-    first: first.value,
+    first: props.pageSize,
   },
   filter: props.filters,
 }))
@@ -127,10 +111,6 @@ function goNext() {
     pageNumber.value++
     refetch()
   }
-}
-
-function handleFiltersChange() {
-
 }
 
 function goPrev(page) {
@@ -168,24 +148,27 @@ function onChecked(keys) {
 watch(dataList, val => emit('onDataChange', val))
 
 // export Excel unchanged
-function handleExport() {
-  if (!dataList.value.length)
-    return
-  const exportCols = props.columns.filter(col => col.title && !col.hideInExcel)
-  const header = exportCols.map(col => col.title)
-  const rows = dataList.value.map(item => exportCols.map(col => item[col.key]))
-  const sheet = utils.aoa_to_sheet([header, ...rows])
-  const book = utils.book_new()
-  utils.book_append_sheet(book, sheet, '数据报表')
-  writeFile(book, '数据报表.xlsx')
+function handleExport(columns = props.columns, data = dataList.value) {
+  if (!data?.length)
+    return $message.warning('没有数据')
+  const columnsData = columns.filter(item => !!item.title && !item.hideInExcel)
+  const thKeys = columnsData.map(item => item.key)
+  const thData = columnsData.map(item => item.title)
+  const trData = data.map(item => thKeys.map(key => item[key]))
+  const sheet = utils.aoa_to_sheet([thData, ...trData])
+  const workBook = utils.book_new()
+  utils.book_append_sheet(workBook, sheet, '数据报表')
+  writeFile(workBook, '数据报表.xlsx')
 }
 
 const paginationConfig = computed(() => ({
   page: pageNumber.value,
-  pageSize: first.value,
+  pageSize: variables.value.pageQuery.first,
+  size: props.size,
   pageCount: pageNumber.value + (pageInfo.value.hasNextPage ? 1 : 0),
-  showSizePicker: false,
+  showSizePicker: true,
   showQuickJumper: false,
+  pageSizes: [5, 10, 20, 30, 40],
   onChange: (page) => {
     if (page > pageNumber.value) {
       goNext()
@@ -194,10 +177,16 @@ const paginationConfig = computed(() => ({
       goPrev(page)
     }
   },
+  onUpdatePageSize: (pageSize) => {
+    pageNumber.value = 1
+    variables.value.pageQuery.first = pageSize
+    variables.value.pageQuery.after = null
+    handleSearch()
+  }
 }))
 
 // reset filters and pagination
-async function resetFilters() {
+async function handleReset() {
   // 创建一个新的空对象，保持与原始 filters 相同的结构
   const emptyFilters = Object.keys(props.filters).reduce((acc, key) => {
     if (props.condition) {
@@ -224,6 +213,25 @@ defineExpose({
   handleSearch,
   onChecked,
   handleExport,
-  resetFilters,
+  handleReset,
 })
 </script>
+
+<style scoped>
+.crud-wrapper {
+  width: 100%;
+}
+
+:deep(.n-data-table) {
+  --n-table-color-striped: var(--n-item-color-active);
+}
+
+:deep(.n-data-table .n-data-table-td) {
+  padding: 8px 12px;
+}
+
+:deep(.n-data-table .n-data-table-th) {
+  padding: 8px 12px;
+  font-weight: 500;
+}
+</style>
