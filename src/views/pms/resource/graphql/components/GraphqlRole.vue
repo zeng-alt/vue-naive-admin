@@ -1,0 +1,151 @@
+<template>
+  <MeModal ref="modalRef">
+    <GraphqlCrud
+      ref="$table"
+      size="small"
+      v-model:filters="queryItems"
+      :condition="true"
+      :scroll-x="-1"
+      :columns="columns"
+      :get-data="PAGE_ROLE"
+      @on-checked="onChecked"
+    >
+      <ConditionItem size="small" v-model:value="queryItems.name" type="string" label="角色名" :label-width="50" :content-width="150">
+        <n-input size="small" v-model:value="queryItems.name.value" type="text" placeholder="请输入角色名" clearable />
+      </ConditionItem>
+      <ConditionItem size="small" label="状态" v-model:value="queryItems.enable" type="string" :label-width="50" :content-width="150">
+        <n-select
+          size="small"
+          v-model:value="queryItems.enable.value"
+          clearable
+          :options="[
+            { label: '启用', value: true },
+            { label: '停用', value: false },
+          ]"
+        />
+      </ConditionItem>
+    </GraphqlCrud>
+  </MeModal>
+</template>
+
+<script setup>
+import { saveGraphqlResource } from '../apollo.js'
+import api from '../api.js'
+import { MeModal } from '@/components'
+import { PAGE_ROLE, saveRole } from '@/views/pms/role/apollo.js'
+import { useForm, useModal } from '@/composables'
+import { ref } from 'vue'
+import { NButton, NSwitch } from 'naive-ui'
+
+const $table = ref(null)
+/** QueryBar筛选参数（可选） */
+const queryItems = ref({
+  name: {},
+  enable: {}
+})
+
+const [modalRef, okLoading] = useModal()
+
+const modalAction = ref('')
+const graphqlService = ref('')
+const graphqlIds = ref([])
+const modalType = ref('')
+const roleIds = ref([])
+
+function onChecked(rowKeys) {
+  roleIds.value = rowKeys || []
+}
+
+function handleOpen(options = {}) {
+  const { action, type, ids = [], service, ...rest  } = options
+  if (type === 'service') {
+    graphqlService.value = service
+  } else {
+    graphqlIds.value = ids
+  }
+  modalType.value = type
+  modalAction.value = action
+  modalRef.value.open({ ...rest, onOk: onSave })
+}
+
+async function onSave() {
+
+  if (roleIds.value.length === 0) {
+      // $message.error('请选择角色')
+      return true
+    }
+
+  okLoading.value = true
+  try {
+
+
+
+    if (modalAction.value === 'authorize') {
+      if (modalType.value === 'service') {
+        await api.serviceAuthorize({service: graphqlService.value, roleIds: roleIds.value})
+      } else {
+        await api.functionAuthorize({graphqlIds: graphqlIds.value, roleIds: roleIds.value})
+      }
+    }
+    else if (modalAction.value === 'cancelAuthorization') {
+
+      if (modalType.value === 'service') {
+        await api.serviceCancelAuthorize({service: graphqlService.value, roleIds: roleIds.value})
+      } else {
+        await api.functionCancelAuthorize({graphqlIds: graphqlIds.value, roleIds: roleIds.value})
+      }
+    }
+    okLoading.value = false
+    $message.success(modalAction.value === 'authorize' ? '授权成功' :'取消授权成功')
+  }
+  catch (error) {
+    console.error(error)
+    okLoading.value = false
+    return false
+  }
+}
+
+async function handleEnable(row) {
+  // row.enableLoading = true
+  try {
+    await saveRole({ id: row.id, enable: !row.enable })
+    // row.enableLoading = false
+    $message.success('操作成功')
+    $table.value?.handleSearch()
+  }
+  catch (error) {
+    console.error(error)
+    // row.enableLoading = false
+  }
+}
+
+const columns = [
+  { type: 'selection', fixed: 'left' },
+  { title: '角色名', key: 'name' },
+  { title: '角色编码', key: 'code' },
+  {
+    title: '状态',
+    key: 'enable',
+    render: row =>
+      h(
+        NSwitch,
+        {
+          size: 'small',
+          rubberBand: false,
+          value: row.enable,
+          loading: !!row.enableLoading,
+          disabled: row.code === 'SUPER_ADMIN',
+          onUpdateValue: () => handleEnable(row),
+        },
+        {
+          checked: () => '启用',
+          unchecked: () => '停用',
+        },
+      ),
+  },
+]
+
+defineExpose({
+  handleOpen,
+})
+</script>

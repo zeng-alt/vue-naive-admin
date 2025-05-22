@@ -47,6 +47,16 @@ queryDictType(dictDataInput: $dictDataInput) {
 `
 
 
+export function getParameter(data) {
+  return apolloClients.main.query({
+    query: GET_PARAMETER,
+    variables: {
+      parameterInput: data
+    }
+  })
+}
+
+
 // 获取枚举列表
 export function fetchDictData(dictCode) {
   const {data} = apolloClients.main.query({

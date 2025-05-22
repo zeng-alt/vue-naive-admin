@@ -15,28 +15,31 @@
       </NButton>
     </template>
 
-    <MeCrud
+    <GraphqlCrud
       ref="$table"
-      v-model:query-items="queryItems"
+      v-model:filters="queryItems"
+      @fetch="handleFetch"
+      :condition="true"
+      :expand="true"
       :scroll-x="1200"
       :columns="columns"
-      :get-data="api.read"
+      :get-data="PAGE_ROLE"
     >
-      <MeQueryItem label="角色名" :label-width="50">
-        <n-input v-model:value="queryItems.name" type="text" placeholder="请输入角色名" clearable />
-      </MeQueryItem>
-      <MeQueryItem label="状态" :label-width="50">
+      <ConditionItem v-model:value="queryItems.name" type="string" label="角色名" :label-width="50">
+        <n-input v-model:value="queryItems.name.value" type="text" placeholder="请输入角色名" clearable />
+      </ConditionItem>
+      <ConditionItem label="状态" v-model:value="queryItems.enable" type="string" :label-width="50">
         <n-select
-          v-model:value="queryItems.enable"
+          v-model:value="queryItems.enable.value"
           clearable
           :options="[
-            { label: '启用', value: 1 },
-            { label: '停用', value: 0 },
+            { label: '启用', value: true },
+            { label: '停用', value: false },
           ]"
         />
-      </MeQueryItem>
-    </MeCrud>
-    <MeModal ref="modalRef" width="520px">
+      </ConditionItem>
+    </GraphqlCrud>
+    <MeModal ref="modalRef" @close="closeModal" width="520px">
       <n-form
         ref="modalFormRef"
         label-placement="left"
@@ -66,6 +69,17 @@
         >
           <n-input v-model:value="modalForm.code" :disabled="modalAction !== 'add'" />
         </n-form-item>
+        <n-form-item label="父子连动">
+          <NSwitch v-model:value="cascade" @update-value="(value) => value && handleCheckedKeysChange(modalForm.permissionIds, permissionTree)">
+            <template #checked>
+              是
+            </template>
+            <template #unchecked>
+              否
+            </template>
+          </NSwitch>
+        </n-form-item>
+
         <n-form-item label="权限" path="permissionIds">
           <n-tree
             key-field="id"
@@ -74,7 +88,7 @@
             :data="permissionTree"
             :checked-keys="modalForm.permissionIds"
             :on-update:checked-keys="(keys) => (modalForm.permissionIds = keys)"
-
+            :cascade="cascade"
             default-expand-all checkable check-on-click
             class="cus-scroll max-h-200 w-full"
           />
@@ -89,24 +103,30 @@
             </template>
           </NSwitch>
         </n-form-item>
+
       </n-form>
     </MeModal>
   </CommonPage>
 </template>
 
 <script setup>
-import { MeCrud, MeModal, MeQueryItem } from '@/components'
+import { MeCrud, MeModal, MeQueryItem, ConditionItem, GraphqlCrud } from '@/components'
 import { useCrud } from '@/composables'
 import { NButton, NSwitch } from 'naive-ui'
 import api from './api'
+import {PAGE_ROLE, saveRole, deleteRole} from './apollo'
 
 defineOptions({ name: 'RoleMgt' })
 
 const router = useRouter()
 
+const cascade = ref(false)
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
-const queryItems = ref({})
+const queryItems = ref({
+  name: {},
+  enable: {}
+})
 
 onMounted(() => {
   $table.value?.handleSearch()
@@ -115,9 +135,9 @@ onMounted(() => {
 const { modalRef, modalFormRef, modalAction, modalForm, handleAdd, handleDelete, handleEdit }
   = useCrud({
     name: '角色',
-    doCreate: api.create,
-    doDelete: api.delete,
-    doUpdate: api.update,
+    doCreate: api.save,
+    doDelete: deleteRole,
+    doUpdate: api.save,
     initForm: { enable: true },
     refresh: (_, keepCurrentPage) => $table.value?.handleSearch(keepCurrentPage),
   })
@@ -202,19 +222,65 @@ const columns = [
 ]
 
 async function handleEnable(row) {
-  row.enableLoading = true
+  // row.enableLoading = true
   try {
-    await api.update({ id: row.id, enable: !row.enable })
-    row.enableLoading = false
+    await saveRole({ id: row.id, enable: !row.enable })
+    // row.enableLoading = false
     $message.success('操作成功')
     $table.value?.handleSearch()
   }
   catch (error) {
     console.error(error)
-    row.enableLoading = false
+    // row.enableLoading = false
   }
 }
 
+function closeModal() {
+  cascade.value = false
+}
+
 const permissionTree = ref([])
-api.getAllPermissionTree().then(({ data = [] }) => (permissionTree.value = data))
+// api.getAllPermissionTree().then(( data = [] ) => (permissionTree.value = data))
+api.getAllPermissionTree().then(res => permissionTree.value = res ?? [])
+
+// 获取所有子节点的key
+function getAllChildrenKeys(node) {
+  const keys = []
+  if (node.children) {
+    node.children.forEach(child => {
+      keys.push(child.id)
+      keys.push(...getAllChildrenKeys(child))
+    })
+  }
+  return keys
+}
+
+// 处理选中节点变化
+function handleCheckedKeysChange(keys, nodes) {
+  if (cascade.value) {
+    // 如果是级联模式，需要收集所有子节点的key
+    const allKeys = new Set(keys)
+    nodes.forEach(node => {
+        getAllChildrenKeys(node).forEach(key => allKeys.add(key))
+    })
+    modalForm.value.permissionIds = Array.from(allKeys)
+  } else {
+    modalForm.value.permissionIds = keys
+  }
+}
+
+function handleFetch(data, callback) {
+  const processed = handlePermission(data)
+  callback(processed)
+}
+
+function handlePermission(role = []) {
+  return role.map(r => {
+    return {
+      ...r,
+      permissionIds: r.rolePermissions?.map(r => r.permission.id) || []
+    }
+  })
+}
+
 </script>

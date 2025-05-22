@@ -48,8 +48,10 @@
 <script setup>
 import { useQuery } from '@vue/apollo-composable'
 import { NButton, NDataTable, NScrollbar, NSpace } from 'naive-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, getCurrentInstance } from 'vue'
 import { utils, writeFile } from 'xlsx'
+
+const { vnode } = getCurrentInstance()
 
 // props
 const props = defineProps({
@@ -69,19 +71,21 @@ const props = defineProps({
   },
   /** 查询结果的字段名 */
 })
-const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange'])
+const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange', 'fetch'])
 
 const queryFunction = props.getData.definitions[0].selectionSet.selections[0].name.alias || props.getData.definitions[0].selectionSet.selections[0].name.value
 // cursor-based pagination state
 const after = ref(null)
 const pageNumber = ref(1)
 const cursorHistory = ref([])
+// 添加 currentPageSize ref
+const currentPageSize = ref(props.pageSize)
 
 // reactive variables for query
 const variables = computed(() => ({
   pageQuery: {
     after: after.value,
-    first: props.pageSize,
+    first: currentPageSize.value,
   },
   filter: props.filters,
 }))
@@ -94,7 +98,31 @@ const edges = computed(() => result.value?.[queryFunction]?.edges ?? [])
 const pageInfo = computed(() => result.value?.[queryFunction]?.pageInfo ?? {})
 
 // derive data list from edges
-const dataList = computed(() => edges.value.map(e => e.node))
+// const dataList = computed(() => {
+//   let res = edges.value.map(e => e.node)
+//   emit('fetch', res) ?? res
+// })
+
+
+const dataList = ref([])
+
+watch(edges, () => {
+  const raw = edges.value.map(e => e.node)
+
+  // 判断是否监听了 fetch 事件
+  const listeners = vnode.props || {}
+  const hasFetchListener = 'onFetch' in listeners
+
+  if (hasFetchListener) {
+    // 如果监听了 fetch，则发出并等待回调（你设计为第三个参数）
+    emit('fetch', raw, (processedData) => {
+      dataList.value = processedData
+    })
+  } else {
+    // 否则，自己处理 fallback 逻辑
+    dataList.value = raw
+  }
+}, { immediate: true })
 
 // 是否展开
 const isExpanded = ref(false)
@@ -109,7 +137,7 @@ function goNext() {
     cursorHistory.value.push(after.value)
     after.value = pageInfo.value.endCursor
     pageNumber.value++
-    refetch()
+    refetch(variables.value)
   }
 }
 
@@ -127,7 +155,7 @@ function goPrev(page) {
     else {
       after.value = cursorHistory.value.pop()
     }
-    refetch()
+    refetch(variables.value)
   }
 }
 
@@ -140,8 +168,10 @@ function handleSearch() {
 }
 
 // row selection remains unchanged
-function onChecked(keys) {
-  emit('onChecked', keys)
+function onChecked(rowKeys) {
+  if (props.columns.some(item => item.type === 'selection')) {
+    emit('onChecked', rowKeys)
+  }
 }
 
 // emit data change
@@ -161,14 +191,16 @@ function handleExport(columns = props.columns, data = dataList.value) {
   writeFile(workBook, '数据报表.xlsx')
 }
 
+
+
+// 修改 paginationConfig
 const paginationConfig = computed(() => ({
   page: pageNumber.value,
-  pageSize: variables.value.pageQuery.first,
-  size: props.size,
+  pageSize: currentPageSize.value,
   pageCount: pageNumber.value + (pageInfo.value.hasNextPage ? 1 : 0),
   showSizePicker: true,
   showQuickJumper: false,
-  pageSizes: [5, 10, 20, 30, 40],
+  pageSizes: [5, 10, 20, 40, 60, 100],
   onChange: (page) => {
     if (page > pageNumber.value) {
       goNext()
@@ -178,16 +210,16 @@ const paginationConfig = computed(() => ({
     }
   },
   onUpdatePageSize: (pageSize) => {
+    currentPageSize.value = pageSize
     pageNumber.value = 1
-    variables.value.pageQuery.first = pageSize
+    //variables.value.pageQuery.first = pageSize
     variables.value.pageQuery.after = null
     handleSearch()
   }
 }))
 
-// reset filters and pagination
+// 修改 handleReset 函数
 async function handleReset() {
-  // 创建一个新的空对象，保持与原始 filters 相同的结构
   const emptyFilters = Object.keys(props.filters).reduce((acc, key) => {
     if (props.condition) {
       acc[key] = {
@@ -204,9 +236,10 @@ async function handleReset() {
   after.value = null
   pageNumber.value = 1
   cursorHistory.value = []
+  currentPageSize.value = props.pageSize // 重置为默认值
   emit('update:filters', emptyFilters)
   await nextTick()
-  refetch()
+  refetch(variables.value)
 }
 
 defineExpose({

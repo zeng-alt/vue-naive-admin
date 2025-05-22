@@ -37,13 +37,13 @@
         <n-select v-model:value="queryItems.gender.value" clearable :options="genders" />
       </ConditionItem>
 
-      <ConditionItem v-model:value="queryItems.status" label="状态" type="string" :label-width="50">
+      <ConditionItem v-model:value="queryItems.enable" label="状态" type="string" :label-width="50">
         <n-select
-          v-model:value="queryItems.status.value"
+          v-model:value="queryItems.enable.value"
           clearable
           :options="[
-            { label: '启用', value: '1' },
-            { label: '停用', value: '0' },
+            { label: '启用', value: true },
+            { label: '停用', value: false },
           ]"
         />
       </ConditionItem>
@@ -118,7 +118,9 @@ import { withPermission } from '@/directives'
 import { formatDateTime } from '@/utils'
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import api from './api'
+import { saveUser, deleteUser } from './apollo'
 import { PAGE_USER, queryRoleByEnable } from './apollo'
+import { h } from 'vue'
 
 defineOptions({ name: 'UserMgt' })
 
@@ -127,7 +129,7 @@ const $table = ref(null)
 const queryItems = ref({
   username: {},
   gender: {},
-  status: {},
+  enable: {},
 })
 
 onMounted(() => {
@@ -155,9 +157,9 @@ const {
 } = useCrud({
   name: '用户',
   initForm: { enable: true },
-  doCreate: api.create,
-  doDelete: api.delete,
-  doUpdate: api.update,
+  doCreate: saveUser,
+  doDelete: deleteUser,
+  doUpdate: saveUser,
   refresh: () => $table.value?.handleSearch(),
 })
 
@@ -196,13 +198,20 @@ const columns = [
     key: 'userRoles',
     width: 200,
     ellipsis: { tooltip: true },
-    render: ({ userRoles }) => {
-      if (userRoles?.length) {
-        return userRoles.map(roles => roles.role).map((item, index) =>
+    render: (row) => {
+      if (row.username === 'superAdmin') {
+        return h(
+          NTag,
+          { type: 'error' },
+          { default: () => '超级管理员' },
+        )
+      }
+      if (row.userRoles?.length) {
+        return row.userRoles.map((item, index) =>
           h(
             NTag,
             { type: 'success', style: index > 0 ? 'margin-left: 8px;' : '' },
-            { default: () => item.name },
+            { default: () => item.role?.name },
           ),
         )
       }
@@ -238,6 +247,7 @@ const columns = [
           rubberBand: false,
           value: row.enable,
           loading: !!row.enableLoading,
+          disabled: row.username === 'superAdmin',
           onUpdateValue: () => handleEnable(row),
         },
         {
@@ -273,6 +283,7 @@ const columns = [
             type: 'primary',
             class: 'ml-12px',
             secondary: true,
+            disabled: row.username === 'superAdmin',
             onClick: () => handleOpenRolesSet(row),
           },
           {
@@ -286,6 +297,7 @@ const columns = [
             size: 'small',
             type: 'primary',
             style: 'margin-left: 12px;',
+            disabled: row.username === 'superAdmin',
             onClick: () => handleOpen({ action: 'reset', title: '重置密码', row, onOk: onSave }),
           },
           {
@@ -299,6 +311,7 @@ const columns = [
           {
             size: 'small',
             type: 'error',
+            disabled: row.username === 'superAdmin',
             style: 'margin-left: 12px;',
             onClick: () => handleDelete(row.id),
           },
@@ -313,16 +326,16 @@ const columns = [
 ]
 
 async function handleEnable(row) {
-  row.enableLoading = true
+  // row.enableLoading = true
   try {
-    await api.update({ id: row.id, enable: !row.enable })
-    row.enableLoading = false
+    await saveUser({ id: row.id, enable: !row.enable })
+    // row.enableLoading = false
     $message.success('操作成功')
     $table.value?.handleSearch()
   }
   catch (error) {
     console.error(error)
-    row.enableLoading = false
+    // row.enableLoading = false
   }
 }
 

@@ -50,6 +50,8 @@
 <script setup>
 import { initDrag } from './utils'
 
+const emit = defineEmits(['open', 'close'])
+
 const props = defineProps({
   width: {
     type: String,
@@ -128,11 +130,13 @@ async function open(options = {}) {
     Array.prototype.at.call(document.querySelectorAll('.modal-header'), -1),
     Array.prototype.at.call(document.querySelectorAll('.modal-box'), -1),
   )
+  emit('open')
 }
 
 // 定义一个close函数，用于关闭模态框
 function close() {
   show.value = false
+  emit('close')
 }
 
 // 定义一个handleOk函数，用于处理模态框确定操作
@@ -143,7 +147,6 @@ async function handleOk(data) {
   }
   try {
     // 调用onOk函数，传入data参数
-    debugger
     const res = await modalOptions.value.onOk(data)
     // 如果onOk函数的返回值不为false，则关闭模态框
     if (res !== false)

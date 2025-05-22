@@ -107,6 +107,7 @@
             </template>
           </n-switch>
         </n-form-item-gi>
+
         <n-form-item-gi :span="12" path="enable">
           <template #label>
             <QuestionLabel
@@ -153,6 +154,14 @@
         >
           <n-input-number v-model:value="modalForm.order" />
         </n-form-item-gi>
+        <n-form-item-gi
+          v-if="modalForm.type === 'MENU'"
+          :span="12"
+          label="菜单风格"
+          path="menuStyle"
+        >
+          <n-select v-model:value="modalForm.menuStyle" :options="options" />
+        </n-form-item-gi>
       </n-grid>
     </n-form>
   </MeModal>
@@ -164,6 +173,7 @@ import { useForm, useModal } from '@/composables'
 import icons from 'isme:icons'
 import pagePathes from 'isme:page-pathes'
 import api from '../api'
+import { saveMenuResource } from '../apollo'
 import QuestionLabel from './QuestionLabel.vue'
 
 const props = defineProps({
@@ -173,6 +183,11 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['refresh'])
+
+const options = [
+  { label: '默认', value: 'default' },
+  { label: '卡片', value: 'list' },
+]
 
 const menuOptions = computed(() => {
   return [{ name: '根菜单', id: '', children: props.menus || [] }]
@@ -196,7 +211,7 @@ const required = {
   trigger: ['blur', 'change'],
 }
 
-const defaultForm = { enable: true, show: true, layout: '' }
+const defaultForm = { enable: true, show: true, layout: '',  menuStyle: 'default'}
 const [modalFormRef, modalForm, validation] = useForm()
 const [modalRef, okLoading] = useModal()
 
@@ -215,14 +230,25 @@ async function onSave() {
   okLoading.value = true
   try {
     let newFormData
-    if (!modalForm.value.parentId)
+    let data = { ...modalForm.value,  parentMenu: {id: modalForm.value.parentId}}
+    // 删除parentId字段
+    delete data.parentId
+    delete data.children
+    if (!modalForm.value.parentId) {
       modalForm.value.parentId = null
+    }
+    if (data.parentMenu.id === undefined) {
+      delete data.parentMenu
+    }
     if (modalAction.value === 'add') {
-      const res = await api.addPermission(modalForm.value)
-      newFormData = res.data
+
+      // const res = await api.addPermission(modalForm.value)
+      const res = await saveMenuResource(data)
+      newFormData = res.data?.saveMenuResource
     }
     else if (modalAction.value === 'edit') {
-      await api.savePermission(modalForm.value.id, modalForm.value)
+      // await api.savePermission(modalForm.value.id, modalForm.value)
+      await saveMenuResource(data)
     }
     okLoading.value = false
     $message.success('保存成功')

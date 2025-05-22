@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { GET_PARAMETER, GET_TENANTS } from '@/apollo'
+import { GET_PARAMETER, GET_TENANTS,  getParameter } from '@/apollo'
 import { useAuthStore } from '@/store'
 import { lStorage, request, throttle } from '@/utils'
 import { useQuery } from '@vue/apollo-composable'
@@ -129,14 +129,29 @@ const route = useRoute()
 const title = import.meta.env.VITE_TITLE
 
 // 获取租户显示配置
-const { result: tenantConfigResult } = useQuery(GET_PARAMETER, {
-  parameterInput: { parameterKey: 'tenant' },
-})
+// const { result: tenantConfigResult } = useQuery(GET_PARAMETER, {
+//   parameterInput: { parameterKey: 'tenant' },
+// })
 
-const tenantEnabled = computed(() => {
-  const config = tenantConfigResult.value?.findParameter
-  return config?.parameterValue === 'true'
-})
+// const tenantEnabled = computed(() => {
+//   const config = tenantConfigResult.value?.findParameter
+//   return config?.parameterValue === 'true'
+// })
+
+const tenantEnabled = ref(false)
+const captchaEnabled = ref(false)
+async function getTenantEnabled() {
+  const { data } = await getParameter({ parameterKey: 'tenant' })
+  tenantEnabled.value = data.findParameter.parameterValue === 'true'
+}
+
+async function getCaptchaEnabled() {
+  const { data } = await getParameter({ parameterKey: 'captcha' })
+  captchaEnabled.value = data.findParameter.parameterValue === 'true'
+}
+
+getTenantEnabled()
+getCaptchaEnabled()
 
 // 获取租户列表
 const { result: tenantsResult } = useQuery(GET_TENANTS, {}, {
@@ -155,14 +170,14 @@ const tenants = computed(() => {
 // 当前选中的租户
 const selectedTenant = ref('master')
 
-const { result: captchaConfigResult } = useQuery(GET_PARAMETER, {
-  parameterInput: { parameterKey: 'captcha' },
-})
+// const { result: captchaConfigResult } = useQuery(GET_PARAMETER, {
+//   parameterInput: { parameterKey: 'captcha' },
+// })
 
-const captchaEnabled = computed(() => {
-  const config = captchaConfigResult.value?.findParameter
-  return config?.parameterValue === 'true'
-})
+// const captchaEnabled = computed(() => {
+//   const config = captchaConfigResult.value?.findParameter
+//   return config?.parameterValue === 'true'
+// })
 
 const loginInfo = ref({
   username: '',

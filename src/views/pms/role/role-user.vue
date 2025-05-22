@@ -31,62 +31,78 @@
       </div>
     </template>
 
-    <MeCrud
+    <!-- <MeCrud
       ref="$table"
       v-model:query-items="queryItems"
       :scroll-x="1200"
       :columns="columns"
       :get-data="api.getAllUsers"
       @on-checked="onChecked"
+    > -->
+    <GraphqlCrud
+      ref="$table"
+      v-model:filters="queryItems"
+      :condition="true"
+      :expand="true"
+      :scroll-x="1200"
+      :columns="columns"
+      :get-data="PAGE_USER"
+      @on-checked="onChecked"
     >
-      <MeQueryItem label="用户名" :label-width="50">
+      <ConditionItem v-model:value="queryItems.username" label="用户名" type="string" :label-width="50">
         <n-input
-          v-model:value="queryItems.username"
+          v-model:value="queryItems.username.value"
           type="text"
           placeholder="请输入用户名"
           clearable
         />
-      </MeQueryItem>
+      </ConditionItem>
 
-      <MeQueryItem label="性别" :label-width="50">
-        <n-select v-model:value="queryItems.gender" clearable :options="genders" />
-      </MeQueryItem>
+      <ConditionItem v-model:value="queryItems.gender" label="性别" type="string" :label-width="50">
+        <n-select v-model:value="queryItems.gender.value" clearable :options="genders" />
+      </ConditionItem>
 
-      <MeQueryItem label="状态" :label-width="50">
+      <ConditionItem v-model:value="queryItems.enable" label="状态" type="string" :label-width="50">
         <n-select
-          v-model:value="queryItems.enable"
+          v-model:value="queryItems.enable.value"
           clearable
+          :consistent-value="false"
           :options="[
-            { label: '启用', value: 1 },
-            { label: '停用', value: 0 },
+            { label: '启用', value: true },
+            { label: '停用', value: false },
           ]"
         />
-      </MeQueryItem>
-    </MeCrud>
+      </ConditionItem>
+    </GraphqlCrud>
   </CommonPage>
 </template>
 
 <script setup>
-import { MeCrud, MeQueryItem } from '@/components'
+import { MeCrud, ConditionItem, GraphqlCrud } from '@/components'
 import { formatDateTime } from '@/utils'
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import { h } from 'vue'
 import api from './api'
+import { PAGE_USER } from '../user/apollo'
 
 defineOptions({ name: 'RoleUser' })
 const route = useRoute()
 
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
-const queryItems = ref({})
+const queryItems = ref({
+  username: {},
+  gender: {},
+  enable: {},
+})
 
 onMounted(() => {
   $table.value?.handleSearch()
 })
 
 const genders = [
-  { label: '男', value: 1 },
-  { label: '女', value: 2 },
+  { label: '男', value: '1' },
+  { label: '女', value: '2' },
 ]
 
 const columns = [
@@ -107,13 +123,13 @@ const columns = [
     key: 'roles',
     width: 200,
     ellipsis: { tooltip: true },
-    render: ({ roles }) => {
-      if (roles?.length) {
-        return roles.map((item, index) =>
+    render: ({ userRoles }) => {
+      if (userRoles?.length) {
+        return userRoles.map((item, index) =>
           h(
             NTag,
             { type: 'success', style: index > 0 ? 'margin-left: 8px;' : '' },
-            { default: () => item.name },
+            { default: () => item.role?.name },
           ),
         )
       }
@@ -124,7 +140,9 @@ const columns = [
     title: '性别',
     key: 'gender',
     width: 80,
-    render: ({ gender }) => genders.find(item => gender === item.value)?.label ?? '',
+    render: ({ gender }) => {
+      return genders.find(item => gender === item.value)?.label ?? ''
+    },
   },
   {
     title: '创建时间',
@@ -161,7 +179,7 @@ const columns = [
     fixed: 'right',
     hideInExcel: true,
     render(row) {
-      return row.roles?.some(item => item.id === +route.params.roleId)
+      return row.userRoles?.some(item => item.role?.id === +route.params.roleId)
         ? h(
             NButton,
             {
@@ -206,7 +224,7 @@ function handleBatchAdd(ids = userIds.value) {
   $dialog.confirm({
     content: `确认分配【${route.query.roleName}】？`,
     async confirm() {
-      await api.addRoleUsers(roleId, { userIds: ids })
+      await api.addRoleUsers(roleId, ids)
       $table.value?.handleSearch()
     },
   })
@@ -220,7 +238,7 @@ function handleBatchRemove(ids = userIds.value) {
   $dialog.confirm({
     content: `确认取消分配【${route.query.roleName}】？`,
     async confirm() {
-      await api.removeRoleUsers(roleId, { userIds: ids })
+      await api.removeRoleUsers(roleId, ids)
       $table.value?.handleSearch()
     },
   })

@@ -56,6 +56,7 @@
             </MeQueryItem>
           </GraphqlCrud>
         </template>
+        <n-empty v-else class="h-450 f-c-c" size="large" description="请选择字典查看详情" />
       </div>
     </div>
     <MeModal ref="modalRef" width="520px">
@@ -172,6 +173,8 @@ import { NTooltip, NButton, NSwitch } from 'naive-ui'
 import { GraphqlCrud, MeQueryItem, MeModal } from '@/components'
 import { FUZZY_PAGE_DICT_DATA, saveDictData, deleteDictData } from './apollo'
 import { ref, onMounted, computed, watch } from 'vue'
+
+defineOptions({ name: 'DictMgt' })
 
 const $table = ref(null)
 const treeLoading = ref(false)
@@ -396,7 +399,7 @@ function handleFiltersChange(data) {
 }
 
 function refresh() {
-  loading.value = false
+
   queryItems.value.dictType = {}
 }
 

@@ -6,10 +6,22 @@
  - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  --------------------------------->
 
-<template>
+ <template>
   <div>
     <n-space vertical :size="12">
-      <h3>菜单</h3>
+      <div class="flex justify-between items-center">
+        <h3>菜单</h3>
+        <div class="flex gap-2">
+          <n-tooltip trigger="hover">
+            <template #trigger>
+              <n-button type="primary" @click="refresh()" quaternary>
+                <i class="i-material-symbols:person-check mr-4 text-14" />
+              </n-button>
+            </template>
+            分配菜单
+          </n-tooltip>
+        </div>
+      </div>
       <div class="flex">
         <n-input v-model:value="pattern" placeholder="搜索" clearable />
         <NButton class="ml-12" type="primary" @click="handleAdd()">
@@ -40,7 +52,7 @@
 <script setup>
 import { NButton } from 'naive-ui'
 import { withModifiers } from 'vue'
-import api from '../api'
+import { deleteMenuResource } from '../apollo'
 import ResAddOrEdit from './ResAddOrEdit.vue'
 
 defineProps({
@@ -109,7 +121,8 @@ function handleDelete(item) {
     async confirm() {
       try {
         $message.loading('正在删除', { key: 'deleteMenu' })
-        await api.deletePermission(item.id)
+        // await api.deletePermission(item.id)
+        await deleteMenuResource(item.id)
         $message.success('删除成功', { key: 'deleteMenu' })
         emit('refresh')
         emit('update:currentMenu', null)

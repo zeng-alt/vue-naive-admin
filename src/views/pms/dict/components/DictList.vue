@@ -4,7 +4,6 @@
       <div class="flex justify-between items-center">
         <h3>字典</h3>
         <div class="flex gap-2">
-
           <n-tooltip trigger="hover">
             <template #trigger>
               <n-button type="warning" @click="refresh()" quaternary>
@@ -161,6 +160,8 @@ import { NButton, NSpace, NInput, NTooltip, NList, NListItem, NTag } from 'naive
 import { useQuery } from '@vue/apollo-composable'
 import { defaultPrimaryColor } from '@/settings'
 import { useAppStore } from '@/store'
+
+defineOptions({ name: 'DictDataMgt' })
 
 const appStore = useAppStore()
 const isDark = computed(() => appStore.isDark)

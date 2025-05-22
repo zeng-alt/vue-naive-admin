@@ -82,6 +82,8 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
         // It's often better to set a flag or use an event bus that components/app can react to.
         // Example: getAuthStore()?.logoutAndRedirect(); // Assuming getAuthStore handles initialization check
       }
+
+      window.$message?.error('服务器发生异常: ' + message)
       // You could potentially retry based on the error type here using forward(operation)
       const obs = forward(operation)
       if (!obs) {
@@ -104,6 +106,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
         return response
       })
     })
+    return
   }
 
   if (networkError) {

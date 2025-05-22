@@ -1,4 +1,5 @@
 import { useQuery } from '@vue/apollo-composable'
+import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
 
 export const QUERY_ROLE = gql`
@@ -9,6 +10,20 @@ export const QUERY_ROLE = gql`
       id
       name
     }
+  }
+`
+
+export const SAVE_USER = gql`
+  mutation SaveUser($userInput: UserInput) {
+    saveUser(userInput: $userInput) {
+      id,
+    }
+  }
+`
+
+export const DELETE_USER = gql`
+  mutation DeleteUserIds($ids: [Long]) {
+    deleteUserIds(id: $ids)
   }
 `
 
@@ -40,12 +55,13 @@ query MyQuery($filter: UserCondition, $pageQuery: PageQuery) {
         nickName
         password
         phoneNumber
-        status
+        enable
         tenantBy
         username,
         userRoles {
           role {
             name
+            id
           }
         }
       }
@@ -57,3 +73,21 @@ query MyQuery($filter: UserCondition, $pageQuery: PageQuery) {
 export function queryRoleByEnable(enable) {
   return useQuery(QUERY_ROLE, { roleInput: { enable } })
 };
+
+export function saveUser(data) {
+  return apolloClients.main.mutate({
+    mutation: SAVE_USER,
+    variables: {
+      userInput: data
+    }
+  })
+}
+
+export function deleteUser(ids) {
+  return apolloClients.main.mutate({
+    mutation: DELETE_USER,
+    variables: {
+      ids,
+    },
+  })
+}

@@ -64,6 +64,9 @@
             <n-descriptions-item label="排序">
               {{ currentMenu.order ?? '--' }}
             </n-descriptions-item>
+            <n-descriptions-item label="菜单风格">
+              {{ currentMenu.menuStyle ?? '默认' }}
+            </n-descriptions-item>
           </n-descriptions>
 
           <div class="mt-32 flex justify-between">
@@ -95,8 +98,11 @@
 import { MeCrud } from '@/components'
 import { NButton, NSwitch } from 'naive-ui'
 import api from './api'
+import { deleteMenuResource } from  './apollo'
 import MenuTree from './components/MenuTree.vue'
 import ResAddOrEdit from './components/ResAddOrEdit.vue'
+
+defineOptions({ name: 'HttpResourceMgt' })
 
 const treeData = ref([])
 const treeLoading = ref(false)
@@ -225,7 +231,8 @@ function handleDeleteBtn(id) {
     async onPositiveClick() {
       try {
         d.loading = true
-        await api.deletePermission(id)
+        //await api.deletePermission(id)
+        await deleteMenuResource(id)
         $message.success('删除成功')
         $table.value.handleSearch()
         d.loading = false
