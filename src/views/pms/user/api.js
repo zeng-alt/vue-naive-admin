@@ -16,4 +16,7 @@ export default {
   resetPwd: (id, data) => request.patch(`/user/password/reset/${id}`, data),
 
   getAllRoles: () => request.get('/role?enable=1'),
+
+  assignRole: (userId, data) => request.patch(`/main/v1/user/assign/${userId}`, data),
+  initPassword: data => request.put('/main/v1/user/init/password', data),
 }

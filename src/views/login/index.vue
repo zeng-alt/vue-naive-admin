@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { GET_PARAMETER, GET_TENANTS,  getParameter } from '@/apollo'
+import { GET_PARAMETER, GET_TENANTS,  getParameter, getTenants } from '@/apollo'
 import { useAuthStore } from '@/store'
 import { lStorage, request, throttle } from '@/utils'
 import { useQuery } from '@vue/apollo-composable'
@@ -140,6 +140,8 @@ const title = import.meta.env.VITE_TITLE
 
 const tenantEnabled = ref(false)
 const captchaEnabled = ref(false)
+const tenants = ref([])
+
 async function getTenantEnabled() {
   const { data } = await getParameter({ parameterKey: 'tenant' })
   tenantEnabled.value = data.findParameter.parameterValue === 'true'
@@ -150,22 +152,32 @@ async function getCaptchaEnabled() {
   captchaEnabled.value = data.findParameter.parameterValue === 'true'
 }
 
-getTenantEnabled()
-getCaptchaEnabled()
-
-// 获取租户列表
-const { result: tenantsResult } = useQuery(GET_TENANTS, {}, {
-  clientId: 'tenant',
-})
-
-const tenants = computed(() => {
-  const list = tenantsResult.value?.queryTenant || []
-  // 添加默认的总部租户
-  return [
+async function getAllTenants() {
+  const { data } = await getTenants({})
+  let list =  data.queryTenant || []
+  tenants.value = [
     { tenantKey: 'master', companyName: '总部' },
     ...list,
   ]
-})
+}
+
+getTenantEnabled()
+getCaptchaEnabled()
+getAllTenants
+
+// 获取租户列表
+// const { result: tenantsResult } = useQuery(GET_TENANTS, {}, {
+//   clientId: 'tenant',
+// })
+
+// const tenants = computed(() => {
+//   const list = tenantsResult.value?.queryTenant || []
+//   // 添加默认的总部租户
+//   return [
+//     { tenantKey: 'master', companyName: '总部' },
+//     ...list,
+//   ]
+// })
 
 // 当前选中的租户
 const selectedTenant = ref('master')

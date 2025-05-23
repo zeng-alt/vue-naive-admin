@@ -105,7 +105,7 @@
       </div>
     </div>
     <ResAddOrEdit ref="modalRef" :menus="treeData" @refresh="initData" />
-    <GraphqlRole ref="roleModalRef" />
+    <GraphqlRole ref="roleModalRef" @refresh="initData"/>
   </CommonPage>
 </template>
 
@@ -180,25 +180,6 @@ const btnsColumns = [
   { title: '编码', key: 'code', width: 250 },
   { title: '方法名', key: 'functionName', width: 200 },
   { title: '协议', key: 'operation', width: 120 },
-  // {
-  //   title: '状态',
-  //   key: 'enable',
-  //   render: row =>
-  //     h(
-  //       NSwitch,
-  //       {
-  //         size: 'small',
-  //         rubberBand: false,
-  //         value: row.enable,
-  //         loading: !!row.enableLoading,
-  //         onUpdateValue: () => handleEnable(row),
-  //       },
-  //       {
-  //         checked: () => '启用',
-  //         unchecked: () => '停用',
-  //       },
-  //     ),
-  // },
   {
     title: '操作',
     key: 'actions',

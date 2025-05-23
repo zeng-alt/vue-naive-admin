@@ -42,10 +42,10 @@ export function getIcons() {
   const faIcons = faFiles.map((filePath) => {
     const fileName = path.basename(filePath) // 获取文件名，包括后缀
     const fileNameWithoutExt = path.parse(fileName).name // 获取去除后缀的文件名
-    return `i-ali:${fileNameWithoutExt}`
+    return `i-fa:${fileNameWithoutExt}`
   })
 
-  return [...dynamicIcons, ...feIcons, ...meIcons, ...carbonIcons, ...alibabaIcons]
+  return [...dynamicIcons, ...feIcons, ...meIcons, ...carbonIcons, ...alibabaIcons, ...faIcons]
 }
 
 /**

@@ -25,10 +25,15 @@
         class="i-fe:github mr-16 cursor-pointer"
         @click="handleLinkClick('https://github.com/zeng-alt/vue-naive-admin')"
       />
-      <i
-        class="i-me:gitee mr-16 cursor-pointer"
-        @click="handleLinkClick('https://gitee.com/isme-admin/vue-naive-admin/tree/2.x')"
-      />
+      <n-tooltip trigger="hover">
+        <template #trigger>
+          <i
+            class="i-carbon:search mr-16 cursor-pointer"
+            @click="handleLinkClick('https://gitee.com/isme-admin/vue-naive-admin/tree/2.x')"
+          />
+        </template>
+        搜索菜单
+      </n-tooltip>
 
       <ThemeSetting class="mr-16" />
 

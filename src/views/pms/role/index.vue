@@ -39,6 +39,8 @@
         />
       </ConditionItem>
     </GraphqlCrud>
+
+
     <MeModal ref="modalRef" @close="closeModal" width="520px">
       <n-form
         ref="modalFormRef"
@@ -106,19 +108,25 @@
 
       </n-form>
     </MeModal>
+
+    <RoleGraphql ref="graphqlRoleRef" @refresh="()=> $table.handleSearch()" width="1000px"/>
   </CommonPage>
+
 </template>
 
 <script setup>
-import { MeCrud, MeModal, MeQueryItem, ConditionItem, GraphqlCrud } from '@/components'
+import { MeModal, ConditionItem, GraphqlCrud } from '@/components'
 import { useCrud } from '@/composables'
 import { NButton, NSwitch } from 'naive-ui'
 import api from './api'
 import {PAGE_ROLE, saveRole, deleteRole} from './apollo'
+import RoleGraphql from './components/RoleGraphql.vue'
+import { ref } from 'vue'
 
 defineOptions({ name: 'RoleMgt' })
 
 const router = useRouter()
+const graphqlRoleRef = ref(null)
 
 const cascade = ref(false)
 const $table = ref(null)
@@ -209,6 +217,21 @@ const columns = [
             type: 'error',
             style: 'margin-left: 12px;',
             disabled: row.code === 'SUPER_ADMIN',
+            onClick: () => handleGraphql(row),
+          },
+          {
+            default: () => '分配graphql',
+            icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' }),
+          },
+        ),
+
+        h(
+          NButton,
+          {
+            size: 'small',
+            type: 'error',
+            style: 'margin-left: 12px;',
+            disabled: row.code === 'SUPER_ADMIN',
             onClick: () => handleDelete(row.id),
           },
           {
@@ -220,6 +243,14 @@ const columns = [
     },
   },
 ]
+
+function handleGraphql(row) {
+  graphqlRoleRef.value?.handleOpen({
+    title: `分配graphql到 - ${row.name}`,
+    row,
+    okText: '分配',
+  })
+}
 
 async function handleEnable(row) {
   // row.enableLoading = true

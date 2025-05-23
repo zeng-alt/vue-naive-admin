@@ -33,6 +33,7 @@
 
     <NDataTable
       :row-key="(row) => row[rowKey]"
+      :checked-row-keys="checkedKeys"
       :columns="columns"
       :data="dataList"
       :loading="loading"
@@ -69,6 +70,11 @@ const props = defineProps({
     default: 'medium',
     validator: (value) => ['tiny', 'small', 'medium', 'large'].includes(value)
   },
+  /** 默认选中的行 */
+  checkedKeys: {
+    type: Array,
+    default: () => []
+  }
   /** 查询结果的字段名 */
 })
 const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange', 'fetch'])

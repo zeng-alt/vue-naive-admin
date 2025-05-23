@@ -340,7 +340,7 @@ async function handleEnable(row) {
 }
 
 function handleOpenRolesSet(row) {
-  const roleIds = row.roles.map(item => item.id)
+  const roleIds = row.userRoles?.map(item => item.role?.id)
   handleOpen({
     action: 'setRole',
     title: '分配角色',
@@ -352,13 +352,13 @@ function handleOpenRolesSet(row) {
 function onSave() {
   if (modalAction.value === 'setRole') {
     return handleSave({
-      api: () => api.update(modalForm.value),
+      api: () => api.assignRole(modalForm.value.id, modalForm.value.roleIds),
       cb: () => $message.success('分配成功'),
     })
   }
   else if (modalAction.value === 'reset') {
     return handleSave({
-      api: () => api.resetPwd(modalForm.value.id, modalForm.value),
+      api: () => api.initPassword({username: modalForm.value.username, password: modalForm.value.password}),
       cb: () => $message.success('密码重置成功'),
     })
   }

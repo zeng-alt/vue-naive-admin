@@ -29,13 +29,14 @@
 </template>
 
 <script setup>
-import { saveGraphqlResource } from '../apollo.js'
 import api from '../api.js'
 import { MeModal } from '@/components'
 import { PAGE_ROLE, saveRole } from '@/views/pms/role/apollo.js'
-import { useForm, useModal } from '@/composables'
+import { useModal } from '@/composables'
 import { ref } from 'vue'
-import { NButton, NSwitch } from 'naive-ui'
+import { NSwitch } from 'naive-ui'
+
+const emit = defineEmits(['refresh'])
 
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
@@ -77,9 +78,6 @@ async function onSave() {
 
   okLoading.value = true
   try {
-
-
-
     if (modalAction.value === 'authorize') {
       if (modalType.value === 'service') {
         await api.serviceAuthorize({service: graphqlService.value, roleIds: roleIds.value})
@@ -87,7 +85,7 @@ async function onSave() {
         await api.functionAuthorize({graphqlIds: graphqlIds.value, roleIds: roleIds.value})
       }
     }
-    else if (modalAction.value === 'cancelAuthorization') {
+    else if (modalAction.value === 'cancelAuthorize') {
 
       if (modalType.value === 'service') {
         await api.serviceCancelAuthorize({service: graphqlService.value, roleIds: roleIds.value})
@@ -97,6 +95,7 @@ async function onSave() {
     }
     okLoading.value = false
     $message.success(modalAction.value === 'authorize' ? '授权成功' :'取消授权成功')
+    emit('refresh')
   }
   catch (error) {
     console.error(error)
