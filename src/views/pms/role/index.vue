@@ -41,7 +41,7 @@
     </GraphqlCrud>
 
 
-    <MeModal ref="modalRef" @close="closeModal" width="520px">
+    <MeModal ref="modalRef" @close="closeModal" width="600px">
       <n-form
         ref="modalFormRef"
         label-placement="left"
@@ -71,29 +71,43 @@
         >
           <n-input v-model:value="modalForm.code" :disabled="modalAction !== 'add'" />
         </n-form-item>
-        <n-form-item label="父子连动">
-          <NSwitch v-model:value="cascade" @update-value="(value) => value && handleCheckedKeysChange(modalForm.permissionIds, permissionTree)">
-            <template #checked>
-              是
-            </template>
-            <template #unchecked>
-              否
-            </template>
-          </NSwitch>
-        </n-form-item>
 
-        <n-form-item label="权限" path="permissionIds">
-          <n-tree
-            key-field="id"
-            label-field="name"
-            :selectable="false"
-            :data="permissionTree"
-            :checked-keys="modalForm.permissionIds"
-            :on-update:checked-keys="(keys) => (modalForm.permissionIds = keys)"
-            :cascade="cascade"
-            default-expand-all checkable check-on-click
-            class="cus-scroll max-h-200 w-full"
-          />
+        <n-form-item path="permissionIds">
+          <n-card title="权限列表" size="large" >
+            <template #header-extra>
+              <n-button size="small" @click="handleSelectAll" class="mr-12">
+                {{ isAllSelected ? '全不选' : '全选' }}
+              </n-button>
+              <n-button size="small" @click="handleExpandAll" class="mr-12">
+                {{ isAllExpanded ? '折叠' : '展开' }}
+              </n-button>
+
+              <n-switch
+                class="mr-12"
+                v-model:value="cascade"
+                size="small"
+                @update-value="(value) => value && handleCheckedKeysChange(modalForm.permissionIds, permissionTree)"
+              >
+                <template #checked><p class="text-12">父子联动</p></template>
+                <template #unchecked><p class="text-12">父子联动</p></template>
+              </n-switch>
+
+            </template>
+            <n-tree
+
+              key-field="id"
+              label-field="name"
+              :selectable="false"
+              :data="permissionTree"
+              :checked-keys="modalForm.permissionIds"
+              :on-update:checked-keys="(keys) => (modalForm.permissionIds = keys)"
+              :cascade="cascade"
+              :default-expand-all="isAllExpanded"
+              checkable
+              check-on-click
+              class="cus-scroll max-h-200 w-full"
+            />
+          </n-card>
         </n-form-item>
         <n-form-item label="状态" path="enable">
           <NSwitch v-model:value="modalForm.enable">
@@ -217,21 +231,6 @@ const columns = [
             type: 'error',
             style: 'margin-left: 12px;',
             disabled: row.code === 'SUPER_ADMIN',
-            onClick: () => handleGraphql(row),
-          },
-          {
-            default: () => '分配graphql',
-            icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' }),
-          },
-        ),
-
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'error',
-            style: 'margin-left: 12px;',
-            disabled: row.code === 'SUPER_ADMIN',
             onClick: () => handleDelete(row.id),
           },
           {
@@ -266,39 +265,73 @@ async function handleEnable(row) {
   }
 }
 
-function closeModal() {
-  cascade.value = false
+const permissionAllId = ref(([]))
+const permissionTree = ref([])
+
+const getAllIds = (nodes) => {
+  let ids = []
+  nodes.forEach(node => {
+    if (node.children) {
+      ids = [...ids, ...getAllIds(node.children)]
+    }
+    if (node.id) {
+      ids.push(node.id)
+    }
+  })
+  return ids
 }
 
-const permissionTree = ref([])
 // api.getAllPermissionTree().then(( data = [] ) => (permissionTree.value = data))
-api.getAllPermissionTree().then(res => permissionTree.value = res ?? [])
+api.getAllPermissionTree().then(res => {
+  permissionTree.value = res ?? []
+  permissionAllId.value = getAllIds(permissionTree.value)
+})
 
-// 获取所有子节点的key
+// 在整棵树中查找指定 id 的节点
+function findNodeById(tree, id) {
+  for (const node of tree) {
+    if (node.id === id) {
+      return node
+    }
+    if (node.children) {
+      const found = findNodeById(node.children, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+// 获取指定节点及其所有子节点的 id
 function getAllChildrenKeys(node) {
   const keys = []
+  if (!node) return keys
   if (node.children) {
-    node.children.forEach(child => {
+    for (const child of node.children) {
       keys.push(child.id)
       keys.push(...getAllChildrenKeys(child))
-    })
+    }
   }
   return keys
 }
 
-// 处理选中节点变化
-function handleCheckedKeysChange(keys, nodes) {
+// 处理勾选变化
+function handleCheckedKeysChange(checkedKeys, tree) {
   if (cascade.value) {
-    // 如果是级联模式，需要收集所有子节点的key
-    const allKeys = new Set(keys)
-    nodes.forEach(node => {
-        getAllChildrenKeys(node).forEach(key => allKeys.add(key))
+    const allKeys = new Set(checkedKeys)
+
+    checkedKeys.forEach(id => {
+      const node = findNodeById(tree, id)
+      if (node) {
+        getAllChildrenKeys(node).forEach(childId => allKeys.add(childId))
+      }
     })
+
     modalForm.value.permissionIds = Array.from(allKeys)
   } else {
-    modalForm.value.permissionIds = keys
+    modalForm.value.permissionIds = checkedKeys
   }
 }
+
 
 function handleFetch(data, callback) {
   const processed = handlePermission(data)
@@ -313,5 +346,66 @@ function handlePermission(role = []) {
     }
   })
 }
+
+
+const isAllExpanded = ref(true)
+const isAllSelected = ref(false)
+
+// 处理全选/全不选
+function handleSelectAll() {
+  if (isAllSelected.value) {
+    modalForm.value.permissionIds = []
+  } else {
+    // 获取所有叶子节点的 id
+    modalForm.value.permissionIds = permissionAllId.value
+  }
+  isAllSelected.value = !isAllSelected.value
+}
+
+// 处理展开/折叠
+function handleExpandAll() {
+  isAllExpanded.value = !isAllExpanded.value
+}
+
+function closeModal() {
+  cascade.value = false
+  isAllExpanded.value = true
+  isAllSelected.value = false
+}
+
+// // 监听选中状态变化
+// watch(() => modalForm.permissionIds, (newVal) => {
+//   // 获取所有叶子节点的 id
+//   const getAllLeafIds = (nodes) => {
+//     let ids = []
+//     nodes.forEach(node => {
+//       if (!node.children || node.children.length === 0) {
+//         ids.push(node.id)
+//       } else {
+//         ids = ids.concat(getAllLeafIds(node.children))
+//       }
+//     })
+//     return ids
+//   }
+//   const allLeafIds = getAllLeafIds(permissionTree.value)
+//   isAllSelected.value = allLeafIds.length > 0 && allLeafIds.every(id => newVal.includes(id))
+// }, { deep: true })
+
+// // 监听展开状态变化
+// watch(() => expandedKeys.value, (newVal) => {
+//   // 获取所有节点的 id
+//   const getAllIds = (nodes) => {
+//     let ids = []
+//     nodes.forEach(node => {
+//       ids.push(node.id)
+//       if (node.children && node.children.length > 0) {
+//         ids = ids.concat(getAllIds(node.children))
+//       }
+//     })
+//     return ids
+//   }
+//   const allIds = getAllIds(permissionTree.value)
+//   isAllExpanded.value = allIds.length > 0 && allIds.every(id => newVal.includes(id))
+// }, { deep: true })
 
 </script>

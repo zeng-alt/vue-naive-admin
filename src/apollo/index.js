@@ -16,7 +16,7 @@ export const GET_PARAMETER = gql`
 // 获取租户列表
 export const GET_TENANTS = gql`
   query GetTenants($tenantInput: TenantInput) {
-    queryTenant(tenantInput: tenantInput) {
+    queryTenant(tenantInput: $tenantInput) {
       accountCount
       address
       companyName
@@ -47,7 +47,7 @@ queryDictType(dictDataInput: $dictDataInput) {
 `
 
 export function getTenants(data) {
-  return apolloClients.main.query({
+  return apolloClients.tenant.query({
     query: GET_TENANTS,
     variables: {
       tenantInput: data

@@ -1,36 +1,65 @@
 import gql from 'graphql-tag'
 import { apolloClients } from '@/utils/graphql'
 
-export const SAVE_MENU_RESOURCE = gql`
-mutation SaveMenuResource($menuResourceInput: MenuResourceInput) {
-  saveMenuResource(menuResourceInput: $menuResourceInput) {
+export const CONDITION_PAGE_HTTP_RESOURCE = gql`
+query ConditionPageHttpResource($pageQuery: PageQuery, $filter: HttpResourceCondition) {
+  conditionPageHttpResource(
+    pageQuery: $pageQuery,
+    filter: $filter,
+    sort: {direction: ASC, property: "id"}
+    ) {
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      edges {
+        cursor
+        node {
+          code
+          enable
+          id
+          menuId
+          method
+          name
+          path
+          redirect
+        }
+      }
+    }
+}
+`
+
+export const SAVE_HTTP_RESOURCE = gql`
+mutation SaveHttpResource($httpResourceInput: HttpResourceInput, $ignoringNull: Boolean = true) {
+  saveHttpResource(httpResourceInput: $httpResourceInput, ignoringNull: $ignoringNull) {
     id,
-    type
+    method,
   }
 }
 `
 
-export const DELETE_MENU_RESOURCE = gql`
-  mutation DeleteMenuResourceIds($ids: [Long]) {
-    deleteMenuResourceIds(id: $ids)
+export const DELETE_PERMISSION = gql`
+  mutation DeletePermissionIds($ids: [Long]) {
+    deletePermissionIds(id: $ids)
   }
 `
 
-export function saveMenuResource(data) {
+export function saveHttpResource(data) {
   return apolloClients.main.mutate({
-    mutation: SAVE_MENU_RESOURCE,
+    mutation: SAVE_HTTP_RESOURCE,
     variables: {
-      menuResourceInput: data
+      httpResourceInput: data
     }
   })
 }
 
-export function deleteMenuResource(ids) {
+export function deletePermission(ids) {
   return apolloClients.main.mutate({
-    mutation: DELETE_MENU_RESOURCE,
+    mutation: DELETE_PERMISSION,
     variables: {
       ids
     }
   })
 }
-

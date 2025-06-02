@@ -172,7 +172,7 @@ import { useCrud } from '@/composables'
 import { NTooltip, NButton, NSwitch } from 'naive-ui'
 import { GraphqlCrud, MeQueryItem, MeModal } from '@/components'
 import { FUZZY_PAGE_DICT_DATA, saveDictData, deleteDictData } from './apollo'
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 defineOptions({ name: 'DictMgt' })
 
@@ -399,7 +399,6 @@ function handleFiltersChange(data) {
 }
 
 function refresh() {
-
   queryItems.value.dictType = {}
 }
 

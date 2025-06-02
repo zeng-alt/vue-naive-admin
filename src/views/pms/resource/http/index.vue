@@ -1,144 +1,301 @@
-<!--------------------------------
- - @Author: Ronnie Zhang
- - @LastEditor: Ronnie Zhang
- - @LastEditTime: 2023/12/05 21:28:53
- - @Email: zclzone@outlook.com
- - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
- --------------------------------->
-
 <template>
-  <CommonPage>
-    <div class="flex">
-      <n-spin size="small" :show="treeLoading">
-        <MenuTree
-          v-model:current-menu="currentMenu"
-          class="w-320 shrink-0"
-          :tree-data="treeData"
-          @refresh="initData"
+  <CommonPage :show-header="showHeader">
+    <template #action v-show="showHeader">
+      <NButton v-permission="'AddUser'" type="primary" @click="handleAdd()">
+        <i class="i-material-symbols:add mr-4 text-18" />
+        创建HTTP资源
+      </NButton>
+    </template>
+
+    <GraphqlCrud
+      ref="$table"
+      v-model:filters="queryItems"
+      :condition="true"
+      :scroll-x="1200"
+      :columns="columns"
+      :expand="true"
+      @on-checked="onChecked"
+      :get-data="CONDITION_PAGE_HTTP_RESOURCE"
+    >
+      <MeQueryItem label="所属菜单" >
+        <n-tree-select
+          v-model:value="queryItems.menuId.value"
+          :options="treeData"
+          label-field="name"
+          key-field="id"
+          placeholder="根菜单"
+          clearable
         />
-      </n-spin>
+      </MeQueryItem>
 
-      <div class="ml-40 w-0 flex-1">
-        <template v-if="currentMenu">
-          <div class="flex justify-between">
-            <h3 class="mb-12">
-              {{ currentMenu.name }}
-            </h3>
-            <NButton size="small" type="primary" @click="handleEdit(currentMenu)">
-              <i class="i-material-symbols:edit-outline mr-4 text-14" />
-              编辑
-            </NButton>
-          </div>
-          <n-descriptions label-placement="left" bordered :column="2">
-            <n-descriptions-item label="编码">
-              {{ currentMenu.code }}
-            </n-descriptions-item>
-            <n-descriptions-item label="名称">
-              {{ currentMenu.name }}
-            </n-descriptions-item>
-            <n-descriptions-item label="路由地址">
-              {{ currentMenu.path ?? '--' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="组件路径">
-              {{ currentMenu.component ?? '--' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="菜单图标">
-              <span v-if="currentMenu.icon" class="flex items-center">
-                <i :class="`${currentMenu.icon}?mask text-22 mr-8`" />
-                <span class="opacity-50">{{ currentMenu.icon }}</span>
-              </span>
-              <span v-else>无</span>
-            </n-descriptions-item>
-            <n-descriptions-item label="layout">
-              {{ currentMenu.layout || '跟随系统' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="是否显示">
-              {{ currentMenu.show ? '是' : '否' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="是否启用">
-              {{ currentMenu.enable ? '是' : '否' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="KeepAlive">
-              {{ currentMenu.keepAlive ? '是' : '否' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="排序">
-              {{ currentMenu.order ?? '--' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="菜单风格">
-              {{ currentMenu.menuStyle ?? '默认' }}
-            </n-descriptions-item>
-          </n-descriptions>
+      <MeQueryItem label="协议" :label-width="50">
+        <n-select
+          v-model:value="queryItems.method.value"
+          clearable
+          :options="option"
+        />
+      </MeQueryItem>
+      <ConditionItem v-model:value="queryItems.name" label="名称" type="string" :label-width="50">
+        <NInput
+          v-model:value="queryItems.name.value"
+          type="text"
+          placeholder="请输入名称"
+          clearable
+        >
+          <template #password-invisible-icon></template>
+        </NInput>
+      </ConditionItem>
+      <ConditionItem v-model:value="queryItems.code" label="编码" type="string" :label-width="50">
+        <NInput
+          v-model:value="queryItems.code.value"
+          type="text"
+          placeholder="请输入编码"
+          clearable
+        />
+      </ConditionItem>
+    </GraphqlCrud>
 
-          <div class="mt-32 flex justify-between">
-            <h3 class="mb-12">
-              按钮
-            </h3>
-            <NButton size="small" type="primary" @click="handleAddBtn">
-              <i class="i-fe:plus mr-4 text-14" />
-              新增
-            </NButton>
-          </div>
 
-          <MeCrud
-            ref="$table"
-            :columns="btnsColumns"
-            :scroll-x="-1"
-            :get-data="api.getButtons"
-            :query-items="{ parentId: currentMenu.id }"
-          />
-        </template>
-        <n-empty v-else class="h-450 f-c-c" size="large" description="请选择菜单查看详情" />
-      </div>
-    </div>
-    <ResAddOrEdit ref="modalRef" :menus="treeData" @refresh="initData" />
+    <MeModal ref="modalRef" width="800px">
+      <n-form
+        ref="modalFormRef"
+        label-placement="left"
+        require-mark-placement="left"
+        :label-width="100"
+        :model="modalForm"
+      >
+        <n-grid :cols="24" :x-gap="24">
+          <n-form-item-gi :span="12" label="所属菜单" path="menuId">
+            <n-tree-select
+              v-model:value="modalForm.menuId"
+              :options="treeData"
+              label-field="name"
+              key-field="id"
+              placeholder="根菜单"
+              clearable
+            />
+          </n-form-item-gi>
+          <n-form-item-gi :span="12" path="name" :rule="required">
+            <template #label>
+              <QuestionLabel label="名称" content="标题" />
+            </template>
+            <n-input v-model:value="modalForm.name" />
+          </n-form-item-gi>
+          <n-form-item-gi :span="12" path="code" :rule="required">
+            <template #label>
+              <QuestionLabel label="编码" content="如果是菜单则对应前端路由的name，使用大驼峰" />
+            </template>
+            <n-input v-model:value="modalForm.code" :disabled="modalAction === 'edit'"/>
+          </n-form-item-gi>
+          <n-form-item-gi :span="12" path="enable">
+            <template #label>
+              <QuestionLabel
+                label="状态"
+                content="如果是菜单，禁用后将不添加到路由表，无法进入此页面"
+              />
+            </template>
+            <n-switch v-model:value="modalForm.enable">
+              <template #checked>
+                启用
+              </template>
+              <template #unchecked>
+                禁用
+              </template>
+            </n-switch>
+          </n-form-item-gi>
+
+          <n-form-item-gi :span="12" path="method" :rule="required">
+            <template #label>
+              <QuestionLabel label="协议" content="如果是菜单则对应前端路由的name，使用大驼峰" />
+            </template>
+            <n-select
+              size="small"
+              v-model:value="modalForm.method"
+              clearable
+              :options="option"
+            />
+          </n-form-item-gi>
+
+          <n-form-item-gi :span="24" path="path">
+            <template #label>
+              <QuestionLabel
+                label="接口路径"
+                content="前端组件的路径，以 / 开头，父级菜单可不填"
+              />
+            </template>
+            <n-input v-model:value="modalForm.path" >
+              <template #separator></template>
+            </n-input>
+          </n-form-item-gi>
+        </n-grid>
+      </n-form>
+    </MeModal>
   </CommonPage>
 </template>
 
 <script setup>
-import { MeCrud } from '@/components'
-import { NButton, NSwitch } from 'naive-ui'
-import api from './api'
-import { deleteMenuResource } from  './apollo'
-import MenuTree from './components/MenuTree.vue'
-import ResAddOrEdit from './components/ResAddOrEdit.vue'
+import { GraphqlCrud, MeModal, MeQueryItem } from '@/components'
+import { useCrud } from '@/composables'
+import { NButton, NFormItem, NInput, NTooltip, NSwitch, NTag } from 'naive-ui'
+import { ref } from 'vue'
+import { CONDITION_PAGE_HTTP_RESOURCE, saveHttpResource, deletePermission } from './apollo'
+import api from '@/views/pms/resource/menu/api'
+import QuestionLabel from '@/views/pms/resource/menu/components/QuestionLabel.vue'
+
+const emit = defineEmits(['checked'])
+
+const props = defineProps({
+  showHeader: {
+    type: Boolean,
+    default: true
+  }
+})
+
+function onChecked(rowKeys) {
+  emit('checked', rowKeys || [])
+}
 
 defineOptions({ name: 'HttpResourceMgt' })
 
-const treeData = ref([])
-const treeLoading = ref(false)
 const $table = ref(null)
-const currentMenu = ref(null)
-async function initData(data) {
-  if (data?.type === 'BUTTON') {
-    $table.value.handleSearch()
-    return
+/** QueryBar筛选参数（可选） */
+const queryItems = ref({
+  menuId: {
+    option: 'EQ',
+    value: null
+  },
+  name: {},
+  code: {},
+  method: {
+    option: 'EQ',
+    value: null
   }
-  treeLoading.value = true
-  const res = await api.getMenuTree()
-  treeData.value = res || []
-  treeLoading.value = false
+})
 
-  if (data)
-    currentMenu.value = data
+const option = [
+  { label: 'GET', value: 'GET' },
+  { label: 'POST', value: 'POST' },
+  { label: 'PUT', value: 'PUT' },
+  { label: 'DELETE', value: 'DELETE' },
+  { label: 'PATCH', value: 'PATCH' },
+  { label: 'HEAD', value: 'HEAD' },
+  { label: 'OPTIONS', value: 'OPTIONS' },
+  { label: 'TRACE', value: 'TRACE' }
+]
+
+const required = {
+  required: true,
+  message: '此为必填项',
+  trigger: ['blur', 'change'],
 }
+
+const {
+  modalRef,
+  modalFormRef,
+  modalForm,
+  modalAction,
+  handleAdd,
+  handleDelete,
+  handleEdit,
+} = useCrud({
+  name: '参数',
+  initForm: {enable: true},
+  doCreate: saveHttpResource,
+  doDelete: deletePermission,
+  doUpdate: saveHttpResource,
+  refresh: () => $table.value?.handleSearch(),
+})
+
+const mapData = ref(new Map())
+const treeData = ref([])
+async function initData() {
+  const res = await api.getMenuTree()
+
+  treeData.value = res || []
+  const map = new Map()
+
+  function traverse(nodes) {
+    nodes.forEach(node => {
+      map.set(node.id, node.name)
+      if (node.children && node.children.length) {
+        traverse(node.children)
+      }
+    })
+  }
+
+  traverse(res)
+  mapData.value = map
+}
+
 initData()
 
-const modalRef = ref(null)
-function handleEdit(item = {}) {
-  modalRef.value?.handleOpen({
-    action: 'edit',
-    title: `编辑菜单 - ${item.name}`,
-    row: item,
-    okText: '保存',
-  })
+function handleMenu(id) {
+  return mapData.value.get(id)
 }
 
-const btnsColumns = [
-  { title: '名称', key: 'name' },
-  { title: '编码', key: 'code' },
+
+async function handleEnable(item) {
+  try {
+    await saveHttpResource({id: item.id, enable: !item.enable})
+    $message.success('操作成功')
+    $table.value?.handleSearch()
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
+
+const columns = [
+  { type: 'selection', fixed: 'left' },
+  {
+    title: '编码',
+    key: 'code',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '名称',
+    key: 'name',
+    width: 150,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: '父菜单',
+    key: 'menuId',
+    width: 150,
+    ellipsis: { tooltip: true },
+    render: (row) => {
+      const menuName = handleMenu(row.menuId)
+      if (menuName) {
+        return h(
+          NTag,
+          { type: 'success' },
+          {
+            default: () => menuName,
+          },
+        )
+      } else  {
+        return '无父菜单'
+      }
+    }
+  },
+  {
+    title: '协议',
+    key: 'method',
+    width: 100,
+    ellipsis: { tooltip: true },
+    render: (row) => {
+      return h(
+          NTag,
+          { type: 'success' },
+          { default: () => row.method },
+        )
+    },
+  },
   {
     title: '状态',
     key: 'enable',
+    width: 100,
     render: row =>
       h(
         NSwitch,
@@ -156,108 +313,71 @@ const btnsColumns = [
       ),
   },
   {
+    title: '路径',
+    key: 'path',
+    ellipsis: { tooltip: true },
+  },
+  {
     title: '操作',
     key: 'actions',
-    width: 320,
+    width: 100,
     align: 'right',
     fixed: 'right',
+    hideInExcel: true,
     render(row) {
       return [
-        h(
-          NButton,
+      h(
+          NTooltip,
+          { trigger: 'hover' },
           {
-            size: 'small',
-            type: 'primary',
-            style: 'margin-left: 12px;',
-            onClick: () => handleEditBtn(row),
-          },
-          {
-            default: () => '编辑',
-            icon: () => h('i', { class: 'i-material-symbols:edit-outline text-14' }),
-          },
-        ),
-
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'error',
-            style: 'margin-left: 12px;',
-            onClick: () => handleDeleteBtn(row.id),
-          },
-          {
-            default: () => '删除',
-            icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' }),
+            trigger: () =>
+              h(
+                NButton,
+                {
+                  text: true,
+                  size: 'large',
+                  style: 'margin-left: 12px;',
+                  type: 'info',
+                  onClick: () => handleEdit(row),
+                },
+                {
+                  icon: () => h('i', {
+                    class: 'i-material-symbols:edit-outline text-14',
+                  }),
+                },
+              ),
+            default: () => '修改', // 这是提示的内容
           },
         ),
+        h(
+          NTooltip,
+          { trigger: 'hover' },
+          {
+            trigger: () =>
+              h(
+                NButton,
+                {
+                  text: true,
+                  size: 'large',
+                  style: 'margin-left: 12px;',
+                  type: 'error',
+                  onClick: () => handleDelete(row.id),
+                },
+                {
+                  icon: () => h('i', {
+                    class: 'i-material-symbols:delete-outline text-14',
+                  }),
+                },
+              ),
+            default: () => '删除', // 这是提示的内容
+          },
+        )
       ]
     },
   },
 ]
 
-watch(
-  () => currentMenu.value,
-  async (v) => {
-    await nextTick()
-    if (v)
-      $table.value.handleSearch()
-  },
-)
-
-function handleAddBtn() {
-  modalRef.value?.handleOpen({
-    action: 'add',
-    title: '新增按钮',
-    row: { type: 'BUTTON', parentId: currentMenu.value.id },
-    okText: '保存',
-  })
-}
-
-function handleEditBtn(row) {
-  modalRef.value?.handleOpen({
-    action: 'edit',
-    title: `编辑按钮 - ${row.name}`,
-    row,
-    okText: '保存',
-  })
-}
-
-function handleDeleteBtn(id) {
-  const d = $dialog.warning({
-    content: '确定删除？',
-    title: '提示',
-    positiveText: '确定',
-    negativeText: '取消',
-    async onPositiveClick() {
-      try {
-        d.loading = true
-        //await api.deletePermission(id)
-        await deleteMenuResource(id)
-        $message.success('删除成功')
-        $table.value.handleSearch()
-        d.loading = false
-      }
-      catch (error) {
-        console.error(error)
-        d.loading = false
-      }
-    },
-  })
-}
-
-async function handleEnable(item) {
-  try {
-    item.enableLoading = true
-    await api.savePermission(item.id, {
-      enable: !item.enable,
-    })
-    $message.success('操作成功')
-    $table.value?.handleSearch()
-    item.enableLoading = false
-  }
-  catch (error) {
-    console.error(error)
-    item.enableLoading = false
-  }
-}
+onMounted(() => {
+  $table.value?.handleSearch()
+})
 </script>

@@ -15,6 +15,7 @@ export default {
   update: data => request.patch(`/role/${data.id}`, data),
   delete: id => request.delete(`/role/${id}`),
 
+  authorizePermission: data => request.post('/main/v1/role/authorize/permission', data),
   getAllPermissionTree: () => request.get('/main/v1/menu/resource/tree/all'),
   getAllUsers: (params = {}) => request.get('/user', { params }),
   addRoleUsers: (roleId, data) => request.patch(`/main/v1/user/add/role/${roleId}`, data),

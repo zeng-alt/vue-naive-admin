@@ -14,7 +14,7 @@
         <div class="flex gap-2">
           <n-tooltip trigger="hover">
             <template #trigger>
-              <n-button type="primary" @click="refresh()" quaternary>
+              <n-button type="primary" @click="assignMenu()" quaternary>
                 <i class="i-material-symbols:person-check mr-4 text-14" />
               </n-button>
             </template>
@@ -46,14 +46,16 @@
     </n-space>
 
     <ResAddOrEdit ref="modalRef" :menus="treeData" @refresh="(data) => emit('refresh', data)" />
+    <AssignMenu ref="assignMenuRef" width="1200px" />
   </div>
 </template>
 
 <script setup>
 import { NButton } from 'naive-ui'
-import { withModifiers } from 'vue'
+import { ref, withModifiers } from 'vue'
 import { deleteMenuResource } from '../apollo'
 import ResAddOrEdit from './ResAddOrEdit.vue'
+import AssignMenu from './AssignMenu.vue'
 
 defineProps({
   treeData: {
@@ -73,6 +75,7 @@ const modalRef = ref(null)
 async function handleAdd(data = {}) {
   modalRef.value?.handleOpen({
     action: 'add',
+    type: 'MENU',
     title: '新增菜单',
     row: { type: 'MENU', ...data },
     okText: '保存',
@@ -96,7 +99,7 @@ function renderSuffix({ option }) {
         type: 'primary',
         title: '新增下级菜单',
         size: 'tiny',
-        onClick: withModifiers(() => handleAdd({ parentId: option.id }), ['stop']),
+        onClick: withModifiers(() => handleAdd({ menuId: option.id }), ['stop']),
       },
       { default: () => '新增' },
     ),
@@ -132,6 +135,16 @@ function handleDelete(item) {
         $message.destroy('deleteMenu')
       }
     },
+  })
+}
+
+const assignMenuRef = ref(null)
+
+function assignMenu() {
+  assignMenuRef.value?.handleOpen({
+    action: 'assign',
+    title: '分配菜单权限',
+    okText: '分配'
   })
 }
 </script>

@@ -30,6 +30,7 @@ export default defineConfig({
         carbon: FileSystemIconLoader('./src/assets/icons/carbon'),
         ali: FileSystemIconLoader('./src/assets/icons/alibaba'),
         fa: FileSystemIconLoader('./src/assets/icons/fa'),
+        ma: FileSystemIconLoader('./src/assets/icons/material'),
       },
     }),
     presetRemToPx({ baseFontSize: 4 }),

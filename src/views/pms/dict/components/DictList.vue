@@ -47,6 +47,108 @@
         </n-tooltip>
       </div>
 
+
+      <!-- <n-infinite-scroll
+        style="height: 240px"
+        :distance="10"
+        @load="handleLoad"
+      >
+
+        <div class="flex gap-2">
+          <n-tag
+            size="medium"
+            class="w-32"
+            type="primary"
+          >
+            字典键
+          </n-tag>
+          <div >
+            <n-tag
+              size="medium"
+              class="w-32"
+              type="primary"
+            >
+              字典名
+            </n-tag>
+          </div>
+          <div>
+            <n-tag
+              size="medium"
+              class="w-32"
+              type="primary"
+            >
+              备注
+            </n-tag>
+          </div>
+          <div class="w-20 text-right">
+            <span class="whitespace-nowrap">操作</span>
+          </div>
+        </div>
+
+        <div
+          v-for="(item, index) in dataList"
+          :key="item.key"
+          class="flex items-center gap-2 mt-10"
+        >
+          <n-button
+            @click="handleRowClick(item)"
+            size="tiny"
+            class="w-32 cursor-pointer"
+          >
+            {{ item.dictCode }}
+          </n-button>
+          <div
+            class="flex-1 cursor-pointer"
+            @dblclick="item.isEditingDictName = true"
+          >
+            <n-input
+              v-if="item.isEditingDictName"
+              size="tiny"
+              v-model:value="item.dictName"
+              type="text"
+              placeholder="字典名"
+              clearable
+              class="flex-1"
+              @blur="handleUpdate(item, 'dictName'); item.isEditingDictName = false"
+            />
+            <div v-else class="text">{{ item.dictName || '--' }}</div>
+          </div>
+          <div
+            class="flex-1 cursor-pointer"
+            @dblclick="item.isEditingRemark = true"
+          >
+            <n-input
+              v-if="item.isEditingRemark"
+              size="tiny"
+              v-model:value="item.remark"
+              type="textarea"
+              placeholder="备注"
+              clearable
+              @blur="handleUpdate(item, 'remark'); item.isEditingRemark = false"
+            />
+            <n-ellipsis style="max-width: 130px" v-else class="text" :tooltip="{ placement: 'top' }">
+              {{ item.remark || '--' }}
+            </n-ellipsis>
+          </div>
+          <div class="flex-1 cursor-pointer w-20">
+            <n-tooltip trigger="hover">
+              <template #trigger>
+                <n-button type="primary" size="tiny" quaternary @click="handleDelete(item)">
+                  <i class="i-fe:x" />
+                </n-button>
+              </template>
+              删除
+            </n-tooltip>
+          </div>
+        </div>
+        <div v-if="loading" class="text">
+          加载中...
+        </div>
+        <div v-if="noMore" class="text">
+          没有更多了 🤪
+        </div>
+      </n-infinite-scroll> -->
+
       <div class="table-container" @scroll="handleScroll">
         <n-list
           bordered
@@ -150,6 +252,8 @@
 
     </n-space>
   </div>
+
+  <ResAddOrEdit  ref="typeModalRef" @refresh="refresh"></ResAddOrEdit>
 </template>
 
 <script setup>
@@ -160,6 +264,7 @@ import { NButton, NSpace, NInput, NTooltip, NList, NListItem, NTag } from 'naive
 import { useQuery } from '@vue/apollo-composable'
 import { defaultPrimaryColor } from '@/settings'
 import { useAppStore } from '@/store'
+import ResAddOrEdit from './ResAddOrEdit.vue'
 
 defineOptions({ name: 'DictDataMgt' })
 
@@ -168,8 +273,14 @@ const isDark = computed(() => appStore.isDark)
 
 const emit = defineEmits(['click', 'refresh'])
 
+const loading = ref(true)
+const noMore = ref(false)
 let scrollTimer = null
 let lastScrollTop = 0
+
+function handleLoad() {
+
+}
 
 const queryItems = ref({
   dictCode: {
@@ -271,13 +382,17 @@ const handleUpdate = (data, key) => {
   })
 }
 
+
+const typeModalRef = ref(null)
+
 const handleAdd = () => {
-  // TODO: 处理新增逻辑
+  typeModalRef.value?.handleOpen({
+    title: '新增字典',
+  })
 }
 
 const handleDelete = (data) => {
-  // TODO: 处理删除逻辑
-  console.log('删除数据:', data)
+
   const d = $dialog.warning({
     content: '确定删除？',
     title: '提示',

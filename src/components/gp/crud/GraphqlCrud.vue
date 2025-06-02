@@ -33,7 +33,7 @@
 
     <NDataTable
       :row-key="(row) => row[rowKey]"
-      :checked-row-keys="checkedKeys"
+      :checked-row-keys="internalCheckedKeys"
       :columns="columns"
       :data="dataList"
       :loading="loading"
@@ -75,7 +75,6 @@ const props = defineProps({
     type: Array,
     default: () => []
   }
-  /** 查询结果的字段名 */
 })
 const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange', 'fetch'])
 
@@ -173,9 +172,18 @@ function handleSearch() {
   refetch()
 }
 
-// row selection remains unchanged
+// 添加内部状态来管理选中行
+const internalCheckedKeys = ref(props.checkedKeys)
+
+// 监听外部 checkedKeys 的变化
+watch(() => props.checkedKeys, (newVal) => {
+  internalCheckedKeys.value = newVal
+}, { deep: true })
+
+// 修改 onChecked 函数
 function onChecked(rowKeys) {
   if (props.columns.some(item => item.type === 'selection')) {
+    internalCheckedKeys.value = rowKeys
     emit('onChecked', rowKeys)
   }
 }

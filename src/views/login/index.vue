@@ -21,7 +21,7 @@
           {{ title }}
         </h2>
 
-        <div v-if="tenantEnabled" class="mt-32 flex items-center">
+        <!-- <div v-if="tenantEnabled" class="mt-32 flex items-center">
           <i class="i-fe:building mr-12 text-16px opacity-60" />
           <n-select
             v-model:value="selectedTenant"
@@ -31,8 +31,23 @@
             value-field="tenantKey"
             placeholder="请选择租户"
           />
-        </div>
+        </div> -->
 
+        <div v-if="tenantEnabled" class="mt-32 flex items-center">
+        <n-popselect v-model:value="selectedTenant" :options="tenants" trigger="click">
+
+          <n-input
+            :v-model:value="selectedTenant"
+            default-value="master"
+            class="h-40 items-center"
+          >
+            <template #prefix>
+              <i class="i-fe:building mr-12 text-16px opacity-60" />
+            </template>
+            <template #separator></template>
+          </n-input>
+        </n-popselect>
+      </div>
         <n-input
           v-model:value="loginInfo.username"
           autofocus
@@ -45,6 +60,7 @@
             <i class="i-fe:user mr-12 opacity-20" />
           </template>
           <template #separator />
+          <template #password-invisible-icon></template>
         </n-input>
         <n-input
           v-model:value="loginInfo.password"
@@ -155,15 +171,20 @@ async function getCaptchaEnabled() {
 async function getAllTenants() {
   const { data } = await getTenants({})
   let list =  data.queryTenant || []
+  // tenants.value = [
+  //   { tenantKey: 'master', companyName: '总部' },
+  //   ...list,
+  // ]
+
   tenants.value = [
-    { tenantKey: 'master', companyName: '总部' },
-    ...list,
+    { value: 'master', label: '总部' },
+    ...(list.map(item => ({ value: item.tenantKey, label: item.companyName }))),
   ]
 }
 
 getTenantEnabled()
 getCaptchaEnabled()
-getAllTenants
+getAllTenants()
 
 // 获取租户列表
 // const { result: tenantsResult } = useQuery(GET_TENANTS, {}, {

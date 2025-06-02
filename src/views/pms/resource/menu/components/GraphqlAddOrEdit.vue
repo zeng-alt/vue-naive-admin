@@ -1,12 +1,5 @@
-<!--------------------------------
- - @Author: Ronnie Zhang
- - @LastEditor: Ronnie Zhang
- - @LastEditTime: 2024/04/01 15:52:31
- - @Email: zclzone@outlook.com
- - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
- --------------------------------->
 
-<template>
+ <template>
   <MeModal ref="modalRef">
     <n-form
       ref="modalFormRef"
@@ -16,19 +9,24 @@
       :model="modalForm"
     >
       <n-grid :cols="24" :x-gap="24">
-        <n-form-item-gi :span="12" label="所属服务">
-          <n-input :value="`${graphqlCode}服务`" :disabled="true" />
-        </n-form-item-gi>
         <n-form-item-gi :span="12" label="所属菜单" path="menuId">
-            <n-tree-select
-              v-model:value="modalForm.menuId"
-              :options="treeData"
-              label-field="name"
-              key-field="id"
-              placeholder="根菜单"
-              clearable
-            />
-          </n-form-item-gi>
+          <n-tree-select
+            v-model:value="modalForm.menuId"
+            :options="menuOptions"
+            :disabled="parentIdDisabled"
+            label-field="name"
+            key-field="id"
+            placeholder="根菜单"
+            clearable
+          />
+        </n-form-item-gi>
+        <n-form-item-gi :span="12" label="所属服务" :rule="required">
+          <n-select
+            v-model:value="modalForm.uri"
+            clearable
+            :options="treeData"
+          />
+        </n-form-item-gi>
         <n-form-item-gi :span="12" path="name" :rule="required">
           <template #label>
             <QuestionLabel label="名称" content="标题" />
@@ -39,7 +37,7 @@
           <template #label>
             <QuestionLabel label="编码" content="如果是菜单则对应前端路由的name，使用大驼峰" />
           </template>
-          <n-input v-model:value="modalForm.code" />
+          <n-input v-model:value="modalForm.code" :disabled="modalAction === 'edit'" />
         </n-form-item-gi>
 
         <n-form-item-gi :span="12" path="operation" :rule="required">
@@ -47,7 +45,6 @@
             <QuestionLabel label="协议" content="如果是菜单则对应前端路由的name，使用大驼峰" />
           </template>
           <n-select
-            size="small"
             v-model:value="modalForm.operation"
             clearable
             :options="[
@@ -64,24 +61,17 @@
           </template>
           <n-input v-model:value="modalForm.functionName" />
         </n-form-item-gi>
-
       </n-grid>
     </n-form>
   </MeModal>
 </template>
 
 <script setup>
-import { saveGraphqlResource } from '../apollo.js'
 import { MeModal } from '@/components'
+import {  apolloClients } from '@/utils/graphql'
 import { useForm, useModal } from '@/composables'
+import { saveGraphqlResource } from '../apollo'
 import QuestionLabel from './QuestionLabel.vue'
-import api from '@/views/pms/resource/menu/api'
-
-const treeData = ref([])
-async function initData() {
-  const res = await api.getMenuTree()
-  treeData.value = res || []
-}
 
 const props = defineProps({
   menus: {
@@ -91,7 +81,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['refresh'])
 
-const graphqlCode = ref('')
+const menuOptions = computed(() => {
+  return [{ name: '根菜单', id: '', children: props.menus || [] }]
+})
 
 const required = {
   required: true,
@@ -99,17 +91,33 @@ const required = {
   trigger: ['blur', 'change'],
 }
 
-// const defaultForm = { enable: true, show: true, layout: '',  menuStyle: 'default'}
+const treeData = ref([])
+
+function initData() {
+  const res = Object.keys(apolloClients).map(n => {
+    return {
+      value: `/${n}/graphql`,
+      label: n + '服务'
+    }
+  })
+
+  treeData.value = res || []
+}
+
+
+
+const defaultForm = {}
 const [modalFormRef, modalForm, validation] = useForm()
 const [modalRef, okLoading] = useModal()
 
 const modalAction = ref('')
+const parentIdDisabled = ref(false)
 function handleOpen(options = {}) {
-  const { action, row = {}, code, ...rest  } = options
+  const { action, row = {}, ...rest } = options
   initData()
-  graphqlCode.value = code
   modalAction.value = action
-  modalForm.value = row
+  modalForm.value = { ...defaultForm, ...row }
+  parentIdDisabled.value = !!row.menuId && action === 'add'
   modalRef.value.open({ ...rest, onOk: onSave })
 }
 
@@ -118,17 +126,14 @@ async function onSave() {
   okLoading.value = true
   try {
     let newFormData
+    let data = { ...modalForm.value}
 
-    if (modalAction.value === 'add') {
-      const res = await saveGraphqlResource(modalForm.value)
-      newFormData = res.data?.saveGraphqlResource
-    }
-    else if (modalAction.value === 'edit') {
-      await saveGraphqlResource(modalForm.value)
-    }
+    const res = await saveGraphqlResource(data)
+    newFormData = res.data?.saveMenuResource
+
     okLoading.value = false
     $message.success('保存成功')
-    emit('refresh', modalAction.value === 'add' ? newFormData : modalForm.value)
+    emit('refresh', 'graphql', modalAction.value === 'add' ? newFormData : modalForm.value)
   }
   catch (error) {
     console.error(error)

@@ -101,10 +101,10 @@
 </template>
 
 <script setup>
-import { GraphqlCrud, MeCrud, MeModal, MeQueryItem } from '@/components'
+import { GraphqlCrud, MeModal } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils'
-import { NButton, NFormItem, NInput, NRadio, NRadioGroup, NSpace, NTooltip } from 'naive-ui'
+import { NButton, NFormItem, NInput, NTooltip } from 'naive-ui'
 import { ref } from 'vue'
 import { PAGE_PARAMETER, deleteParameter, saveParameter } from './apollo'
 
