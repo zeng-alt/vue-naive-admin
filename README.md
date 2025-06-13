@@ -15,6 +15,10 @@
 
 Vue Naive Admin 是一款极简风格的后台管理模板，包含前后端解决方案，前端使用 Vite + Vue3 + Pinia + Unocss，后端使用 Nestjs + TypeOrm + MySql，简单易用，赏心悦目，历经十几次重构和细节打磨，诚意满满！！
 
+在Vue Naive Admin的基础上进行二次扩展，开发支持rabac,abac,多租户功能的后台管理系统
+
+对应的后端github地址: https://github.com/zeng-alt/zero-ddd
+
 ## 设计理念
 
 Vue Naive Admin 2022年2月开始开源，从 1.0 到现在的 2.0，一直秉持着`简单即正义`的理念，旨在帮助中小企业、在校大学生及个人开发者快速上手开发后台管理项目，为了降低使用者的学习成本，没有使用看似主流的 TypeScript（前端），这也使得 Vue Naive Admin 成为了市面上少有的 `使用 JavaScript 的 Vue3 后台管理模板`，而且还算优秀，得到了大量朋友的认可和喜爱。
@@ -37,24 +41,6 @@ Vue Naive Admin 2022年2月开始开源，从 1.0 到现在的 2.0，一直秉�
 
 ![](https://docs.isme.top/Public/Uploads/2023-11-18/6558568b2b476.png)
 ![](https://docs.isme.top/Public/Uploads/2023-11-18/655853caa9ce8.png)
-
-## 2.0 和 1.0 区别
-
-- 2.0 是基于 1.0 风格从 0 到 1 重新设计的，所以 2.0 看似跟 1.0 很像，但其实代码机构差别还挺大的。
-- 1.0 只提供前端，后端使用 Mock 模拟的，而 2.0 是全栈版，提供真实的后端接口。
-- 2.0 虽然版本高于 1.0，但复杂度却远低于 1.0，虽然 1.0 也很简单。
-- 2.0 的灵活度远高于 1.0，只要你愿意，你可以为每个页面单独定制一个 layout
-
-[体验1.0 | template.isme.top](https://template.isme.top)
-
-[体验2.0 | admin.isme.top](https://admin.isme.top)
-
-## Nestjs 后端
-
-Vue Naive Admin 提供一套后端代码，技术栈使用 Nestjs + TypeOrm + MySql，内置 JWT、RABC及模板所需的一些基础接口。
-
-- 源码-github: [isme-nest-serve | github](https://github.com/zclzone/isme-nest-serve)
-- 源码-gitee: [isme-nest-serve | gitee](https://gitee.com/isme-admin/isme-nest-serve)
 
 ## 文档
 
@@ -80,13 +66,3 @@ npx degit zclzone/vue-naive-admin
 - 复制、修改和发行本项目代码需包含原作者的版权及许可信息，包括但不限于文件头注释、协议等
 
 简单来说，作者只想保留版权，没有任何其他限制。
-
-## 其他已对接本项目的后端项目
-
-- [isme-java-serve](https://github.com/DHBin/isme-java-serve): 一个轻量级的Java后端服务，基于SpringBoot、MybatisPlus、SaToken、MapStruct等实现，已对接 Vue Naive Admin 2.0。
-- [naive-admin-go](https://github.com/ituserxxx/naive-admin-go): 一个 Go 后端服务，基于 gin、gorm、mysql、jwt和session，已对接 Vue Naive Admin 2.0。
-- [isme-java](https://github.com/AllenDengMs/isme-java): 一个轻量且完成度高的Java后端服务，基于Springboot 3 + JDK21，层次结构严谨，注释齐全，避免过度封装，代码可读性度高，依赖最简化，上手成本低，已集成 账号管理、权限管理、API鉴权、消息国际化等功能。
-
-## 联系作者 or 进交流群
-
-[https://www.isme.top/contact.html](https://www.isme.top/contact.html)
