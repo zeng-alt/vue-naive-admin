@@ -7,8 +7,8 @@
  **********************************/
 
 import api from '@/api'
-import { useAuthStore, usePermissionStore, useUserStore } from '@/store'
-import { getPermissions, getUserInfo } from '@/store/helper'
+import { useAuthStore, usePermissionStore, useUserStore, usePolicyRuleStore } from '@/store'
+import { getPermissions, getUserInfo, getPolicyRules } from '@/store/helper'
 
 const WHITE_LIST = ['/login', '/404']
 export function createPermissionGuard(router) {
@@ -30,10 +30,13 @@ export function createPermissionGuard(router) {
 
     const userStore = useUserStore()
     const permissionStore = usePermissionStore()
+    const policyRuleStore = usePolicyRuleStore()
+
     if (!userStore.userInfo) {
-      const [user, permissions] = await Promise.all([getUserInfo(), getPermissions()])
+      const [user, permissions, policyRules] = await Promise.all([getUserInfo(), getPermissions(), getPolicyRules()])
       userStore.setUser(user)
       permissionStore.setPermissions(permissions)
+      await policyRuleStore.setPolicyRules(policyRules)
       const routeComponents = import.meta.glob('@/views/**/*.vue')
       permissionStore.accessRoutes.forEach((route) => {
         route.component = routeComponents[route.component] || undefined
@@ -43,17 +46,14 @@ export function createPermissionGuard(router) {
     }
 
     const routes = router.getRoutes()
-    // return routes.find(route => route.name === to.name)
 
     if (routes.find(route => route.name === to.name))
       return true
 
     // 判断是无权限还是404
-    // const { data: hasMenu } = await api.validateMenuPath(to.path)
-    // return hasMenu
-    //   ? { name: '403', query: { path: to.fullPath }, state: { from: 'permission-guard' } }
-    //   : { name: '404', query: { path: to.fullPath } }
-
-    return { name: '403', query: { path: to.fullPath }, state: { from: 'permission-guard' } };
+    const hasMenu = await api.validateMenuPath(to.path)
+    return hasMenu
+      ? { name: '403', query: { path: to.fullPath }, state: { from: 'permission-guard' } }
+      : { name: '404', query: { path: to.fullPath } }
   })
 }

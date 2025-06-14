@@ -9,7 +9,7 @@
 
 import { createStorage } from './storage'
 
-const prefixKey = 'vue-naive-admin_'
+const prefixKey = 'zero-ddd_'
 
 export function createLocalStorage(option = {}) {
   return createStorage({

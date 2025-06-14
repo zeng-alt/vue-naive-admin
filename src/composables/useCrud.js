@@ -106,6 +106,7 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
         }
         catch (error) {
           console.error(error)
+          $message.error('删除失败')
           d.loading = false
         }
       },

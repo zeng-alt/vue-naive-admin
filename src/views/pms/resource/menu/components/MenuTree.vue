@@ -132,7 +132,7 @@ function handleDelete(item) {
       }
       catch (error) {
         console.error(error)
-        $message.destroy('deleteMenu')
+        $message.error('删除失败', { key: 'deleteMenu' })
       }
     },
   })

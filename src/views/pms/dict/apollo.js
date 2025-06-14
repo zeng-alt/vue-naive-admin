@@ -2,13 +2,13 @@ import gql from 'graphql-tag'
 import { apolloClients } from '@/utils/graphql'
 
 export const DELETE_DICT_TYPE = gql`
-mutation DeleteDictType($id: [Long]) {
+mutation DeleteDictType($id: [ID]) {
   deleteDictTypeIds(id: $id)
 }
 `
 
 export const DELETE_DICT_DATA = gql`
-mutation DeleteDictData($id: [Long]) {
+mutation DeleteDictData($id: [ID]) {
   deleteDictDataIds(id: $id)
 }
 `

@@ -45,7 +45,7 @@ query fuzzyPageTenant($filter: TenantInput, $pageQuery: PageQuery) {
 `
 
 export const DELETE_TENANT = gql`
-  mutation DeleteTenantIds($ids: [Long]) {
+  mutation DeleteTenantIds($ids: [ID]) {
     deleteTenantIds(id: $ids)
   }
 `

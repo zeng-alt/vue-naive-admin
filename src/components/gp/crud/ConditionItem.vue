@@ -94,21 +94,21 @@ const operatorOptions = computed(() => {
     return [
       {
         label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:startWith text-16' }),
+          h('i', { class: 'i-fa:TextCaseTitle20Filled text-16' }),
           '左包含',
         ]),
         key: 'LEFT_LIKE',
       },
       {
         label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:endWith text-16' }),
+          h('i', { class: 'i-fa:TextChangeCase16Filled text-16' }),
           '右包含',
         ]),
         key: 'RIGHT_LIKE',
       },
       {
         label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:contain text-16' }),
+          h('i', { class: 'i-fa:TextCaseUppercase20Filled text-16' }),
           '包含',
         ]),
         key: 'LIKE',
@@ -179,11 +179,11 @@ function getOperatorIcon(operator) {
   if (operator === 'LT')
     return 'i-fa:chevron-left'
   if (operator === 'LEFT_LIKE')
-    return 'i-fa:startWith'
+    return 'i-fa:TextCaseTitle20Filled'
   if (operator === 'RIGHT_LIKE')
-    return 'i-fa:endWith'
+    return 'i-fa:TextChangeCase16Filled'
   if (operator === 'LIKE')
-    return 'i-fa:contain'
+    return 'i-fa:TextCaseUppercase20Filled'
   return 'i-fa:equals'
 }
 

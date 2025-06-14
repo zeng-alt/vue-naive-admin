@@ -41,7 +41,7 @@ mutation SaveHttpResource($httpResourceInput: HttpResourceInput, $ignoringNull: 
 `
 
 export const DELETE_PERMISSION = gql`
-  mutation DeletePermissionIds($ids: [ID]) {
+  mutation DeletePermissionIds($ids: [Long]) {
     deletePermissionIds(id: $ids)
   }
 `

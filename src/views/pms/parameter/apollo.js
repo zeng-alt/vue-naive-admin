@@ -10,7 +10,7 @@ export const SAVE_PARAMETER = gql`
 `
 
 export const DELETE_PARAMETER = gql`
-  mutation DeleteParameterIds($ids: [Long]) {
+  mutation DeleteParameterIds($ids: [ID]) {
     deleteParameterIds(id: $ids)
   }
 `

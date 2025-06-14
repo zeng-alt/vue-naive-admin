@@ -2,7 +2,7 @@
   <CommonPage>
 
     <n-split
-      :resize-trigger-size="1"
+      :resize-trigger-size="16"
       direction="horizontal"
       :max="0.75"
       :min="0.15"
@@ -10,13 +10,7 @@
       @update:size="handleSplitResize"
     >
       <template #resize-trigger>
-
-        <div class="w-full h-450 flex items-center justify-center">
-          <n-icon>
-            <i class="i-fa:ArrowSplit20Filled mr-4 text-14" />
-          </n-icon>
-        </div>
-
+        <div :class="isDark ? 'custom-divider-dark' : 'custom-divider'"/>
       </template>
       <template #1>
         <TenantList ref="tenantListRef" v-model:current-tenant="currentTenant" @add="handleAdd" :split-size="splitSize"></TenantList>
@@ -41,7 +35,7 @@
                   <i class="i-material-symbols:block mr-4 text-14" />
                   取消
                 </NButton>
-                <NButton size="small" type="info" @click="testDataSource()">
+                <NButton size="small" type="info" @click="testDataSource()" v-policyRule="{key: 'TestDataSource', variables: {dataSource: currentTenant.tenantDataSource}}">
                   <i class="i-material-symbols:checklist mr-4 text-14" />
                   测试数据源
                 </NButton>
@@ -51,147 +45,155 @@
                 </NButton>
               </div>
             </div>
-            <n-descriptions label-style="width: 120px" class="ml-20" label-placement="left" bordered :column="2">
-              <n-descriptions-item label="编码">
-                <template v-if="action === 'add'">
-                  <n-input v-model:value="editData.tenantKey" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.tenantKey }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="企业名称">
+            <n-form
+              ref="formRef"
+              :model="editData"
+              :rules="rules"
+              label-placement="left"
+              label-width="120"
+              require-mark-placement="right-hanging"
+            >
+              <n-descriptions label-style="width: 120px" class="ml-20" label-placement="left" bordered :column="2">
+                <n-descriptions-item label="编码">
+                  <template v-if="action === 'add'">
+                    <n-input v-model:value="editData.tenantKey" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.tenantKey }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="企业名称">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input v-model:value="editData.companyName" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.companyName }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="社会信用代码">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input v-model:value="editData.licenseNumber" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.licenseNumber ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="联系人">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input v-model:value="editData.contactUserName" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.contactUserName ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="联系电话">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input v-model:value="editData.contactPhone" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.contactPhone ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="过期时间">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-date-picker v-model:formatted-value="editData.expireTime" value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.expireTime ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="用户数量">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input-number v-model:value="editData.accountCount" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.accountCount ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="租户状态">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-select v-model:value="editData.status" :options="[{ label: '停用', value: '0' }, { label: '正常', value: '1' }]" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.status ? '正常' : '停用' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="地址">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input v-model:value="editData.address" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.address ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="企业简介">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input type="textarea" v-model:value="editData.intro" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.intro ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+              </n-descriptions>
 
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input v-model:value="editData.companyName" :rule="required"/>
-                </template>
-                <template v-else>
-                  {{ currentTenant.companyName }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="社会信用代码">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input v-model:value="editData.licenseNumber" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.licenseNumber ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="联系人">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input v-model:value="editData.contactUserName" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.contactUserName ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="联系电话">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input v-model:value="editData.contactPhone" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.contactPhone ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="过期时间">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-date-picker v-model:formatted-value="editData.expireTime" value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.expireTime ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="用户数量">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input-number v-model:value="editData.accountCount" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.accountCount ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="租户状态">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-select v-model:value="editData.status" :options="[{ label: '停用', value: '0' }, { label: '正常', value: '1' }]" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.status ? '正常' : '停用' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="地址">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input v-model:value="editData.address" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.address ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="企业简介">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input type="textarea" v-model:value="editData.intro" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.intro ?? '--' }}
-                </template>
-              </n-descriptions-item>
-            </n-descriptions>
-            <div class="flex justify-between mb-4 ml-20 mt-20">
-              <h3 class="mb-12">
-                租户数据源
-              </h3>
-            </div>
-            <n-descriptions class="mb-4 ml-20" label-style="width: 120px" label-placement="left" bordered :column="2">
-              <n-descriptions-item>
-                <template #label>
-                  <QuestionLabel label="数据源db" content="数据库名" />
-                </template>
-                <template v-if="action === 'add'">
-                  <n-input v-model:value="editData.tenantDataSource.db" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.tenantDataSource?.db ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="密码">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-input v-model:value="editData.tenantDataSource.password" />
-                </template>
-                <template v-else>
-                  {{ '.......' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="模式">
-                <template v-if="action === 'add'">
-                  <n-input v-model:value="editData.tenantDataSource.schema" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.tenantDataSource?.schema ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="mode">
-                <template v-if="action === 'add' || action === 'edit'">
-                  <n-select
-                    v-model:value="editData.tenantDataSource.mode"
-                    :options="[
+              <div class="flex justify-between mb-4 ml-20 mt-20">
+                <h3 class="mb-12">租户数据源</h3>
+              </div>
+
+              <n-descriptions class="mb-4 ml-20" label-style="width: 120px" label-placement="left" bordered :column="2">
+                <n-descriptions-item>
+                  <template #label>
+                    <QuestionLabel label="数据源db" content="数据库名" />
+                  </template>
+                  <template v-if="action === 'add'">
+                    <n-input v-model:value="editData.tenantDataSource.db" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.tenantDataSource?.db ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="密码">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-input v-model:value="editData.tenantDataSource.password" />
+                  </template>
+                  <template v-else>
+                    {{ '.......' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="模式">
+                  <template v-if="action === 'add'">
+                    <n-input v-model:value="editData.tenantDataSource.schema" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.tenantDataSource?.schema ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="mode">
+                  <template v-if="action === 'add' || action === 'edit'">
+                    <n-select
+                      v-model:value="editData.tenantDataSource.mode"
+                      :options="[
                         { label: '数据行', value: 'COLUMN' },
                         { label: '数据库', value: 'DATABASE' },
                         { label: '数据schema', value: 'SCHEMA' },
-                        { label: '混合', value: 'MIXED' },
+                        { label: '混合', value: 'MIXED' }
                       ]"
                     />
-                </template>
-                <template v-else>
-                  {{ currentTenant.tenantDataSource?.mode ?? '--' }}
-                </template>
-              </n-descriptions-item>
-              <n-descriptions-item label="状态">
-                <template v-if="action === 'edit' || action === 'add'">
-                  <n-switch v-model:value="editData.tenantDataSource.enabled" />
-                </template>
-                <template v-else>
-                  {{ currentTenant.tenantDataSource?.enabled ? '启用' : '禁用' }}
-                </template>
-              </n-descriptions-item>
-            </n-descriptions>
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.tenantDataSource?.mode ?? '--' }}
+                  </template>
+                </n-descriptions-item>
+                <n-descriptions-item label="状态">
+                  <template v-if="action === 'edit' || action === 'add'">
+                    <n-switch v-model:value="editData.tenantDataSource.enabled" />
+                  </template>
+                  <template v-else>
+                    {{ currentTenant.tenantDataSource?.enabled ? '启用' : '禁用' }}
+                  </template>
+                </n-descriptions-item>
+              </n-descriptions>
+            </n-form>
           </div>
 
           <div v-else class="w-full h-450 flex items-center justify-center">
@@ -210,16 +212,50 @@ import TenantList from './components/TenantList.vue';
 import { CommonPage, QuestionLabel } from '@/components';
 import { ref } from 'vue'
 import { saveTenant } from './apollo'
+import api from './api'
 import cloneDeep from 'lodash/cloneDeep'
+import { useDark } from '@vueuse/core'
+
+const isDark = useDark()
 
 defineOptions({ name: 'TenantMgt' })
 
 const action = ref("")
 
-const required = {
-  required: true,
-  message: '此为必填项',
-  trigger: ['blur', 'change'],
+
+const formRef = ref(null)
+
+const rules = {
+  tenantKey: {
+    required: true,
+    message: '请输入编码',
+    trigger: 'blur'
+  },
+  companyName: {
+    required: true,
+    message: '请输入企业名称',
+    trigger: 'blur'
+  },
+  contactPhone: {
+    pattern: /^1[3-9]\d{9}$/,
+    message: '请输入正确的手机号码',
+    trigger: 'blur'
+  },
+  expireTime: {
+    required: true,
+    message: '请选择过期时间',
+    trigger: 'blur'
+  },
+  'tenantDataSource.db': {
+    required: true,
+    message: '请输入数据库名',
+    trigger: 'blur'
+  },
+  'tenantDataSource.password': {
+    required: true,
+    message: '请输入密码',
+    trigger: 'blur'
+  }
 }
 
 const splitSize = ref(0.25)
@@ -231,8 +267,8 @@ const editData = ref({})
 const tenantListRef = ref(null)
 
 
-function testDataSource() {
-
+async function testDataSource() {
+  api.testDataSource(currentTenant.value.tenantDataSource?.id)
 }
 
 function publishDataSource() {
@@ -253,6 +289,7 @@ function handleAdd() {
 
 async function handleSave() {
   try {
+    await formRef.value?.validate()
     await saveTenant(editData.value)
     currentTenant.value = editData.value
     action.value = ''
@@ -283,3 +320,37 @@ const data =  [{
   whateverLabel: 'Tenant 1',
 }]
 </script>
+
+<style scoped>
+.custom-divider {
+  width: 8px;
+  height: 100%;
+  background-color: transparent;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-divider-dark {
+  width: 8px;
+  height: 100%;
+  background-color: transparent;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 浅色模式 hover */
+.custom-divider:hover {
+  background-color: rgba(0, 0, 0, 0.2); /* 显示分割条颜色 */
+}
+
+/* 暗色模式 hover */
+.custom-divider-dark:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+</style>

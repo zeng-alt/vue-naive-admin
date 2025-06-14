@@ -104,14 +104,14 @@ mutation SaveAllGraphqlResource($graphqlResourceInput: [GraphqlResourceInput], $
 `
 
 export const DELETE_MENU_RESOURCE = gql`
-  mutation DeleteMenuResourceIds($ids: [Long]) {
+  mutation DeleteMenuResourceIds($ids: [ID]) {
     deleteMenuResourceIds(id: $ids)
   }
 `
 
 
 export const DELETE_PERMISSION = gql`
-  mutation DeletePermissionIds($ids: [Long]) {
+  mutation DeletePermissionIds($ids: [ID]) {
     deletePermissionIds(id: $ids)
   }
 `

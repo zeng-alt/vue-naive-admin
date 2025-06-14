@@ -36,6 +36,9 @@ export const useUserStore = defineStore('user', {
     setUser(user) {
       this.userInfo = user
     },
+    getUser() {
+      return this.userInfo
+    },
     resetUser() {
       this.$reset()
     },

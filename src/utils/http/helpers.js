@@ -30,6 +30,9 @@ export function resolveResError(code, message, needTip = true) {
         },
       })
       return false
+    case 400:
+      message = '业务处理异常: ' + message
+      break
     case 11007:
     case 11008:
       if (isConfirming || !needTip)
@@ -50,7 +53,7 @@ export function resolveResError(code, message, needTip = true) {
       })
       return false
     case 403:
-      message = '请求被拒绝'
+      message = '没有权限，请求被拒绝'
       break
     case 404:
       message = '请求资源或接口不存在'

@@ -138,6 +138,7 @@ import { lStorage, request, throttle } from '@/utils'
 import { useQuery } from '@vue/apollo-composable'
 import { useStorage } from '@vueuse/core'
 import api from './api'
+import { ref, onBeforeMount } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -171,20 +172,19 @@ async function getCaptchaEnabled() {
 async function getAllTenants() {
   const { data } = await getTenants({})
   let list =  data.queryTenant || []
-  // tenants.value = [
-  //   { tenantKey: 'master', companyName: '总部' },
-  //   ...list,
-  // ]
-
   tenants.value = [
     { value: 'master', label: '总部' },
     ...(list.map(item => ({ value: item.tenantKey, label: item.companyName }))),
   ]
 }
 
-getTenantEnabled()
-getCaptchaEnabled()
-getAllTenants()
+onBeforeMount(async () => {
+  await Promise.all([
+    getTenantEnabled(),
+    getCaptchaEnabled(),
+    getAllTenants()
+  ])
+})
 
 // 获取租户列表
 // const { result: tenantsResult } = useQuery(GET_TENANTS, {}, {

@@ -10,7 +10,7 @@ export const SAVE_GRAPHQL_RESOURCE = gql`
 `
 
 export const DELETE_GRAPHQL_RESOURCE = gql`
-  mutation deleteGraphqlResourceIds($ids: [Long]) {
+  mutation deleteGraphqlResourceIds($ids: [ID]) {
     deleteGraphqlResourceIds(id: $ids)
   }
 `

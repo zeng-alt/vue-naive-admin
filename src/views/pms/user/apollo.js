@@ -22,7 +22,7 @@ export const SAVE_USER = gql`
 `
 
 export const DELETE_USER = gql`
-  mutation DeleteUserIds($ids: [Long]) {
+  mutation DeleteUserIds($ids: [ID]) {
     deleteUserIds(id: $ids)
   }
 `

@@ -52,8 +52,8 @@
 <script setup>
 import { NButton, NEllipsis } from 'naive-ui'
 import { deleteTenant } from '../apollo.js'
-import { ref, withModifiers, onMounted, h, onUnmounted } from 'vue'
-import { useLazyQuery, useQuery } from '@vue/apollo-composable'
+import { ref, withModifiers, onMounted, h } from 'vue'
+import { useLazyQuery } from '@vue/apollo-composable'
 import { FUZZY_PAGE_TENANT } from '../apollo.js'
 import { apolloClients } from '@/utils/graphql'
 

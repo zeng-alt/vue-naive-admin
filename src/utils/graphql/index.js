@@ -75,15 +75,23 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
       )
 
       // Example: Handle specific errors globally
-      if (extensions?.code === 'UNAUTHENTICATED' || extensions?.code === 'FORBIDDEN') {
+      if (extensions?.classification === 'UNAUTHENTICATED' || extensions?.classification === 'FORBIDDEN') {
         // Maybe clear auth state and redirect to login
         console.warn(`[GraphQL Error Link] Unauthorized/Forbidden access detected for ${operation.operationName}.`)
-        // IMPORTANT: Triggering navigation or complex store actions here can be tricky.
-        // It's often better to set a flag or use an event bus that components/app can react to.
-        // Example: getAuthStore()?.logoutAndRedirect(); // Assuming getAuthStore handles initialization check
+        $message.error(`[GraphQL Error Link] Unauthorized/Forbidden ${message}`)
+      } else if (extensions?.classification === 'NOT_FOUND') {
+        console.warn(`[GraphQL Error Link] Not found access detected for ${operation.operationName}.`)
+      } else if (extensions?.classification === 'BAD_REQUEST') {
+        console.warn(`${operation.operationName} - ${message}`)
+        window.$notification?.warning({
+          title: 'Error',
+          content: message,
+        })
+      } else if (extensions?.classification === 'INTERNAL_ERROR') {
+        window.$message?.error('服务器发生异常: ' + message)
       }
 
-      window.$message?.error('服务器发生异常: ' + message)
+
       // You could potentially retry based on the error type here using forward(operation)
       const obs = forward(operation)
       if (!obs) {
@@ -109,44 +117,44 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
     return
   }
 
-  if (networkError) {
-    console.error(`[Network error]: ${networkError}. Operation: ${operation.operationName}`)
-    // const { code, message, needTip } = resolveResError(networkError.statusCode, networkError.message)
-    let message = networkError.message
-    switch (networkError.statusCode) {
-      case 401:
-        if (isConfirming)
-          return
-        isConfirming = true
-        $dialog.confirm({
-          title: '提示',
-          type: 'info',
-          content: '登录已过期，是否重新登录？',
-          confirm() {
-            useAuthStore().logout()
-            window.$message?.success('已退出登录')
-            isConfirming = false
-          },
-          cancel() {
-            isConfirming = false
-          },
-        })
-        return
-      case 403:
-        message = `${operation.operationName} 请求被拒绝`
-        break
-      case 404:
-        message = `${operation.operationName} 请求资源或接口不存在`
-        break
-      case 500:
-        message = '服务器发生异常'
-        break
-      default:
-        message = message ?? `【${code}】: 未知异常!`
-        break
-    }
-    window.$message?.error(message)
-  }
+  // if (networkError) {
+  //   console.error(`[Network error]: ${networkError}. Operation: ${operation.operationName}`)
+  //   // const { code, message, needTip } = resolveResError(networkError.statusCode, networkError.message)
+  //   let message = networkError.message
+  //   switch (networkError.statusCode) {
+  //     case 401:
+  //       if (isConfirming)
+  //         return
+  //       isConfirming = true
+  //       $dialog.confirm({
+  //         title: '提示',
+  //         type: 'info',
+  //         content: '登录已过期，是否重新登录？',
+  //         confirm() {
+  //           useAuthStore().logout()
+  //           window.$message?.success('已退出登录')
+  //           isConfirming = false
+  //         },
+  //         cancel() {
+  //           isConfirming = false
+  //         },
+  //       })
+  //       return
+  //     case 403:
+  //       message = `${operation.operationName} 请求被拒绝`
+  //       break
+  //     case 404:
+  //       message = `${operation.operationName} 请求资源或接口不存在`
+  //       break
+  //     case 500:
+  //       message = '服务器发生异常'
+  //       break
+  //     default:
+  //       message = message ?? `【${code}】: 未知异常!`
+  //       break
+  //   }
+  //   window.$message?.error(message)
+  // }
 })
 
 // 4. 响应拦截器

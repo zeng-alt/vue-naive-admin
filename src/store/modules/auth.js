@@ -54,6 +54,6 @@ export const useAuthStore = defineStore('auth', {
     },
   },
   persist: {
-    key: 'vue-naivue-admin_auth',
+    key: 'zero-ddd_auth',
   },
 })

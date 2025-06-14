@@ -38,11 +38,12 @@ export const GET_TENANTS = gql`
 `
 
 export const GET_DICT_DATA = `
-queryDictType(dictDataInput: $dictDataInput) {
-  dictDatas {
-    dictLabel
-    dictValue
-  }
+queryDictData(dictDataInput: $dictDataInput) {
+  dictLabel
+  dictValue
+  isDefault
+  listClass
+  status
 }
 `
 
@@ -67,19 +68,15 @@ export function getParameter(data) {
 
 
 // 获取枚举列表
-export function fetchDictData(dictCode) {
-  const {data} = apolloClients.main.query({
+export async function fetchDictData(dictCode) {
+  return apolloClients.main.query({
     query: gql`
       query GetDictData($dictDataInput: DictDataInput) {
         ${GET_DICT_DATA}
       }
     `,
     variables: {
-      dictDataInput: {
-        dictCode
-      }
+      dictDataInput: {dictType: {dictCode}}
     }
   })
-
-  return data.queryDictType.dictDatas
 }

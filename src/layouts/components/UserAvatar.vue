@@ -35,7 +35,7 @@ const options = reactive([
     label: '个人资料',
     key: 'profile',
     icon: () => h('i', { class: 'i-material-symbols:person-outline text-14' }),
-    show: computed(() => permissionStore.accessRoutes?.some(item => item.path === '/main/v1/profile')),
+    show: computed(() => permissionStore.accessRoutes?.some(item => item.path === '/profile')),
   },
   {
     label: '切换角色',
@@ -54,7 +54,7 @@ const roleSelectRef = ref(null)
 function handleSelect(key) {
   switch (key) {
     case 'profile':
-      router.push('/main/v1/profile')
+      router.push('/profile')
       break
     case 'toggleRole':
       roleSelectRef.value?.open({

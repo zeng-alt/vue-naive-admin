@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { fetchDictData } from '@/apollo'
 
 const emit = defineEmits(['update:value'])

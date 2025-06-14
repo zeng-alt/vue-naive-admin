@@ -4,18 +4,6 @@ import { basePermissions } from '@/settings'
 export async function getUserInfo() {
   const res = await api.getUser()
   return res || {}
-  // const { id, username, avatar, nickName, gender, address, email, roles, currentRole } = res.data || {}
-  // return {
-  //   id,
-  //   username,
-  //   avatar,
-  //   nickName,
-  //   gender,
-  //   address,
-  //   email,
-  //   roles,
-  //   currentRole,
-  // }
 }
 
 export async function getPermissions() {
@@ -28,4 +16,13 @@ export async function getPermissions() {
     console.error(error)
   }
   return basePermissions.concat(asyncPermissions)
+}
+
+export async function getPolicyRules() {
+  return [
+    {key: 'GetMenuTree', condition: 'true'},
+    {key: 'GetUser', condition: 'true'},
+    {key: 'TestDataSource', condition: "#dataSource?.db == 'db1'"},
+    // {key: 'TestDataSource', condition: "false"},
+  ]
 }

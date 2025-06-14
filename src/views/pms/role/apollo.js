@@ -11,7 +11,7 @@ export const SAVE_ROLE = gql`
 `
 
 export const DELETE_ROLE = gql`
-  mutation DeleteRoleIds($ids: [Long]) {
+  mutation DeleteRoleIds($ids: [ID]) {
     deleteRoleIds(id: $ids)
   }
 `
