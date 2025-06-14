@@ -7,9 +7,9 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
+import * as NaiveUI from 'naive-ui'
 import { useAppStore } from '@/store'
 import { isNullOrUndef } from '@/utils'
-import * as NaiveUI from 'naive-ui'
 
 export function setupMessage(NMessage) {
   class Message {

@@ -6,9 +6,9 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
-import { isExternal } from '@/utils'
 import { hyphenate } from '@vueuse/core'
 import { defineStore } from 'pinia'
+import { isExternal } from '@/utils'
 
 export const usePermissionStore = defineStore('permission', {
   state: () => ({

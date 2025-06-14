@@ -17,8 +17,8 @@
 </template>
 
 <script setup>
-import { useAppStore } from '@/store'
 import { getPresetColors } from '@arco-design/color'
+import { useAppStore } from '@/store'
 
 const appStore = useAppStore()
 

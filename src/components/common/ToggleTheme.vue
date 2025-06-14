@@ -8,8 +8,8 @@
 </template>
 
 <script setup>
-import { useAppStore } from '@/store'
 import { useDark, useToggle } from '@vueuse/core'
+import { useAppStore } from '@/store'
 
 const appStore = useAppStore()
 const isDark = useDark()

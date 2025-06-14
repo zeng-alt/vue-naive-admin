@@ -80,8 +80,6 @@
 <script setup>
 import { ConditionItem, GraphqlCrud } from '@/components'
 import { formatDateTime } from '@/utils'
-import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
-import { h } from 'vue'
 import api from './api'
 import { PAGE_USER } from '../user/apollo'
 

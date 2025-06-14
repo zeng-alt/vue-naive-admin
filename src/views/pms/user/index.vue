@@ -112,11 +112,11 @@
 </template>
 
 <script setup>
-import { ConditionItem, GraphqlCrud, MeModal } from '@/components'
+import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
+import { MeCrud, MeModal, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
 import { withPermission } from '@/directives'
 import { formatDateTime } from '@/utils'
-import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import api from './api'
 import { saveUser, deleteUser } from './apollo'
 import { PAGE_USER, queryRoleByEnable } from './apollo'
@@ -259,7 +259,7 @@ const columns = [
   {
     title: '操作',
     key: 'actions',
-    width: 320,
+    width: 420,
     align: 'right',
     fixed: 'right',
     hideInExcel: true,

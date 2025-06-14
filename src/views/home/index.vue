@@ -159,13 +159,13 @@
 </template>
 
 <script setup>
-import { useUserStore } from '@/store'
 import { BarChart, LineChart, PieChart } from 'echarts/charts'
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import * as echarts from 'echarts/core'
 import { UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
+import { useUserStore } from '@/store'
 
 const userStore = useUserStore()
 

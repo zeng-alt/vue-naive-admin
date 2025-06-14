@@ -7,48 +7,52 @@
  --------------------------------->
 
 <template>
-  <AppCard v-if="$slots.default" bordered bg="#fafafc dark:black" class="mb-30 min-h-60 rounded-4">
-    <form class="flex justify-between p-16" @submit.prevent="handleSearch()">
-      <n-scrollbar x-scrollable>
-        <n-space :wrap="!expand || isExpanded" :size="[32, 16]" class="p-10">
-          <slot />
-        </n-space>
-      </n-scrollbar>
-      <div class="flex-shrink-0 p-10">
-        <n-button ghost type="primary" @click="handleReset">
-          <i class="i-fe:rotate-ccw mr-4" />
-          重置
-        </n-button>
-        <n-button attr-type="submit" class="ml-20" type="primary">
-          <i class="i-fe:search mr-4" />
-          搜索
-        </n-button>
-
-        <template v-if="expand">
-          <n-button v-if="!isExpanded" type="primary" text @click="toggleExpand">
-            <i class="i-fe:chevrons-down ml-4" />
-            展开
+  <div class="h-full flex flex-col overflow-hidden">
+    <AppCard v-if="$slots.default" bordered bg="#fafafc dark:black" class="mb-30 min-h-60 rounded-4">
+      <form class="flex justify-between p-16" @submit.prevent="handleSearch()">
+        <n-scrollbar x-scrollable>
+          <n-space :wrap="!expand || isExpanded" :size="[32, 16]" class="p-10">
+            <slot />
+          </n-space>
+        </n-scrollbar>
+        <div class="flex-shrink-0 p-10">
+          <n-button ghost type="primary" @click="handleReset">
+            <i class="i-fe:rotate-ccw mr-4" />
+            重置
           </n-button>
-          <n-button v-else text type="primary" @click="toggleExpand">
-            <i class="i-fe:chevrons-up ml-4" />
-            收起
+          <n-button attr-type="submit" class="ml-20" type="primary">
+            <i class="i-fe:search mr-4" />
+            搜索
           </n-button>
-        </template>
-      </div>
-    </form>
-  </AppCard>
 
-  <NDataTable
-    :remote="remote"
-    :loading="loading"
-    :scroll-x="scrollX"
-    :columns="columns"
-    :data="tableData"
-    :row-key="(row) => row[rowKey]"
-    :pagination="isPagination ? pagination : false"
-    @update:checked-row-keys="onChecked"
-    @update:page="onPageChange"
-  />
+          <template v-if="expand">
+            <n-button v-if="!isExpanded" type="primary" text @click="toggleExpand">
+              <i class="i-fe:chevrons-down ml-4" />
+              展开
+            </n-button>
+            <n-button v-else text type="primary" @click="toggleExpand">
+              <i class="i-fe:chevrons-up ml-4" />
+              收起
+            </n-button>
+          </template>
+        </div>
+      </form>
+    </AppCard>
+
+    <NDataTable
+      :remote="remote"
+      :loading="loading"
+      :scroll-x="scrollX"
+      :columns="columns"
+      :data="tableData"
+      :row-key="(row) => row[rowKey]"
+      :pagination="isPagination ? pagination : false"
+      flex-height
+      class="flex-1"
+      @update:checked-row-keys="onChecked"
+      @update:page="onPageChange"
+    />
+  </div>
 </template>
 
 <script setup>

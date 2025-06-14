@@ -10,6 +10,7 @@ import { router } from '@/router'
 import { useEvaluationContext } from '@/composables'
 import { useUserStore, usePolicyRuleStore } from '@/store'
 import { withDirectives } from 'vue'
+import { router } from '@/router'
 
 
 const permission = {

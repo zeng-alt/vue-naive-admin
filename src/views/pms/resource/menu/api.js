@@ -6,8 +6,8 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
-import { request } from '@/utils'
 import axios from 'axios'
+import { request } from '@/utils'
 
 export default {
   getMenuTree: () => request.get('/main/v1/menu/resource//tree/menu'),

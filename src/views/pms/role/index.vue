@@ -131,7 +131,6 @@
 <script setup>
 import { MeModal, ConditionItem, GraphqlCrud } from '@/components'
 import { useCrud } from '@/composables'
-import { NButton, NSwitch } from 'naive-ui'
 import api from './api'
 import {PAGE_ROLE, saveRole, deleteRole} from './apollo'
 import RoleGraphql from './components/RoleGraphql.vue'
