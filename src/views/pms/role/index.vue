@@ -135,6 +135,7 @@ import api from './api'
 import {PAGE_ROLE, saveRole, deleteRole} from './apollo'
 import RoleGraphql from './components/RoleGraphql.vue'
 import { ref } from 'vue'
+import {NSwitch, NButton} from 'naive-ui'
 
 defineOptions({ name: 'RoleMgt' })
 

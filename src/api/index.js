@@ -21,5 +21,6 @@ export default {
   getRolePermissions: () => request.get('/main/v1/menu/resource/tree'),
   // 验证菜单路径
   validateMenuPath: path => request.get(`/main/v1/menu/resource/validate?path=${path}`),
-
+  // 获取规则
+  getPolicyRule: (code, isPreAuth) => request.get(`/main/v1/policy/rule/findRuleByCode/${code}/${isPreAuth}`),
 }

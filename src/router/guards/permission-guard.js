@@ -30,13 +30,13 @@ export function createPermissionGuard(router) {
 
     const userStore = useUserStore()
     const permissionStore = usePermissionStore()
-    const policyRuleStore = usePolicyRuleStore()
+    // const policyRuleStore = usePolicyRuleStore()
 
     if (!userStore.userInfo) {
-      const [user, permissions, policyRules] = await Promise.all([getUserInfo(), getPermissions(), getPolicyRules()])
+      const [user, permissions] = await Promise.all([getUserInfo(), getPermissions()])
       userStore.setUser(user)
       permissionStore.setPermissions(permissions)
-      await policyRuleStore.setPolicyRules(policyRules)
+      // await policyRuleStore.setPolicyRules(policyRules)
       const routeComponents = import.meta.glob('@/views/**/*.vue')
       permissionStore.accessRoutes.forEach((route) => {
         route.component = routeComponents[route.component] || undefined

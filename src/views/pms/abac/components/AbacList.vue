@@ -53,7 +53,7 @@ import { NButton, NEllipsis } from 'naive-ui'
 import { useLazyQuery } from '@vue/apollo-composable'
 import { FUZZY_PAGE_PERMISSION_RULE } from '../apollo.js'
 import { apolloClients } from '@/utils/graphql'
-import { useDict } from '@/composables/userDict.js'
+import { useDict } from '@/composables/useDict.js'
 import { ref, withModifiers, onMounted, h, watch } from 'vue'
 
 const props = defineProps({

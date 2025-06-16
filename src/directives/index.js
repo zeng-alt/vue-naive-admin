@@ -7,10 +7,9 @@
  **********************************/
 
 import { router } from '@/router'
-import { useEvaluationContext } from '@/composables'
+import { useEvaluationContext, usePolicyRule } from '@/composables'
 import { useUserStore, usePolicyRuleStore } from '@/store'
-import { withDirectives } from 'vue'
-import { router } from '@/router'
+import { withDirectives, watchEffect } from 'vue'
 
 
 const permission = {
@@ -57,19 +56,30 @@ function evaluatePolicyRule(el, binding) {
     return
   }
 
-  const policyRulesStore = usePolicyRuleStore()
-  const rule = policyRulesStore.getPolicyRule(key)
+  const ruleRef = usePolicyRule(key)
 
-  if (!rule) {
-    console.warn(`策略 ${key} 不存在或未编译`)
-    el.style.display = 'none'
-    return
-  }
+  // if (!rule) {
+  //   console.warn(`策略 ${key} 不存在或未编译`)
+  //   el.style.display = 'none'
+  //   return
+  // }
+
+  // const { context } = useEvaluationContext()
+  // if (!rule.eval(context.value, variables)) {
+  //   el.remove()
+  // }
 
   const { context } = useEvaluationContext()
-  if (!rule.eval(context.value, variables)) {
-    el.remove()
-  }
+
+  // 使用 watchEffect 监听 ruleRef.value 的变化
+  watchEffect(() => {
+    const rule = ruleRef.value
+    if (!rule) return // 数据还没准备好，继续等待
+
+    if (!rule.eval(context.value, variables)) {
+      el.remove()
+    }
+  })
 }
 
 

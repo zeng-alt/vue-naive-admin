@@ -30,6 +30,12 @@ export const usePolicyRuleStore = defineStore('policyRule', {
       this.policyRules = compiledRules
     },
 
+
+    async setPolicyRules(key, policyRule) {
+      const compiled = SpelExpressionEvaluator.compile(policyRule)
+      this.policyRules.set(key, compiled)
+    },
+
     getPolicyRule(key) {
       return this.policyRules.get(key)
     },

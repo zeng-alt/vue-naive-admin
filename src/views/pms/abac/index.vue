@@ -3,9 +3,6 @@
     <template #action>
       <n-popover trigger="hover" class="ml-40">
         <template #trigger>
-          <!-- <n-icon size="20" @click="onClick" class="cursor-pointer">
-            <BookInformation20Regular/>
-          </n-icon> -->
           <n-button @click="onClick" type="info" size="small">
             <n-icon size="20">
               <BookInformation20Regular />
@@ -125,6 +122,10 @@
                     <i class="i-material-symbols:save mr-4 text-14" />
                     保存
                   </n-button>
+                  <n-button size="small" type="primary" @click="handleRefresh">
+                    <i class="i-material-symbols:refresh mr-4 text-14" />
+                    刷新缓存
+                  </n-button>
                 </n-space>
               </template>
               <template #default>
@@ -162,6 +163,7 @@ import { useRouter } from 'vue-router'
 import SpelContext from './components/SpelContext.vue'
 import { useEvaluationContext } from '@/composables'
 import { findPolicyRule, savePolicyRule } from './apollo'
+import api from './api.js'
 import { apolloClients } from '@/utils/graphql'
 import { SpelExpressionEvaluator } from 'spel2js'
 
@@ -204,8 +206,14 @@ async function initAbac(isPreAuth = true) {
   }
   result.value = ''
   if (currentAbac.value) {
-    let {data} = await findPolicyRule(currentAbac.value.id, isPreAuth, 'network-only')
-    // let data = null;
+    // let data = await api.getPolicyRule(currentAbac.value.code, type.value === 'preAuth')
+    // securityExpression.value = {
+    //   code: data?.condition || '',
+    //   id: data?.id,
+    //   enable:  data?.id ? data?.enable : true
+    // }
+
+    let {data} = await findPolicyRule(currentAbac.value.id, type.value === 'preAuth', 'network-only')
     securityExpression.value = {
       code: data?.findPolicyRule?.condition || '',
       id: data?.findPolicyRule?.id,
@@ -228,13 +236,14 @@ const enableLoading = ref(false)
 async function handleSwitch(value) {
   try {
     enableLoading.value = true
-    await savePolicyRule({
+    await api.saveRule({
       id: securityExpression.value.id,
       condition: securityExpression.value.code,
       preAuth: type.value === 'preAuth',
-      enable: value,
-      permission: currentAbac.value
+      enable: securityExpression.value.id ? securityExpression.value.enable : true,
+      permissionId: currentAbac.value.id
     })
+
     enableLoading.value = false
 
   } catch (error) {
@@ -259,20 +268,55 @@ function onClick() {
   router.push({ path: '/pms/abac/info'})
 }
 
+async function handleRefresh() {
+  try {
+    await api.getPolicyRule(currentAbac.value.code, type.value === 'preAuth')
+    $message.success('刷新成功')
+  } catch (e) {
+    console.error(e)
+    $notification.error({
+      title: '刷新失败',
+      description: 请重新点击刷新缓存按钮
+    })
+  }
+}
+
 async function handleSave() {
   try {
     SpelExpressionEvaluator.compile(securityExpression.value.code)
-    let {data} = await savePolicyRule({
+
+    await api.saveRule({
       id: securityExpression.value.id,
       condition: securityExpression.value.code,
       preAuth: type.value === 'preAuth',
       enable: securityExpression.value.id ? securityExpression.value.enable : true,
-      permission: currentAbac.value
+      permissionId: currentAbac.value.id
     })
-    securityExpression.value.id = data.savePolicyRule?.id || null
-    securityExpression.value.enable = data.savePolicyRule?.enable || false
+    // let {data} = await findPolicyRule(currentAbac.value.id, type.value === 'preAuth', 'network-only')
+    // // securityExpression.value.id = data.savePolicyRule?.id || null
+    // // securityExpression.value.enable = data.savePolicyRule?.enable || false
+
+    // securityExpression.value = {
+    //   code: data?.findPolicyRule?.condition || '',
+    //   id: data?.findPolicyRule?.id,
+    //   enable:  data?.findPolicyRule?.id ? data?.findPolicyRule?.enable : true
+    // }
+
+    let {data} = await findPolicyRule(currentAbac.value.id, type.value === 'preAuth', 'network-only')
+    securityExpression.value = {
+      code: data?.findPolicyRule?.condition || '',
+      id: data?.findPolicyRule?.id,
+      enable:  data?.findPolicyRule?.id ? data?.findPolicyRule?.enable : true
+    }
+    // let data = await api.getPolicyRule(currentAbac.value.code, type.value === 'preAuth')
+    // securityExpression.value = {
+    //   code: data?.condition || '',
+    //   id: data?.id,
+    //   enable:  data?.id ? data?.enable : true
+    // }
     await nextTick()
     $message.success('保存成功')
+    handleRefresh()
   } catch (error) {
     console.error(error)
     $message.error('保存失败')

@@ -15,6 +15,7 @@
     "@apollo/client": "^3.13.8",
     "@arco-design/color": "^0.4.0",
     "@guolao/vue-monaco-editor": "^1.5.5",
+    "@vicons/fluent": "^0.13.0",
     "@vue/apollo-composable": "^4.2.2",
     "@vueuse/core": "^13.2.0",
     "axios": "^1.9.0",
