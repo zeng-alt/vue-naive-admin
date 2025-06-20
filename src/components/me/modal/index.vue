@@ -16,12 +16,29 @@
     :bordered="false"
     @after-leave="onAfterLeave"
   >
-    <n-card :style="modalOptions.contentStyle" :closable="modalOptions.closable" @close="close()">
+    <n-card :style="modalOptions.contentStyle" :closable="modalOptions.closable" @close="closeAndDraft()">
       <template #header>
         <header class="modal-header">
           {{ modalOptions.title }}
+          <!-- 暂存状态指示器 -->
+          <n-tag v-if="modalOptions.showDraftStatus && hasDraftData" type="info" size="small" class="ml-8">
+            有暂存
+          </n-tag>
         </header>
       </template>
+
+      <template #header-extra>
+        <n-button
+          v-if="(modalOptions.enableDraft || enableDraft) && modalOptions.showDraftSave && !isViewMode"
+          @click="handleSaveDraft"
+          quaternary
+          type="tertiary"
+        >
+        <i class="i-material-symbols:draft mr-4 text-18" />
+          暂存
+        </n-button>
+      </template>
+
       <slot />
 
       <!-- 底部按钮 -->
@@ -50,7 +67,7 @@
 <script setup>
 import { initDrag } from './utils'
 
-const emit = defineEmits(['open', 'close'])
+const emit = defineEmits(['open', 'close', 'save-draft', 'restore-draft'])
 
 const props = defineProps({
   width: {
@@ -101,11 +118,42 @@ const props = defineProps({
     type: Function,
     default: () => {},
   },
+
+  // 暂存相关配置
+  enableDraft: {
+    type: Boolean,
+    default: false,
+  },
+  showDraftSave: {
+    type: Boolean,
+    default: true,
+  },
+  showDraftRestore: {
+    type: Boolean,
+    default: true,
+  },
+  showDraftStatus: {
+    type: Boolean,
+    default: true,
+  },
+  onSaveDraft: {
+    type: Function,
+    default: () => {},
+  },
+  onCheckDraft: {
+    type: Function,
+    default: () => false,
+  },
 })
 // 声明一个show变量，用于控制模态框的显示与隐藏
 const show = ref(false)
 // 声明一个modalOptions变量，用于存储模态框的配置信息
 const modalOptions = ref({})
+
+// 是否有暂存数据
+const hasDraftData = ref(false)
+// 是否为查看模式
+const isViewMode = computed(() => modalOptions.value?.action === 'view')
 
 const okLoading = computed({
   get() {
@@ -118,6 +166,13 @@ const okLoading = computed({
   },
 })
 
+// 检查暂存状态
+function checkDraftStatus() {
+  if (modalOptions.value?.enableDraft && typeof modalOptions.value.onCheckDraft === 'function') {
+    hasDraftData.value = modalOptions.value.onCheckDraft()
+  }
+}
+
 // 打开模态框
 async function open(options = {}) {
   // 将props和options合并赋值给modalOptions
@@ -125,6 +180,10 @@ async function open(options = {}) {
 
   // 将show的值设置为true
   show.value = true
+
+  // 检查暂存状态
+  checkDraftStatus()
+
   await nextTick()
   initDrag(
     Array.prototype.at.call(document.querySelectorAll('.modal-header'), -1),
@@ -136,8 +195,34 @@ async function open(options = {}) {
 // 定义一个close函数，用于关闭模态框
 function close() {
   show.value = false
+  hasDraftData.value = false
   emit('close')
 }
+
+function closeAndDraft() {
+  show.value = false
+  hasDraftData.value = false
+  if (typeof modalOptions.value.onSaveDraft === 'function') {
+    modalOptions.value.onSaveDraft()
+  }
+  emit('close')
+}
+
+// 处理暂存保存
+async function handleSaveDraft() {
+  if (typeof modalOptions.value.onSaveDraft === 'function') {
+    try {
+      await modalOptions.value.onSaveDraft()
+      // 重新检查暂存状态
+      checkDraftStatus()
+      emit('save-draft')
+
+    } catch (error) {
+      console.error('保存暂存失败:', error)
+    }
+  }
+}
+
 
 // 定义一个handleOk函数，用于处理模态框确定操作
 async function handleOk(data) {
@@ -162,6 +247,10 @@ async function handleOk(data) {
 async function handleCancel(data) {
   // 如果modalOptions中没有onCancel函数，则直接关闭模态框
   if (typeof modalOptions.value.onCancel !== 'function') {
+    if (typeof modalOptions.value.onClearDraft === 'function') {
+      modalOptions.value.onClearDraft()
+    }
+
     return close()
   }
   try {
@@ -169,8 +258,12 @@ async function handleCancel(data) {
     const res = await modalOptions.value.onCancel(data)
 
     // 如果onCancel函数的返回值不为false，则关闭模态框
-    if (res !== false)
+    if (res !== false) {
+      if (typeof modalOptions.value.onClearDraft === 'function') {
+        modalOptions.value.onClearDraft()
+      }
       close()
+    }
   }
   catch (error) {
     console.error(error)
@@ -194,5 +287,10 @@ defineExpose({
   handleCancel,
   okLoading,
   options: modalOptions,
+
+  handleSaveDraft,
+  closeAndDraft,
+  checkDraftStatus,
+  hasDraftData,
 })
 </script>

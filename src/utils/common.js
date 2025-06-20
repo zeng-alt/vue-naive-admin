@@ -84,6 +84,55 @@ export function debounce(method, wait, immediate) {
   }
 }
 
+
+/**
+ * 防抖 + 节流组合函数
+ * @param {Function} fn 要执行的函数
+ * @param {number} debounceWait 防抖延迟时间（ms）
+ * @param {number} throttleWait 节流最小间隔时间（ms）
+ * @returns {Function}
+ */
+export function debounceAndThrottle(fn, debounceWait = 2000, throttleWait = 10000) {
+  let timeout = null
+  let lastInvokeTime = 0
+
+  function handler(...args) {
+    const context = this
+    const now = Date.now()
+
+    const run = () => {
+      fn.apply(context, args)
+      lastInvokeTime = Date.now()
+    }
+
+    if (now - lastInvokeTime > throttleWait) {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+      run()
+      return
+    }
+
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(run, debounceWait)
+  }
+
+  function cancel() {
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
+  }
+
+  return {
+    handler,
+    cancel
+  }
+}
+
+
+
 /**
  * @param {number} time 毫秒数
  * @returns 睡一会儿，让子弹暂停一下

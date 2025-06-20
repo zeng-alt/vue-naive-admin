@@ -117,44 +117,44 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
     return
   }
 
-  // if (networkError) {
-  //   console.error(`[Network error]: ${networkError}. Operation: ${operation.operationName}`)
-  //   // const { code, message, needTip } = resolveResError(networkError.statusCode, networkError.message)
-  //   let message = networkError.message
-  //   switch (networkError.statusCode) {
-  //     case 401:
-  //       if (isConfirming)
-  //         return
-  //       isConfirming = true
-  //       $dialog.confirm({
-  //         title: '提示',
-  //         type: 'info',
-  //         content: '登录已过期，是否重新登录？',
-  //         confirm() {
-  //           useAuthStore().logout()
-  //           window.$message?.success('已退出登录')
-  //           isConfirming = false
-  //         },
-  //         cancel() {
-  //           isConfirming = false
-  //         },
-  //       })
-  //       return
-  //     case 403:
-  //       message = `${operation.operationName} 请求被拒绝`
-  //       break
-  //     case 404:
-  //       message = `${operation.operationName} 请求资源或接口不存在`
-  //       break
-  //     case 500:
-  //       message = '服务器发生异常'
-  //       break
-  //     default:
-  //       message = message ?? `【${code}】: 未知异常!`
-  //       break
-  //   }
-  //   window.$message?.error(message)
-  // }
+  if (networkError) {
+    console.error(`[Network error]: ${networkError}. Operation: ${operation.operationName}`)
+    // const { code, message, needTip } = resolveResError(networkError.statusCode, networkError.message)
+    let message = networkError.message
+    switch (networkError.statusCode) {
+      case 401:
+        if (isConfirming)
+          return
+        isConfirming = true
+        $dialog.confirm({
+          title: '提示',
+          type: 'info',
+          content: '登录已过期，是否重新登录？',
+          confirm() {
+            useAuthStore().logout()
+            window.$message?.success('已退出登录')
+            isConfirming = false
+          },
+          cancel() {
+            isConfirming = false
+          },
+        })
+        return
+      case 403:
+        message = `${operation.operationName} 请求被拒绝`
+        break
+      case 404:
+        message = `${operation.operationName} 请求资源或接口不存在`
+        break
+      case 500:
+        message = '服务器发生异常'
+        break
+      default:
+        message = message ?? `【${code}】: 未知异常!`
+        break
+    }
+    window.$message?.error(message)
+  }
 })
 
 // 4. 响应拦截器

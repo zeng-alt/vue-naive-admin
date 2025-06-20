@@ -4,20 +4,16 @@
       {{ label }}
     </label>
     <div class="flex items-center border rounded transition-colors hover:border-primary" :style="{ width: `${contentWidth}px` }">
-      <!-- 操作符选择器 -->
-      <div class="flex items-center border-r px-2">
-        <NDropdown
-          trigger="click"
+      <div class="flex items-center px-2 shadow-[1px_0_0_0_rgb(229,231,235)]">
+        <n-dropdown
+          trigger="hover"
           :options="operatorOptions"
           @select="handleOperatorSelect"
         >
-          <NButton text class="px-2">
-            <i :class="[getOperatorIcon(selectedOperator), iconSizeClass]" />
-          </NButton>
-        </NDropdown>
+          <i :class="[getOperatorIcon(selectedOperator), iconSizeClass]" />
+        </n-dropdown>
       </div>
 
-      <!-- 输入区域 -->
       <div class="flex flex-1 items-center">
         <slot :size="size" />
       </div>
@@ -26,7 +22,6 @@
 </template>
 
 <script setup>
-import { NButton, NDropdown } from 'naive-ui'
 import { computed, h, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -68,123 +63,65 @@ const emit = defineEmits(['update:value'])
 
 const selectedOperator = ref(props.value?.operator || 'EQ')
 
-const sizeClass = computed(() => {
-  const sizeMap = {
-    tiny: 'text-xs',
-    small: 'text-sm',
-    medium: 'text-base',
-    large: 'text-lg'
-  }
-  return sizeMap[props.size] || 'text-base'
-})
+const sizeClassMap = {
+  tiny: 'text-xs',
+  small: 'text-sm',
+  medium: 'text-base',
+  large: 'text-lg',
+}
 
-const iconSizeClass = computed(() => {
-  const sizeMap = {
-    tiny: 'text-14',
-    small: 'text-16',
-    medium: 'text-18',
-    large: 'text-20'
-  }
-  return sizeMap[props.size] || 'text-16'
-})
+const iconSizeClassMap = {
+  tiny: 'text-14',
+  small: 'text-16',
+  medium: 'text-18',
+  large: 'text-20',
+}
 
-// 根据字段类型，动态给出可选条件
+const sizeClass = computed(() => sizeClassMap[props.size])
+const iconSizeClass = computed(() => iconSizeClassMap[props.size])
+
+/**
+ * 操作符选项
+ */
+const operatorMap = {
+  string: [
+    { label: '左包含', key: 'LEFT_LIKE', icon: 'i-fa:TextCaseTitle20Filled' },
+    { label: '右包含', key: 'RIGHT_LIKE', icon: 'i-fa:TextChangeCase16Filled' },
+    { label: '包含', key: 'LIKE', icon: 'i-fa:TextCaseUppercase20Filled' },
+    { label: '等于', key: 'EQ', icon: 'i-fa:equals' },
+    { label: '不等于', key: 'NE', icon: 'i-fa:not-equal' },
+  ],
+  number: [
+    { label: '等于', key: 'EQ', icon: 'i-fa:equals' },
+    { label: '不等于', key: 'NE', icon: 'i-fa:not-equal' },
+    { label: '大于', key: 'GT', icon: 'i-fa:chevron-right' },
+    { label: '小于', key: 'LT', icon: 'i-fa:chevron-left' },
+  ],
+  date: [
+    { label: '等于', key: 'EQ', icon: 'i-fa:equals' },
+    { label: '不等于', key: 'NE', icon: 'i-fa:not-equal' },
+    { label: '大于', key: 'GT', icon: 'i-fa:chevron-right' },
+    { label: '小于', key: 'LT', icon: 'i-fa:chevron-left' },
+  ],
+}
+
 const operatorOptions = computed(() => {
-  if (props.type === 'string') {
-    return [
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:TextCaseTitle20Filled text-16' }),
-          '左包含',
-        ]),
-        key: 'LEFT_LIKE',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:TextChangeCase16Filled text-16' }),
-          '右包含',
-        ]),
-        key: 'RIGHT_LIKE',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:TextCaseUppercase20Filled text-16' }),
-          '包含',
-        ]),
-        key: 'LIKE',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:equals text-16' }),
-          '等于',
-        ]),
-        key: 'EQ',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:not-equal text-16' }),
-          '不等于',
-        ]),
-        key: 'NE',
-      },
-    ]
-  }
-  if (props.type === 'number' || props.type === 'date') {
-    return [
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:equals text-16' }),
-          '等于',
-        ]),
-        key: 'EQ',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:not-equal text-16' }),
-          '不等于',
-        ]),
-        key: 'NE',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:chevron-right text-16' }),
-          '大于',
-        ]),
-        key: 'GT',
-      },
-      {
-        label: () => h('div', { class: 'flex items-center gap-2' }, [
-          h('i', { class: 'i-fa:chevron-left text-16' }),
-          '小于',
-        ]),
-        key: 'LT',
-      },
-    ]
-  }
-  return []
+  return (operatorMap[props.type] || []).map(({ label, key, icon }) => ({
+    key,
+    label: () =>
+      h('div', { class: 'flex items-center gap-2' }, [
+        h('i', { class: `${icon} text-16` }),
+        label,
+      ]),
+  }))
 })
 
-// 获取操作符的图标
-function getOperatorIcon(operator) {
-  const option = operatorOptions.value.find(opt => opt.key === operator)
-  if (!option)
-    return 'i-fa:equals'
-
-  if (operator === 'EQ')
-    return 'i-fa:equals'
-  if (operator === 'NE')
-    return 'i-fa:not-equal'
-  if (operator === 'GT')
-    return 'i-fa:chevron-right'
-  if (operator === 'LT')
-    return 'i-fa:chevron-left'
-  if (operator === 'LEFT_LIKE')
-    return 'i-fa:TextCaseTitle20Filled'
-  if (operator === 'RIGHT_LIKE')
-    return 'i-fa:TextChangeCase16Filled'
-  if (operator === 'LIKE')
-    return 'i-fa:TextCaseUppercase20Filled'
-  return 'i-fa:equals'
+/**
+ * 获取 icon class
+ */
+const getOperatorIcon = (key) => {
+  const flat = [...(operatorMap[props.type] || [])]
+  return flat.find((item) => item.key === key)?.icon || 'i-fa:equals'
 }
 
 // 处理操作符选择
@@ -260,5 +197,15 @@ onMounted(() => {
 
 .text-20 {
   font-size: 20px;
+}
+
+.input-wrapper :deep(.n-input),
+.input-wrapper :deep(.n-select),
+.input-wrapper :deep(.n-date-picker),
+.input-wrapper :deep(input),
+.input-wrapper :deep(textarea) {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 </style>

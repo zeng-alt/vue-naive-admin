@@ -82,6 +82,7 @@ import { ConditionItem, GraphqlCrud } from '@/components'
 import { formatDateTime } from '@/utils'
 import api from './api'
 import { PAGE_USER } from '../user/apollo'
+import {NAvatar, NSwitch, NButton, NTag} from 'naive-ui'
 
 defineOptions({ name: 'RoleUser' })
 const route = useRoute()

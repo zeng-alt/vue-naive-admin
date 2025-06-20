@@ -13,7 +13,7 @@ export default {
   create: data => request.post('/role', data),
   read: (params = {}) => request.get('/role/page', { params }),
   update: data => request.patch(`/role/${data.id}`, data),
-  delete: id => request.delete(`/role/${id}`),
+  delete: id => request.delete(`/main/v1/role/${id}`),
 
   authorizePermission: data => request.post('/main/v1/role/authorize/permission', data),
   getAllPermissionTree: () => request.get('/main/v1/menu/resource/tree/all'),

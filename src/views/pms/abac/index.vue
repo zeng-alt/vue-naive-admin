@@ -55,10 +55,21 @@
                     关闭
                   </template>
                 </n-switch>
+
                 <n-popselect v-model="type" :options="options" trigger="click" @update:value="handleTypeChange">
 
                   <n-button type="success" size="small">{{ type == 'preAuth' ? '前置' : '后置' }}</n-button>
                 </n-popselect>
+
+                <n-button size="small" type="primary" @click="handleSave">
+                  <i class="i-material-symbols:save mr-4 text-14" />
+                  保存
+                </n-button>
+
+                <n-button size="small" type="primary" @click="handleRefresh">
+                  <i class="i-material-symbols:refresh mr-4 text-14" />
+                  刷新缓存
+                </n-button>
               </n-space>
             </div>
 
@@ -118,14 +129,7 @@
                     <i class="i-material-symbols:playArrow mr-4 text-14" />
                     运行
                   </n-button>
-                  <n-button size="small" type="primary" @click="handleSave">
-                    <i class="i-material-symbols:save mr-4 text-14" />
-                    保存
-                  </n-button>
-                  <n-button size="small" type="primary" @click="handleRefresh">
-                    <i class="i-material-symbols:refresh mr-4 text-14" />
-                    刷新缓存
-                  </n-button>
+
                 </n-space>
               </template>
               <template #default>

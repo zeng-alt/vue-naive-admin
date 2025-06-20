@@ -1,7 +1,10 @@
 <template>
 
   <div class="flex justify-between items-center">
-    <h3>租户列表</h3>
+    <h3 class="page-title">
+      <i class="i-material-symbols:list mr-8" />
+      租户列表
+    </h3>
     <div class="flex gap-2">
       <n-tooltip trigger="hover">
         <template #trigger>
@@ -35,18 +38,43 @@
       :on-update:selected-keys="onSelect"
       default-expand-all block-line selectable
     >
-      <template slot="empty">
-        <n-empty description="你什么也找不到"/>
+      <template #empty>
+        <div class="empty-state">
+          <n-empty description="暂无租户数据">
+            <template #icon>
+              <i class="i-material-symbols:business text-4xl" />
+            </template>
+            <template #extra>
+              <n-button type="primary" @click="handleAdd()" strong>
+                <template #icon>
+                  <i class="i-material-symbols:add" />
+                </template>
+                创建第一个租户
+              </n-button>
+            </template>
+          </n-empty>
+        </div>
       </template>
     </n-tree>
-    <div v-if="loading" class="text">
-      加载中...
+
+    <!-- 现代化加载状态 -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-content">
+        <n-spin size="small" />
+        <span class="loading-text">正在加载更多租户...</span>
+      </div>
     </div>
-    <div v-if="noMore" class="text">
-      没有更多了
+
+    <!-- 现代化完成状态 -->
+    <div v-if="noMore && treeData.length > 0" class="completion-state">
+      <n-divider class="completion-divider">
+        <div class="completion-content">
+          <i class="i-material-symbols:check-circle text-green-500" />
+          <span class="completion-text">已加载全部 {{ treeData.length }} 个租户</span>
+        </div>
+      </n-divider>
     </div>
   </n-infinite-scroll>
-
 </template>
 
 <script setup>
@@ -241,5 +269,96 @@ defineExpose({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.loading-state {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.loading-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.completion-state {
+  padding: 16px 20px;
+}
+
+.completion-divider :deep(.n-divider__line) {
+  background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+}
+
+.completion-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.completion-text {
+  font-weight: 500;
+}
+
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-state :deep(.n-empty) {
+  margin: 0;
+}
+
+.empty-state :deep(.n-empty__icon) {
+  color: #d0d0d0;
+}
+
+.empty-state :deep(.n-empty__description) {
+  color: #999;
+  font-size: 16px;
+  margin: 16px 0;
+}
+
+.section-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+}
+
+.section-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #e6f7ff;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.dark .page-title {
+  color: #fff;
+  border-bottom-color: #404040;
 }
 </style>

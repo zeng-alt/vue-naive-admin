@@ -94,7 +94,6 @@
 
             </template>
             <n-tree
-
               key-field="id"
               label-field="name"
               :selectable="false"
@@ -134,7 +133,7 @@ import { useCrud } from '@/composables'
 import api from './api'
 import {PAGE_ROLE, saveRole, deleteRole} from './apollo'
 import RoleGraphql from './components/RoleGraphql.vue'
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import {NSwitch, NButton} from 'naive-ui'
 
 defineOptions({ name: 'RoleMgt' })
@@ -158,9 +157,9 @@ const { modalRef, modalFormRef, modalAction, modalForm, handleAdd, handleDelete,
   = useCrud({
     name: '角色',
     doCreate: api.save,
-    doDelete: deleteRole,
+    doDelete: api.delete,
     doUpdate: api.save,
-    initForm: { enable: true },
+    initForm: { enable: true, permissionIds: [] },
     refresh: (_, keepCurrentPage) => $table.value?.handleSearch(keepCurrentPage),
   })
 
@@ -283,7 +282,16 @@ const getAllIds = (nodes) => {
 
 // api.getAllPermissionTree().then(( data = [] ) => (permissionTree.value = data))
 api.getAllPermissionTree().then(res => {
-  permissionTree.value = res ?? []
+  // 确保所有 ID 都是字符串类型
+  const convertIdsToString = (nodes) => {
+    return nodes.map(node => ({
+      ...node,
+      id: String(node.id),
+      children: node.children ? convertIdsToString(node.children) : undefined
+    }))
+  }
+
+  permissionTree.value = convertIdsToString(res ?? [])
   permissionAllId.value = getAllIds(permissionTree.value)
 })
 
@@ -342,7 +350,7 @@ function handlePermission(role = []) {
   return role.map(r => {
     return {
       ...r,
-      permissionIds: r.rolePermissions?.map(r => r.permission.id) || []
+      permissionIds: r.rolePermissions?.map(r => String(r.permission.id)) || []
     }
   })
 }
@@ -373,39 +381,24 @@ function closeModal() {
   isAllSelected.value = false
 }
 
-// // 监听选中状态变化
-// watch(() => modalForm.permissionIds, (newVal) => {
-//   // 获取所有叶子节点的 id
-//   const getAllLeafIds = (nodes) => {
-//     let ids = []
-//     nodes.forEach(node => {
-//       if (!node.children || node.children.length === 0) {
-//         ids.push(node.id)
-//       } else {
-//         ids = ids.concat(getAllLeafIds(node.children))
-//       }
-//     })
-//     return ids
-//   }
-//   const allLeafIds = getAllLeafIds(permissionTree.value)
-//   isAllSelected.value = allLeafIds.length > 0 && allLeafIds.every(id => newVal.includes(id))
-// }, { deep: true })
+// 监听 modalForm.permissionIds 的变化，确保树组件正确显示选中状态
+watch(() => modalForm.value.permissionIds, (newVal) => {
+  console.log('modalForm.permissionIds changed:', newVal)
+  // 使用 nextTick 确保 DOM 更新后再检查
+  nextTick(() => {
+    console.log('After nextTick - modalForm.permissionIds:', modalForm.value.permissionIds)
+  })
+}, { deep: true })
 
-// // 监听展开状态变化
-// watch(() => expandedKeys.value, (newVal) => {
-//   // 获取所有节点的 id
-//   const getAllIds = (nodes) => {
-//     let ids = []
-//     nodes.forEach(node => {
-//       ids.push(node.id)
-//       if (node.children && node.children.length > 0) {
-//         ids = ids.concat(getAllIds(node.children))
-//       }
-//     })
-//     return ids
-//   }
-//   const allIds = getAllIds(permissionTree.value)
-//   isAllExpanded.value = allIds.length > 0 && allIds.every(id => newVal.includes(id))
-// }, { deep: true })
+// 监听 permissionTree 的变化，确保数据加载完成后再设置选中状态
+watch(() => permissionTree.value, (newVal) => {
+  if (newVal && newVal.length > 0 && modalForm.value.permissionIds && modalForm.value.permissionIds.length > 0) {
+    console.log('Permission tree loaded, permissionIds:', modalForm.value.permissionIds)
+    // 强制更新树组件的选中状态
+    nextTick(() => {
+      // 这里可以添加额外的逻辑来确保选中状态正确显示
+    })
+  }
+}, { deep: true })
 
 </script>

@@ -7,7 +7,9 @@
  **********************************/
 
 import { cloneDeep } from 'lodash-es'
-import { useForm, useModal } from '.'
+// import { useDraftStore } from '@/store'
+import { useForm, useModal, useDraft } from '.'
+import { debounceAndThrottle } from '@/utils'
 
 const ACTIONS = {
   view: '查看',
@@ -15,18 +17,131 @@ const ACTIONS = {
   add: '新增',
 }
 
-export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, refresh }) {
+export function useCrud({
+  name,
+  initForm = {},
+  doCreate,
+  doDelete,
+  doUpdate,
+  refresh,
+  enableDraft = true,
+  draftKey = name
+}) {
+
+
+
   const modalAction = ref('')
   const [modalRef, okLoading] = useModal()
   const [modalFormRef, modalForm, validation] = useForm(initForm)
+  // const draftStore = useDraftStore()
+  const currentRecordId = ref(null) // 当前编辑记录的ID
+  const isModalOpening = ref(true)
+
+  // 生成暂存key
+  const getDraftKey = () => {
+    const action = modalAction.value
+    const id = currentRecordId.value
+    return `${draftKey}_${action}_${id || 'new'}`
+  }
+
+  const isSave = () => {
+    return enableDraft && modalAction.value !== 'view'  && !isModalOpening.value
+  }
+
+  const draftStore = useDraft(modalForm, currentRecordId, getDraftKey, isSave, )
+
+  /** 自动保存暂存 */
+  function autoSaveDraft() {
+    if (!enableDraft || modalAction.value === 'view') return
+
+    const key = getDraftKey()
+    // draftStore.saveDraft(key, {
+    //   ...modalForm.value,
+    //   id: currentRecordId.value
+    // })
+    draftStore.saveDraft()
+  }
+
+  /** 加载暂存数据 */
+  function loadDraft() {
+    if (!enableDraft) return null
+
+    return draftStore.loadDraft()
+  }
+
+  /** 检查是否有暂存数据 */
+  function hasDraft() {
+    if (!enableDraft) return false
+
+    return draftStore.hasDraft()
+  }
+
+  /** 清除暂存数据 */
+  function clearDraft() {
+    if (!enableDraft) return
+
+    draftStore.clearDraft()
+  }
+
+  /** 手动保存暂存 */
+  async function handleSaveDraft() {
+    if (!enableDraft || modalAction.value === 'view') {
+      $message.warning('当前状态不支持暂存')
+      return
+    }
+
+    autoSaveDraft()
+    $message.success('暂存成功')
+  }
+
+  /** 恢复暂存数据 */
+  async function handleRestoreDraft() {
+    if (!hasDraft()) {
+      $message.warning('没有可恢复的暂存数据')
+      return
+    }
+
+    $dialog.confirm({
+      title: '提示',
+      type: 'warning',
+      content: '确定要恢复暂存的数据吗？当前修改将被覆盖',
+      confirm() {
+        const draftData = loadDraft()
+        if (draftData) {
+          modalForm.value = { ...draftData }
+          $message.success('暂存数据恢复成功')
+        }
+      },
+      cancel() {
+      },
+    })
+  }
+
+  // const autoSaveHandler = debounceAndThrottle(autoSaveDraft, 2000, 10000)
+
+  // // 监听表单变化，自动暂存
+  // watch(
+  //   modalForm,
+  //   () => {
+  //     if (!enableDraft || modalAction.value === 'view'  || isModalOpening.value) return
+
+  //     // 防抖，避免频繁保存
+  //     autoSaveHandler()
+  //   },
+  //   { deep: true }
+  // )
 
   /** 新增 */
   function handleAdd(row = {}, title) {
+    currentRecordId.value = null
+    isModalOpening.value = true
     handleOpen({ action: 'add', title, row: Object.assign({}, cloneDeep(initForm), cloneDeep(row)) })
   }
 
   /** 修改 */
   function handleEdit(row, title) {
+    currentRecordId.value = row.id
+    isModalOpening.value = true
     handleOpen({ action: 'edit', title, row })
   }
 
@@ -40,8 +155,15 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
     const { action, row, title, onOk } = options
     modalAction.value = action
     modalForm.value = { ...row }
+
     modalRef.value?.open({
       ...options,
+      // 暂存相关配置
+      enableDraft,
+      action,
+      onClearDraft: () => clearDraft(),
+      onCheckDraft: () => hasDraft(),
+      onSaveDraft: handleSaveDraft,
       async onOk() {
         if (typeof onOk === 'function') {
           return await onOk()
@@ -51,6 +173,27 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
         }
       },
       title: title ?? (ACTIONS[modalAction.value] || '') + name,
+    })
+
+    nextTick(() => {
+      if (enableDraft && hasDraft() && action !== 'view') {
+        $dialog.confirm({
+          title: '提示',
+          type: 'info',
+          content: '检测到有未保存的暂存数据，是否恢复？',
+          confirm() {
+            const draftData = loadDraft()
+            if (draftData) {
+              modalForm.value = { ...draftData }
+            }
+          },
+          cancel() {
+            clearDraft()
+          },
+        })
+      }
+      if (enableDraft && action !== 'view')
+        isModalOpening.value = false
     })
   }
 
@@ -63,11 +206,17 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
     const actions = {
       add: {
         api: () => doCreate(modalForm.value),
-        cb: () => $message.success('新增成功'),
+        cb: () => {
+          $message.success('新增成功')
+          clearDraft()
+        },
       },
       edit: {
         api: () => doUpdate(modalForm.value),
-        cb: () => $message.success('保存成功'),
+        cb: () => {
+          $message.success('保存成功')
+          clearDraft()
+        },
       },
     }
 
@@ -100,6 +249,8 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
         try {
           d.loading = true
           const data = await doDelete(id)
+          // 删除成功后，清除相关的暂存数据
+          draftStore.clearDraft()
           $message.success('删除成功')
           d.loading = false
           refresh(data, true)
@@ -114,6 +265,13 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
     })
   }
 
+  // 组件卸载时清理定时器
+  // onUnmounted(() => {
+  //   if (autoSaveTimer) {
+  //     clearTimeout(autoSaveTimer)
+  //   }
+  // })
+
   return {
     modalRef,
     modalFormRef,
@@ -127,5 +285,11 @@ export function useCrud({ name, initForm = {}, doCreate, doDelete, doUpdate, ref
     handleView,
     handleOpen,
     handleSave,
+    // 暂存相关方法
+    handleSaveDraft,
+    handleRestoreDraft,
+    hasDraft,
+    clearDraft,
+    autoSaveDraft,
   }
 }
