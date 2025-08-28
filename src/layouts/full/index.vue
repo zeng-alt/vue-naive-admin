@@ -1,28 +1,32 @@
-<!--------------------------------
- - @Author: Ronnie Zhang
- - @LastEditor: Ronnie Zhang
- - @LastEditTime: 2023/12/16 18:51:02
- - @Email: zclzone@outlook.com
- - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
- --------------------------------->
-
 <template>
-  <div class="wh-full flex">
-    <aside
-      class="flex-col flex-shrink-0 transition-width-300"
-      :class="appStore.collapsed ? 'w-64' : 'w-220'"
-      border-r="1px solid light_border dark:dark_border"
-    >
-      <SideBar />
-    </aside>
+  <div class="h-screen w-full flex">
+    <n-layout has-sider class="h-full w-full">
+      <n-layout-sider
+        show-trigger
+        collapse-mode="width"
+        :collapsed-width="80"
+        :native-scrollbar="false"
+        :width="210"
+        :collapsed="appStore.collapsed"
+        @collapse="appStore.setCollapsed(true)"
+        @expand="appStore.setCollapsed(false)"
+        style="height: 100vh; overflow: visible;"
+      >
+        <SideBar />
+      </n-layout-sider>
 
-    <article class="w-0 flex-col flex-1">
-      <AppHeader class="h-60 flex-shrink-0" />
-      <div class="p-12" border-b="1px solid light_border dark:dark_border">
-        <AppTab class="flex-shrink-0" />
-      </div>
-      <slot />
-    </article>
+      <article class="w-0 flex-1 flex flex-col h-full overflow-hidden">
+        <div style="flex-shrink: 0;">
+          <AppHeader style="height: 60px;" />
+          <div style="padding: 12px;">
+            <AppTab />
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+          <slot />
+        </div>
+      </article>
+    </n-layout>
   </div>
 </template>
 
@@ -38,5 +42,38 @@ const appStore = useAppStore()
 <style>
 .collapsed {
   width: 64px;
+}
+
+/* 确保侧边栏高度正确，但允许触发器按钮溢出 */
+:deep(.n-layout-sider) {
+  height: 100vh !important;
+  overflow: visible !important;
+  border-right: none !important; /* 移除右边框 */
+}
+
+/* 让侧边栏内容区域为 flex 布局 */
+:deep(.n-layout-sider .n-layout-sider-scroll-container) {
+  overflow: hidden !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 自定义滚动条 */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 </style>

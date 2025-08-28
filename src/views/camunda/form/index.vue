@@ -1,7 +1,7 @@
 <!-- src/App.vue -->
 
 <template>
-  <div style="height: 99%;">
+  <div style="height: 100%;">
     <VueformBuilder ref="builder$" :builder-locale="builderLocale" @save="handleSave"/>
   </div>
 </template>

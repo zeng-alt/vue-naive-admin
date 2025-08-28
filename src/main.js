@@ -19,18 +19,15 @@ import '@/styles/reset.css'
 import '@/styles/global.css'
 import 'uno.css'
 
+import Vueform from '@vueform/vueform'
+import vueformConfig from '../vueform.config.js'
+import Builder from '@vueform/builder'
+import builderConfig from '../builder.config.js'
+
 import { install as VueMonacoEditorPlugin, loader } from '@guolao/vue-monaco-editor'
-
-// import ElementPlus from 'element-plus'
-// import 'element-plus/dist/index.css'
-
-// import NgFormElementPlus  from 'ng-form-elementplus'
-// import 'ng-form-elementplus/lib/style.css'
 
 async function bootstrap() {
   const app = createApp(App)
-  // app.use(ElementPlus)
-  // app.use(NgFormElementPlus)
   app.use(VueMonacoEditorPlugin)
   setupStore(app)
   setupDirectives(app)
@@ -38,6 +35,8 @@ async function bootstrap() {
   app.mount('#app')
   setupNaiveDiscreteApi()
   app.use(createApolloProvider())
+  app.use(Vueform, vueformConfig)
+  app.use(Builder, builderConfig)
 }
 
 bootstrap()

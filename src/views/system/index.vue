@@ -1,67 +1,71 @@
 <template>
-  <div class="menu-container">
-    <div class="menu-content">
-      <!-- 搜索框 -->
-      <div class="search-section">
-        <div class="search-wrapper">
-          <n-input
-            v-model:value="searchText"
-            placeholder="搜索菜单..."
-            clearable
-            size="small"
-            round
-          >
-            <template #prefix>
-              <i class="i-carbon:search text-18 opacity-60" />
-            </template>
-          </n-input>
+  <AppPage show-footer>
+    <CommonPage :showHeader="false">
+    <div class="menu-container">
+      <div class="menu-content">
+        <!-- 搜索框 -->
+        <div class="search-section">
+          <div class="search-wrapper">
+            <n-input
+              v-model:value="searchText"
+              placeholder="搜索菜单..."
+              clearable
+              size="small"
+              round
+            >
+              <template #prefix>
+                <i class="i-carbon:search text-18 opacity-60" />
+              </template>
+            </n-input>
+          </div>
         </div>
-      </div>
 
-      <!-- 响应式网格 -->
-      <div class="menu-grid">
-        <div
-          v-for="item in filteredMenuItems"
-          :key="item.code"
-          class="menu-card-wrapper"
-        >
-          <n-card
-            class="menu-card"
-            hoverable
-            @click="handleCardClick(item)"
+        <!-- 响应式网格 -->
+        <div class="menu-grid">
+          <div
+            v-for="item in filteredMenuItems"
+            :key="item.code"
+            class="menu-card-wrapper"
           >
-            <div class="card-content">
-              <!-- 图标区域 -->
-              <div class="icon-wrapper">
-                <div class="icon-container">
-                  <i
-                    :class="`${item.icon}?mask`"
-                    :style="{ color: themeVars.primaryColor }"
-                    class="menu-icon"
-                  />
+            <n-card
+              class="menu-card"
+              hoverable
+              @click="handleCardClick(item)"
+            >
+              <div class="card-content">
+                <!-- 图标区域 -->
+                <div class="icon-wrapper">
+                  <div class="icon-container">
+                    <i
+                      :class="`${item.icon}?mask`"
+                      :style="{ color: themeVars.primaryColor }"
+                      class="menu-icon"
+                    />
+                  </div>
+                </div>
+
+                <!-- 文字区域 -->
+                <div class="text-content">
+                  <div class="menu-title">
+                    {{ item.name }}
+                  </div>
+                  <div v-if="item.description" class="menu-description">
+                    {{ item.description }}
+                  </div>
                 </div>
               </div>
-
-              <!-- 文字区域 -->
-              <div class="text-content">
-                <div class="menu-title">
-                  {{ item.name }}
-                </div>
-                <div v-if="item.description" class="menu-description">
-                  {{ item.description }}
-                </div>
-              </div>
-            </div>
-          </n-card>
+            </n-card>
+          </div>
         </div>
-      </div>
 
-      <!-- 空状态 -->
-      <div v-if="filteredMenuItems.length === 0" class="empty-state">
-        <n-empty description="没有找到匹配的菜单"  size="huge"/>
+        <!-- 空状态 -->
+        <div v-if="filteredMenuItems.length === 0" class="empty-state">
+          <n-empty description="没有找到匹配的菜单"  size="huge"/>
+        </div>
       </div>
     </div>
-  </div>
+  </CommonPage>
+  </AppPage>
 </template>
 
 <script setup>

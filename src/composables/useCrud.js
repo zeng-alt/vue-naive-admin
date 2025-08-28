@@ -133,15 +133,11 @@ export function useCrud({
 
   /** 新增 */
   function handleAdd(row = {}, title) {
-    currentRecordId.value = null
-    isModalOpening.value = true
     handleOpen({ action: 'add', title, row: Object.assign({}, cloneDeep(initForm), cloneDeep(row)) })
   }
 
   /** 修改 */
   function handleEdit(row, title) {
-    currentRecordId.value = row.id
-    isModalOpening.value = true
     handleOpen({ action: 'edit', title, row })
   }
 
@@ -153,6 +149,8 @@ export function useCrud({
   /** 打开modal */
   function handleOpen(options = {}) {
     const { action, row, title, onOk } = options
+    isModalOpening.value = true
+    currentRecordId.value = row.id
     modalAction.value = action
     modalForm.value = { ...row }
 

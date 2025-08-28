@@ -8,7 +8,7 @@
 
 <template>
   <AppCard class="flex items-center px-12" border-b="1px solid light_border dark:dark_border">
-    <!-- <MenuCollapse /> -->
+    <MenuCollapse />
 
     <BreadCrumb />
 

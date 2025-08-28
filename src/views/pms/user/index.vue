@@ -9,7 +9,7 @@
 <template>
   <CommonPage>
     <template #action>
-      <NButton v-permission="'AddUser'" type="primary" @click="handleAdd()">
+      <NButton v-permission="'saveUser'" type="primary" @click="handleAdd()">
         <i class="i-material-symbols:add mr-4 text-18" />
         创建新用户
       </NButton>
