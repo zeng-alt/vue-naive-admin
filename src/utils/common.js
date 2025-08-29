@@ -165,3 +165,21 @@ export function translate(template, replacements) {
     return replacements[key] || '{' + key + '}'
   })
 }
+
+
+// 动态加载语言文件
+export async function loadLocaleMessages(locale) {
+  try {
+    const response = await fetch(`/locales/${locale}.js`)
+    const text = await response.text()
+    
+    // 解析 JavaScript 模块内容
+    const moduleContent = text.replace('export default', 'return')
+    const messages = new Function(moduleContent)()
+    
+    return messages
+  } catch (error) {
+    console.error(`Failed to load locale ${locale}:`, error)
+    return {}
+  }
+}

@@ -142,7 +142,7 @@ export default {
     'Create data object reference': '创建数据对象参考',
     'Create data store reference': '创建数据存储参考',
     'Create element': '创建元素',
-    // Errors
+
     'no parent for {element} in {parent}': '在{parent}里，{element}没有父类',
     'no shape type specified': '没有指定的形状类型',
     'flow elements must be children of pools/participants': '流元素必须是池/参与者的子类',
@@ -157,7 +157,7 @@ export default {
     'failed to import {element}': '导入{element}失败',
     'Available process variables, identified in the diagram.': '图中标识的可用过程变量。',
     'No variables found.': '找不到变量。',
-    // 属性面板的参数
+
     'Id': '编号',
     'Name': '名称',
     'Version tag': '版本',

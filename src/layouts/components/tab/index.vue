@@ -21,7 +21,7 @@
         @click="handleItemClick(item.path)"
         @contextmenu.prevent="handleContextMenu($event, item)"
       >
-        {{ item.title }}
+        {{ t(item.title) }}
       </n-tab>
     </n-tabs>
 
@@ -38,6 +38,10 @@
 <script setup>
 import { useTabStore } from '@/store'
 import ContextMenu from './ContextMenu.vue'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const tabStore = useTabStore()

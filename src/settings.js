@@ -24,6 +24,7 @@ export const naiveThemeOverrides = {
   },
 }
 
+
 export const basePermissions = [
   {
     code: 'ExternalLink',
@@ -76,7 +77,7 @@ export const basePermissions = [
       },
       {
         code: 'Form',
-        name: '动态表单',
+        name: 'dynamicForm',
         type: 'MENU',
         path: '/form',
         component: '/src/views/camunda/form/index.vue',

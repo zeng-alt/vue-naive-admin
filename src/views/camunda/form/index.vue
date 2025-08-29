@@ -8,15 +8,21 @@
 
 <script setup>
 import {NSpace, NButton } from 'naive-ui'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { locale } = useI18n()
 
 const builder$ = ref()
 
-const builderLocale = ref('zh_CN')
+const builderLocale = ref(locale.value)
 
 const changeLocale = (locale) => {
   builderLocale.value = locale
 }
+
+watch(locale, (newLocale, oldLocale) => {
+  changeLocale(newLocale)
+})
 
 const handleSave = (builderObject, history) => {
   console.log(builderObject);

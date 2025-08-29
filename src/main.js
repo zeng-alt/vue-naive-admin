@@ -20,14 +20,39 @@ import '@/styles/global.css'
 import 'uno.css'
 
 import Vueform from '@vueform/vueform'
-import vueformConfig from '../vueform.config.js'
+import vueformConfig from './camunda/form/vueform.config.js'
 import Builder from '@vueform/builder'
-import builderConfig from '../builder.config.js'
+import builderConfig from './camunda/form/builder.config.js'
 
 import { install as VueMonacoEditorPlugin, loader } from '@guolao/vue-monaco-editor'
 
+import { createI18n } from 'vue-i18n'
+const messages = {
+  en_US: {
+    hello: 'Hello World',
+    switch: 'Switch Language',
+    dynamicForm: 'dynamicForm'
+  },
+  zh_CN: {
+    hello: '你好，世界',
+    switch: '切换语言',
+    dynamicForm: '动态表单'
+  }
+}
+
+const i18n = createI18n({
+  legacy: false, // Vue3 推荐使用 composition API，所以设为 false
+  locale: 'zh_CN',  // 默认语言
+  fallbackLocale: 'en_US', // 兜底语言
+  messages,
+  missing: (locale, key) => key, // 找不到就返回 key
+  warnHtmlInMessage: 'off',
+  warnFallBack: false // ⚠️ 关键
+})
+
 async function bootstrap() {
   const app = createApp(App)
+  app.use(i18n)
   app.use(VueMonacoEditorPlugin)
   setupStore(app)
   setupDirectives(app)

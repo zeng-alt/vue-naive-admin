@@ -9,7 +9,7 @@
 <template>
   <n-breadcrumb>
     <n-breadcrumb-item v-if="!breadItems?.length" :clickable="false">
-      {{ route.meta.title }}
+      {{t(route.meta.title, route.meta.title)}}
     </n-breadcrumb-item>
     <n-breadcrumb-item
       v-for="(item, index) of breadItems"
@@ -24,7 +24,7 @@
       >
         <div class="flex items-center">
           <i :class="item.icon" class="mr-8" />
-          {{ item.name }}
+          {{t(item.name, item.name)}}
         </div>
       </n-dropdown>
     </n-breadcrumb-item>
@@ -33,6 +33,10 @@
 
 <script setup>
 import { usePermissionStore } from '@/store'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const route = useRoute()
@@ -72,7 +76,7 @@ function getDropOptions(list = []) {
   return list
     .filter(item => item.show)
     .map(child => ({
-      label: child.name,
+      label: t(child.name),
       key: child.code,
       icon: () => h('i', { class: child.icon }),
     }))

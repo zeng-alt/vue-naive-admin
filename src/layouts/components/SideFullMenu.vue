@@ -15,6 +15,7 @@
     :indent="18"
     v-if="!appStore.collapsed"
     :options="permissionStore.menus"
+    :render-label="renderLabel"
     :value="activeKey"
     @update:value="handleMenuSelect"
   />
@@ -142,6 +143,9 @@ import { isExternal } from '@/utils'
 import { NEllipsis, NDropdown, NTooltip } from "naive-ui";
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -157,6 +161,10 @@ watch(route, async () => {
   await nextTick()
   menu.value?.showOption()
 })
+
+function renderLabel(option) {
+  return t(option.label, option.label)
+}
 
 function handleMenuSelect(key, item) {
   if (isExternal(item?.originPath)) {

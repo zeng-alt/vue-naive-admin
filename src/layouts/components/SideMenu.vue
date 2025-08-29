@@ -16,6 +16,7 @@
     :collapsed-width="64"
     :collapsed="appStore.collapsed"
     :options="permissionStore.menus"
+    :render-label="renderLabel"
     :value="activeKey"
     @update:value="handleMenuSelect"
   />
@@ -26,6 +27,9 @@ import { useAppStore, usePermissionStore } from '@/store'
 import { isExternal } from '@/utils'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -39,6 +43,9 @@ watch(route, async () => {
   await nextTick()
   menu.value?.showOption()
 })
+function renderLabel(option) {
+  return t(option.label, option.label)
+}
 
 function handleMenuSelect(key, item) {
   if (isExternal(item.originPath)) {

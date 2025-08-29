@@ -17,6 +17,8 @@
 
       <ToggleTheme />
 
+      <ToggleTranslation />
+
       <Fullscreen />
 
       <i
@@ -36,7 +38,7 @@
 </template>
 
 <script setup>
-import { ToggleTheme } from '@/components'
+import { ToggleTheme, ToggleTranslation } from '@/components'
 import { BeginnerGuide, BreadCrumb, Fullscreen, MenuCollapse, UserAvatar } from '@/layouts/components'
 
 function handleLinkClick(link) {
