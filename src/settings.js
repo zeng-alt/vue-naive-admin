@@ -77,7 +77,7 @@ export const basePermissions = [
       },
       {
         code: 'Form',
-        name: 'dynamicForm',
+        name: 'router.dynamicForm',
         type: 'MENU',
         path: '/form',
         component: '/src/views/camunda/form/index.vue',

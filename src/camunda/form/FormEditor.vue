@@ -1,13 +1,11 @@
 <!-- src/App.vue -->
 
 <template>
-
-  <VueformBuilder ref="builder$" :builder-locale="builderLocale" @save="handleSave"/>
-
+  <VueformBuilder style="height: 100%;" ref="builder$" :builder-locale="builderLocale" @save="handleSave"/>
 </template>
 
 <script setup>
-import {NSpace, NButton } from 'naive-ui'
+
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 const { locale } = useI18n()
@@ -32,8 +30,6 @@ const handleSave = (builderObject, history) => {
 function save() {
   const builder = builder$.value.builder
   const history = builder$.value.History.history
-  console.log(builder);
-  console.log(history);
 }
 </script>
 

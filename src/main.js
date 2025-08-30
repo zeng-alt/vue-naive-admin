@@ -23,31 +23,29 @@ import Vueform from '@vueform/vueform'
 import vueformConfig from './camunda/form/vueform.config.js'
 import Builder from '@vueform/builder'
 import builderConfig from './camunda/form/builder.config.js'
-
+import {loadLocaleMessages} from './utils/common.js'
 import { install as VueMonacoEditorPlugin, loader } from '@guolao/vue-monaco-editor'
 
 import { createI18n } from 'vue-i18n'
+
+const en_US = await loadLocaleMessages('en_US')
+const zh_CN = await loadLocaleMessages('zh_CN')
 const messages = {
-  en_US: {
-    hello: 'Hello World',
-    switch: 'Switch Language',
-    dynamicForm: 'dynamicForm'
-  },
-  zh_CN: {
-    hello: '你好，世界',
-    switch: '切换语言',
-    dynamicForm: '动态表单'
-  }
+  en_US,
+  zh_CN
 }
+
+const savedLocale = localStorage.getItem('locale') || 'en_US'
 
 const i18n = createI18n({
   legacy: false, // Vue3 推荐使用 composition API，所以设为 false
-  locale: 'zh_CN',  // 默认语言
+  locale: savedLocale,  // 默认语言
   fallbackLocale: 'en_US', // 兜底语言
   messages,
   missing: (locale, key) => key, // 找不到就返回 key
   warnHtmlInMessage: 'off',
-  warnFallBack: false // ⚠️ 关键
+  missingWarn: false,   // <== 禁用缺失 key 警告
+  fallbackWarn: false,  // <== 禁用 fallback 警告
 })
 
 async function bootstrap() {

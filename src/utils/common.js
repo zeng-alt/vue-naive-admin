@@ -154,18 +154,6 @@ export function useResize(el, cb) {
   return observer
 }
 
-export function translate(template, replacements) {
-  replacements = replacements || {}
- 
-  // Translate
-  template = translations[template] || template
- 
-  // Replace
-  return template.replace(/{([^}]+)}/g, function(_, key) {
-    return replacements[key] || '{' + key + '}'
-  })
-}
-
 
 // 动态加载语言文件
 export async function loadLocaleMessages(locale) {
