@@ -3,5 +3,5 @@ export default {
     dynamicForm: 'dynamicForm'
   },
   dmn: {},
-  
+  bpmn: {}
 }

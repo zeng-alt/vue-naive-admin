@@ -1,7 +1,5 @@
 <template>
-  <keep-alive>
-    <BpmnEditor bpmnXML="1233456"></BpmnEditor>
-  </keep-alive>
+  <BpmnEditor></BpmnEditor>
 </template>
 
 <script setup>

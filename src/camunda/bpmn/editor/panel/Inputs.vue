@@ -1,0 +1,493 @@
+<template>
+  <div class="inputs-panel">
+    <div class="inputs-section">
+      <div class="section-header">
+        <span class="section-title">输入参数 (Input Parameters)</span>
+        <NButton size="small" type="primary" @click="addInput">
+          <template #icon>
+            <NIcon>
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                />
+              </svg>
+            </NIcon>
+          </template>
+          添加参数
+        </NButton>
+      </div>
+
+      <div v-if="inputData.inputs.length === 0" class="empty-state">
+        <NEmpty description="暂无输入参数">
+          <template #extra>
+            <NButton size="small" @click="addInput">
+              添加第一个输入参数
+            </NButton>
+          </template>
+        </NEmpty>
+      </div>
+
+      <div v-for="(input, index) in inputData.inputs" :key="input.id" class="input-item">
+        <NCard size="small" :bordered="true">
+          <template #header>
+            <div class="input-header">
+              <span>{{ input.name || `参数 ${index + 1}` }}</span>
+              <NButton size="small" type="error" text @click="removeInput(index)">
+                <NIcon>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 16 16">
+                    <path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3h-4.5Zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5h2.5Zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462L3.62 4.5Z" clip-rule="evenodd" />
+                  </svg>
+                </NIcon>
+              </NButton>
+            </div>
+          </template>
+
+          <NSpace vertical>
+            <!-- 参数名 -->
+            <NFormItem label="参数名" :show-feedback="false">
+              <NInput v-model:value="input.name" size="small" :autofocus="index === inputData.inputs.length - 1" placeholder="输入参数名称" @blur="updateElement" />
+            </NFormItem>
+
+            <!-- 参数类型 -->
+            <NFormItem label="参数类型" :show-feedback="false">
+              <NSelect v-model:value="input.type" size="small" :options="inputTypeOptions" @update:value="onTypeChange(input)" />
+            </NFormItem>
+
+            <!-- 字符串/表达式类型 -->
+            <NFormItem
+              v-if="input.type === 'string' || input.type === 'expression'" label="值"
+              :show-feedback="false"
+            >
+              <NInput
+                v-model:value="input.value" size="small"
+                :placeholder="input.type === 'expression' ? '${variable}' : '输入字符串值'" @blur="updateElement"
+              />
+            </NFormItem>
+
+            <!-- 脚本类型 -->
+            <template v-if="input.type === 'script'">
+              <NFormItem label="脚本格式" :show-feedback="false">
+                <NSelect
+                  v-model:value="input.scriptFormat" size="small" :options="scriptFormatOptions"
+                  @update:value="updateElement"
+                />
+              </NFormItem>
+              <NFormItem label="脚本内容" :show-feedback="false">
+                <NInput
+                  v-model:value="input.scriptValue" size="small" type="textarea" placeholder="输入脚本代码" :rows="4"
+                  @blur="updateElement"
+                />
+              </NFormItem>
+            </template>
+
+            <!-- List类型 -->
+            <template v-if="input.type === 'list'">
+              <NFormItem label="列表项" :show-feedback="false">
+                <div class="list-items">
+                  <div v-for="(item, itemIndex) in input.listItems" :key="itemIndex" class="list-item">
+                    <NInputGroup>
+                      <NInput
+                        v-model:value="item.value" size="small" :placeholder="getListItemPlaceholder(item.type)"
+                        @blur="updateElement"
+                      />
+                      <NButton
+                        size="small" type="error"
+                        @click="removeListItem(input, itemIndex)"
+                      >
+                        <NIcon>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 16 16">
+                            <path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3h-4.5Zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5h2.5Zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462L3.62 4.5Z" clip-rule="evenodd" />
+                          </svg>
+                        </NIcon>
+                      </NButton>
+                    </NInputGroup>
+                  </div>
+                  <NButton size="small" block style="margin-top: 8px" @click="addListItem(input)">
+                    添加列表项
+                  </NButton>
+                </div>
+              </NFormItem>
+            </template>
+
+            <!-- Map类型 -->
+            <template v-if="input.type === 'map'">
+              <NFormItem label="键值对" :show-feedback="false">
+                <div class="map-entries">
+                  <div v-for="(entry, entryIndex) in input.mapEntries" :key="entryIndex" class="map-entry">
+                    <NInputGroup>
+                      <NInput v-model:value="entry.key" size="small" placeholder="键名" @blur="updateElement" />
+                      <NInput
+                        v-model:value="entry.value" size="small" :placeholder="getMapValuePlaceholder(entry.type)"
+                        @blur="updateElement"
+                      />
+                      <NButton size="small" type="error" @click="removeMapEntry(input, entryIndex)">
+                        <NIcon>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 16 16">
+                            <path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3h-4.5Zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5h2.5Zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462L3.62 4.5Z" clip-rule="evenodd" />
+                          </svg>
+                        </NIcon>
+                      </NButton>
+                    </NInputGroup>
+                  </div>
+                  <NButton size="small" block style="margin-top: 8px" @click="addMapEntry(input)">
+                    添加键值对
+                  </NButton>
+                </div>
+              </NFormItem>
+            </template>
+          </NSpace>
+        </NCard>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <NSpace justify="end" style="margin-top: 24px">
+      <NButton @click="resetInputs">
+        重置
+      </NButton>
+      <NButton type="primary" @click="saveInputs">
+        保存
+      </NButton>
+    </NSpace>
+  </div>
+</template>
+
+<script setup>
+import {
+  NButton,
+  NCard,
+  NEmpty,
+  NFormItem,
+  NIcon,
+  NInput,
+  NInputGroup,
+  NSelect,
+  NSpace,
+} from 'naive-ui'
+import { reactive } from 'vue'
+
+const props = defineProps({
+  element: null,
+  modeler: null,
+})
+
+// Emits
+const emit = defineEmits(['inputsUpdated'])
+
+// 输入数据
+const inputData = reactive({
+  inputs: [],
+})
+
+// 配置选项
+const inputTypeOptions = [
+  { label: '字符串', value: 'string' },
+  { label: '表达式', value: 'expression' },
+  { label: '脚本', value: 'script' },
+  { label: '列表', value: 'list' },
+  { label: '映射', value: 'map' },
+]
+
+const scriptFormatOptions = [
+  { label: 'JavaScript', value: 'javascript' },
+  { label: 'Groovy', value: 'groovy' },
+  { label: 'JUEL', value: 'juel' },
+]
+
+// 生成唯一ID
+function generateId() {
+  return `input_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
+}
+
+// 获取占位符文本
+function getListItemPlaceholder(type) {
+  return type === 'expression' ? '$' + '{variable}' : '输入值'
+}
+
+function getMapValuePlaceholder(type) {
+  return type === 'expression' ? '$' + '{variable}' : '输入值'
+}
+
+// 添加输入参数
+function addInput() {
+  const newInput = {
+    id: generateId(),
+    name: '',
+    type: 'string',
+    value: '',
+    scriptFormat: 'javascript',
+    scriptValue: '',
+    listItems: [],
+    mapEntries: [],
+  }
+  inputData.inputs.push(newInput)
+  updateElement()
+}
+
+// 删除输入参数
+function removeInput(index) {
+  inputData.inputs.splice(index, 1)
+  updateElement()
+}
+
+// 类型改变处理
+function onTypeChange(input) {
+  // 重置相关字段
+  input.value = ''
+  input.scriptValue = ''
+  input.listItems = []
+  input.mapEntries = []
+
+  // 根据类型初始化默认值
+  if (input.type === 'list') {
+    input.listItems = []
+  }
+  else if (input.type === 'map') {
+    input.mapEntries = []
+  }
+
+  updateElement()
+}
+
+// 列表操作
+function addListItem(input) {
+  input.listItems.push({ type: 'string', value: '' })
+  updateElement()
+}
+
+function removeListItem(input, index) {
+  input.listItems.splice(index, 1)
+  updateElement()
+}
+
+// 映射操作
+function addMapEntry(input) {
+  input.mapEntries.push({ key: '', type: 'string', value: '' })
+  updateElement()
+}
+
+function removeMapEntry(input, index) {
+  input.mapEntries.splice(index, 1)
+  updateElement()
+}
+
+// 更新BPMN元素
+function updateElement() {
+  if (!props.element || !props.modeler)
+    return
+
+  const modeling = props.modeler.get('modeling')
+  const moddle = props.modeler.get('moddle')
+
+  // 获取或创建扩展元素
+  let extensionElements = props.element.businessObject.extensionElements
+  if (!extensionElements) {
+    extensionElements = moddle.create('bpmn:ExtensionElements')
+  }
+
+  // 清除现有的输入输出配置
+  extensionElements.values = extensionElements.values?.filter(
+    element => element.$type !== 'camunda:InputOutput',
+  ) || []
+
+  // 如果有输入参数，创建InputOutput元素
+  if (inputData.inputs.length > 0) {
+    const inputOutput = moddle.create('camunda:InputOutput')
+
+    inputOutput.inputParameters = inputData.inputs.map((input) => {
+      const inputParameter = moddle.create('camunda:InputParameter')
+      inputParameter.name = input.name
+
+      switch (input.type) {
+        case 'string':
+          inputParameter.value = input.value
+          break
+
+        case 'expression':
+          inputParameter.value = input.value
+          break
+
+        case 'script': {
+          const script = moddle.create('camunda:Script')
+          script.scriptFormat = input.scriptFormat
+          script.value = input.scriptValue
+          inputParameter.definition = script
+          break
+        }
+
+        case 'list': {
+          const list = moddle.create('camunda:List')
+          list.items = input.listItems.map((item) => {
+            const listItem = moddle.create('camunda:Value')
+            if (item.type === 'expression') {
+              listItem.value = item.value
+            }
+            else {
+              listItem.value = item.value
+            }
+            return listItem
+          })
+          inputParameter.definition = list
+          break
+        }
+
+        case 'map': {
+          const map = moddle.create('camunda:Map')
+          map.entries = input.mapEntries.map((entry) => {
+            const mapEntry = moddle.create('camunda:Entry')
+            mapEntry.key = entry.key
+            if (entry.type === 'expression') {
+              mapEntry.value = entry.value
+            }
+            else {
+              mapEntry.value = entry.value
+            }
+            return mapEntry
+          })
+          inputParameter.definition = map
+          break
+        }
+      }
+
+      return inputParameter
+    })
+
+    extensionElements.values.push(inputOutput)
+  }
+
+  // 更新元素
+  modeling.updateProperties(props.element, {
+    extensionElements: extensionElements.values.length > 0 ? extensionElements : undefined,
+  })
+
+  emit('inputsUpdated', { ...inputData })
+}
+
+// 重置输入
+function resetInputs() {
+  inputData.inputs = []
+  updateElement()
+  window.$success('输入参数已重置')
+}
+
+// 保存输入
+function saveInputs() {
+  // 验证参数名
+  updateElement()
+  window.$success('输入参数已保存')
+}
+
+// 加载现有数据
+function loadInputData() {
+  if (!props.element)
+    return
+
+  const businessObject = props.element.businessObject
+  const extensionElements = businessObject.extensionElements
+
+  if (extensionElements) {
+    const inputOutput = extensionElements.values?.find(
+      element => element.$type === 'camunda:InputOutput',
+    )
+
+    if (inputOutput && inputOutput.inputParameters) {
+      inputData.inputs = inputOutput.inputParameters.map((param) => {
+        const input = {
+          id: generateId(),
+          name: param.name || '',
+          type: 'string',
+          value: '',
+          scriptFormat: 'javascript',
+          scriptValue: '',
+          listItems: [],
+          mapEntries: [],
+        }
+
+        // 判断参数类型和值
+        if (param.definition) {
+          if (param.definition.$type === 'camunda:Script') {
+            input.type = 'script'
+            input.scriptFormat = param.definition.scriptFormat || 'javascript'
+            input.scriptValue = param.definition.value || ''
+          }
+          else if (param.definition.$type === 'camunda:List') {
+            input.type = 'list'
+            input.listItems = (param.definition.items || []).map(item => ({
+              type: 'string',
+              value: item.value || '',
+            }))
+          }
+          else if (param.definition.$type === 'camunda:Map') {
+            input.type = 'map'
+            input.mapEntries = (param.definition.entries || []).map(entry => ({
+              key: entry.key || '',
+              type: 'string',
+              value: entry.value || '',
+            }))
+          }
+        }
+        else {
+          // 简单值，判断是否为表达式
+          const value = param.value || ''
+          if (value.startsWith('${') && value.endsWith('}')) {
+            input.type = 'expression'
+          }
+          else {
+            input.type = 'string'
+          }
+          input.value = value
+        }
+
+        return input
+      })
+    }
+  }
+}
+
+loadInputData()
+</script>
+
+<style scoped>
+.inputs-panel {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.empty-state {
+  margin: 24px 0;
+}
+
+.input-item {
+  margin-bottom: 16px;
+}
+
+.input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-item,
+.map-entry {
+  margin-bottom: 8px;
+}
+
+.list-items,
+.map-entries {
+  width: 100%;
+}
+</style>

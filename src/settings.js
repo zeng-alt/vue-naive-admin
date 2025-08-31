@@ -6,6 +6,8 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
+import KeepAlive from "./views/base/keep-alive.vue"
+
 export const defaultLayout = 'normal'
 
 // export const defaultPrimaryColor = '#316C72'
@@ -54,6 +56,7 @@ export const basePermissions = [
         order: 2,
         enable: true,
         show: true,
+        keepAlive: true,
       },
       {
         code: 'NaiveUI',
@@ -89,6 +92,7 @@ export const basePermissions = [
       {
         code: 'Bpmn',
         name: 'bpmn',
+        keepAlive: true,
         type: 'MENU',
         path: '/bpmn',
         component: '/src/views/camunda/bpmn/index.vue',
@@ -101,6 +105,7 @@ export const basePermissions = [
         code: 'dmn',
         name: 'dmn',
         type: 'MENU',
+        meta: { keepAlive: true },
         path: '/dmn',
         component: '/src/views/camunda/dmn/index.vue',
         icon: 'i-simple-icons:juejin',
