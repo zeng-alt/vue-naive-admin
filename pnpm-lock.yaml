@@ -159,6 +159,9 @@ importers:
       unplugin-vue-components:
         specifier: ^28.5.0
         version: 28.5.0(@babel/parser@7.27.0)(@nuxt/kit@3.17.5)(vue@3.5.13(typescript@5.8.3))
+      vfonts:
+        specifier: ^0.0.3
+        version: 0.0.3
       vite:
         specifier: ^6.3.5
         version: 6.3.5(jiti@2.4.2)(sass-embedded@1.89.1)(sass@1.91.0)(tsx@4.19.3)(yaml@2.8.0)
@@ -4165,6 +4168,9 @@ packages:
     resolution: {integrity: sha512-H9V1zGRLQZg9b+GdMk8MXDN2Lva0zx72MPahDKc30v+DtwKjfyOSXWRIX4t2mhDubM1H09gPhWeth/BJWPHGUw==}
     peerDependencies:
       vue: ^3.0.11
+
+  vfonts@0.0.3:
+    resolution: {integrity: sha512-nguyw8L6Un8eelg1vQ31vIU2ESxqid7EYmy8V+MDeMaHBqaRSkg3dTBToC1PR00D89UzS/SLkfYPnx0Wf23IQQ==}
 
   vite-hot-client@2.0.4:
     resolution: {integrity: sha512-W9LOGAyGMrbGArYJN4LBCdOC5+Zwh7dHvOHC0KmGKkJhsOzaKbpo/jEjpPKVHIW0/jBWj8RZG0NUxfgA8BxgAg==}
@@ -9051,6 +9057,8 @@ snapshots:
     dependencies:
       evtd: 0.2.4
       vue: 3.5.13(typescript@5.8.3)
+
+  vfonts@0.0.3: {}
 
   vite-hot-client@2.0.4(vite@6.3.5(jiti@2.4.2)(sass-embedded@1.89.1)(sass@1.91.0)(tsx@4.19.3)(yaml@2.8.0)):
     dependencies:

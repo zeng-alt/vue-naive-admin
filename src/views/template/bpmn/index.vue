@@ -1,53 +1,43 @@
-<!--------------------------------
- - @Author: Ronnie Zhang
- - @LastEditor: Ronnie Zhang
- - @LastEditTime: 2023/12/05 21:29:56
- - @Email: zclzone@outlook.com
- - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
- --------------------------------->
-
 <template>
   <CommonPage>
     <template #action>
-      <NButton v-permission="'saveUser'" type="primary" @click="handleAdd()">
+      <NButton v-permission="'AddUser'" type="primary" @click="handleAdd()">
         <i class="i-material-symbols:add mr-4 text-18" />
         创建新用户
       </NButton>
     </template>
 
-    <GraphqlCrud
+    <MeCrud
       ref="$table"
-      v-model:filters="queryItems"
-      :condition="true"
-      :expand="true"
+      v-model:query-items="queryItems"
       :scroll-x="1200"
       :columns="columns"
-      :get-data="PAGE_USER"
+      :get-data="api.read"
     >
-      <ConditionItem v-model:value="queryItems.username" label="用户名" type="string" :label-width="50">
+      <MeQueryItem label="用户名" :label-width="50">
         <n-input
-          v-model:value="queryItems.username.value"
+          v-model:value="queryItems.username"
           type="text"
           placeholder="请输入用户名"
           clearable
         />
-      </ConditionItem>
+      </MeQueryItem>
 
-      <ConditionItem v-model:value="queryItems.gender" label="性别" type="string" :label-width="50">
-        <n-select v-model:value="queryItems.gender.value" clearable :options="genders" />
-      </ConditionItem>
+      <MeQueryItem label="性别" :label-width="50">
+        <n-select v-model:value="queryItems.gender" clearable :options="genders" />
+      </MeQueryItem>
 
-      <ConditionItem v-model:value="queryItems.enable" label="状态" type="string" :label-width="50">
+      <MeQueryItem label="状态" :label-width="50">
         <n-select
-          v-model:value="queryItems.enable.value"
+          v-model:value="queryItems.enable"
           clearable
           :options="[
-            { label: '启用', value: true },
-            { label: '停用', value: false },
+            { label: '启用', value: 1 },
+            { label: '停用', value: 0 },
           ]"
         />
-      </ConditionItem>
-    </GraphqlCrud>
+      </MeQueryItem>
+    </MeCrud>
 
     <MeModal ref="modalRef" width="520px">
       <n-form
@@ -79,7 +69,7 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <n-input v-model:value="modalForm.password" type="password" show-password-on="mousedown" />
+          <n-input v-model:value="modalForm.password" />
         </n-form-item>
 
         <n-form-item v-if="['add', 'setRole'].includes(modalAction)" label="角色" path="roleIds">
@@ -113,37 +103,25 @@
 
 <script setup>
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
-import { h } from 'vue'
-import { MeModal } from '@/components'
+import { MeCrud, MeModal, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
-import { withPermission } from '@/directives'
 import { formatDateTime } from '@/utils'
-import api from './api'
-import { deleteUser, saveUser } from './apollo'
-import { PAGE_USER, queryRoleByEnable } from './apollo'
 
 defineOptions({ name: 'UserMgt' })
 
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
-const queryItems = ref({
-  username: {},
-  gender: {},
-  enable: {},
-})
+const queryItems = ref({})
 
 onMounted(() => {
   $table.value?.handleSearch()
 })
 
 const genders = [
-  { label: '男', value: '1' },
-  { label: '女', value: '2' },
+  { label: '男', value: 1 },
+  { label: '女', value: 2 },
 ]
-// const roles = ref([])
-// api.getAllRoles().then(({ data = [] }) => (roles.value = data))
-const { result } = queryRoleByEnable(true)
-const roles = computed(() => result.value?.queryRole ?? [])
+const roles = ref([])
 
 const {
   modalRef,
@@ -157,9 +135,9 @@ const {
 } = useCrud({
   name: '用户',
   initForm: { enable: true },
-  doCreate: saveUser,
-  doDelete: deleteUser,
-  doUpdate: saveUser,
+  doCreate: api.create,
+  doDelete: api.delete,
+  doUpdate: api.update,
   refresh: () => $table.value?.handleSearch(),
 })
 
@@ -174,44 +152,19 @@ const columns = [
         src: avatar,
       }),
   },
-  {
-    title: '用户名',
-    key: 'username',
-    width: 150,
-    sorter: true,
-    filter: true,
-    filterOptionValues: [],
-    filterOptions: [
-      {
-        label: 'Value1',
-        value: 1,
-      },
-      {
-        label: 'Value2',
-        value: 2,
-      },
-    ],
-    ellipsis: { tooltip: true },
-  },
+  { title: '用户名', key: 'username', width: 150, ellipsis: { tooltip: true } },
   {
     title: '角色',
-    key: 'userRoles',
+    key: 'roles',
     width: 200,
     ellipsis: { tooltip: true },
-    render: (row) => {
-      if (row.username === 'superAdmin') {
-        return h(
-          NTag,
-          { type: 'error' },
-          { default: () => '超级管理员' },
-        )
-      }
-      if (row.userRoles?.length) {
-        return row.userRoles.map((item, index) =>
+    render: ({ roles }) => {
+      if (roles?.length) {
+        return roles.map((item, index) =>
           h(
             NTag,
             { type: 'success', style: index > 0 ? 'margin-left: 8px;' : '' },
-            { default: () => item.role?.name },
+            { default: () => item.name },
           ),
         )
       }
@@ -222,9 +175,7 @@ const columns = [
     title: '性别',
     key: 'gender',
     width: 80,
-    render: ({ gender }) => {
-      return genders.find(item => gender === item.value)?.label ?? ''
-    },
+    render: ({ gender }) => genders.find(item => gender === item.value)?.label ?? '',
   },
   { title: '邮箱', key: 'email', width: 150, ellipsis: { tooltip: true } },
   {
@@ -247,7 +198,6 @@ const columns = [
           rubberBand: false,
           value: row.enable,
           loading: !!row.enableLoading,
-          disabled: row.username === 'superAdmin',
           onUpdateValue: () => handleEnable(row),
         },
         {
@@ -259,31 +209,18 @@ const columns = [
   {
     title: '操作',
     key: 'actions',
-    width: 420,
+    width: 320,
     align: 'right',
     fixed: 'right',
     hideInExcel: true,
     render(row) {
       return [
-        withPermission(
-          h(NButton, {
-            size: 'small',
-            type: 'primary',
-            secondary: true,
-          }, {
-            default: () => '超管专属',
-            icon: () => h('i', { class: 'i-carbon:user-role text-14' }),
-          }),
-          'SuperAdmin',
-        ),
         h(
           NButton,
           {
             size: 'small',
             type: 'primary',
-            class: 'ml-12px',
             secondary: true,
-            disabled: row.username === 'superAdmin',
             onClick: () => handleOpenRolesSet(row),
           },
           {
@@ -297,7 +234,6 @@ const columns = [
             size: 'small',
             type: 'primary',
             style: 'margin-left: 12px;',
-            disabled: row.username === 'superAdmin',
             onClick: () => handleOpen({ action: 'reset', title: '重置密码', row, onOk: onSave }),
           },
           {
@@ -311,7 +247,6 @@ const columns = [
           {
             size: 'small',
             type: 'error',
-            disabled: row.username === 'superAdmin',
             style: 'margin-left: 12px;',
             onClick: () => handleDelete(row.id),
           },
@@ -326,21 +261,21 @@ const columns = [
 ]
 
 async function handleEnable(row) {
-  // row.enableLoading = true
+  row.enableLoading = true
   try {
-    await saveUser({ id: row.id, enable: !row.enable })
-    // row.enableLoading = false
+    // await api.update({ id: row.id, enable: !row.enable })
+    row.enableLoading = false
     $message.success('操作成功')
     $table.value?.handleSearch()
   }
   catch (error) {
     console.error(error)
-    // row.enableLoading = false
+    row.enableLoading = false
   }
 }
 
 function handleOpenRolesSet(row) {
-  const roleIds = row.userRoles?.map(item => item.role?.id)
+  const roleIds = row.roles.map(item => item.id)
   handleOpen({
     action: 'setRole',
     title: '分配角色',
@@ -352,13 +287,13 @@ function handleOpenRolesSet(row) {
 function onSave() {
   if (modalAction.value === 'setRole') {
     return handleSave({
-      api: () => api.assignRole(modalForm.value.id, modalForm.value.roleIds),
+      api: () => api.update(modalForm.value),
       cb: () => $message.success('分配成功'),
     })
   }
   else if (modalAction.value === 'reset') {
     return handleSave({
-      api: () => api.initPassword({ username: modalForm.value.username, password: modalForm.value.password }),
+      api: () => api.resetPwd(modalForm.value.id, modalForm.value),
       cb: () => $message.success('密码重置成功'),
     })
   }
