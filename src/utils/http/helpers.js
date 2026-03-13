@@ -31,7 +31,7 @@ export function resolveResError(code, message, needTip = true) {
       })
       return false
     case 400:
-      message = '业务处理异常: ' + message
+      message = `业务处理异常: ${message}`
       break
     case 11007:
     case 11008:

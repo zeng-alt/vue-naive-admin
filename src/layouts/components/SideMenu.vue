@@ -23,11 +23,11 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { useAppStore, usePermissionStore } from '@/store'
 import { isExternal } from '@/utils'
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 

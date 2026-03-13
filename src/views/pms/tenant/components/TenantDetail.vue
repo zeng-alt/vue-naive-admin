@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col w-full h-full">
+  <div class="h-full w-full flex flex-col">
     <template v-if="currentTenant">
-      <div class="flex justify-between mb-4">
+      <div class="mb-4 flex justify-between">
         <h3 class="mb-12">
           租户数据源
         </h3>
@@ -43,23 +43,21 @@
         </n-descriptions-item>
       </n-descriptions>
     </template>
-    <div v-else class="w-full h-450 flex justify-center">
+    <div v-else class="h-450 w-full flex justify-center">
       <n-empty size="large" description="请选择租户查看详情" />
     </div>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   currentTenant: {
     type: Object,
     default: () => null,
   },
 })
-
 </script>
 
 <style scoped>
-
 
 </style>

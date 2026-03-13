@@ -1,7 +1,7 @@
 export default {
   router: {
-    dynamicForm: 'dynamicForm'
+    dynamicForm: 'dynamicForm',
   },
   dmn: {},
-  bpmn: {}
+  bpmn: {},
 }

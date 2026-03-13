@@ -1,14 +1,15 @@
-let isLanguageRegistered = false;
+let isLanguageRegistered = false
 
-export const setupSPELLanguage = (monaco) => {
+export function setupSPELLanguage(monaco) {
   try {
-    if (isLanguageRegistered) return;
+    if (isLanguageRegistered)
+      return
     // 检查是否已注册
     if (monaco.languages.getLanguages().some(lang => lang.id === 'spel')) {
-      return;
+      return
     }
     // 注册SPEL语言
-    monaco.languages.register({ id: 'spel' });
+    monaco.languages.register({ id: 'spel' })
 
     // 设置语法高亮规则
     monaco.languages.setMonarchTokensProvider('spel', {
@@ -16,20 +17,59 @@ export const setupSPELLanguage = (monaco) => {
       tokenPostfix: '.spel',
 
       keywords: [
-        'and', 'or', 'not', 'null', 'instanceof', 'matches', 'between',
-        'div', 'mod', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'true', 'false',
-        'new', 'T', 'authentication', 'principal', 'this', 'resultObject'
+        'and',
+        'or',
+        'not',
+        'null',
+        'instanceof',
+        'matches',
+        'between',
+        'div',
+        'mod',
+        'eq',
+        'ne',
+        'lt',
+        'le',
+        'gt',
+        'ge',
+        'true',
+        'false',
+        'new',
+        'T',
+        'authentication',
+        'principal',
+        'this',
+        'resultObject',
       ],
 
       operators: [
-        '+', '-', '*', '/', '%', '^', '?', ':', '?.', '?:',
-        '(', ')', '[', ']', '.', ',', '!', '=', '<', '>', '=='
+        '+',
+        '-',
+        '*',
+        '/',
+        '%',
+        '^',
+        '?',
+        ':',
+        '?.',
+        '?:',
+        '(',
+        ')',
+        '[',
+        ']',
+        '.',
+        ',',
+        '!',
+        '=',
+        '<',
+        '>',
+        '==',
       ],
 
       functions: ['hasRole', 'isAuthenticated', 'hasPermission'],
 
       // 添加自定义方法匹配规则
-      methodPattern: /[a-zA-Z_$][\w$]*(?=\s*\()/,
+      methodPattern: /[a-z_$][\w$]*(?=\s*\()/i,
 
       symbols: /[=><!~?:&|+\-*/^%]+/,
 
@@ -38,33 +78,33 @@ export const setupSPELLanguage = (monaco) => {
       tokenizer: {
         root: [
           // 添加方法匹配规则
-          [/[a-zA-Z_$][\w$]*(?=\s*\()/, 'method'],
+          [/[a-z_$][\w$]*(?=\s*\()/i, 'method'],
 
           // 标识符和关键字
-          [/[a-zA-Z_$][\w$]*/, {
+          [/[a-z_$][\w$]*/i, {
             cases: {
               '@keywords': 'keyword',
               '@default': 'identifier',
-              '@functions': 'function'
-            }
+              '@functions': 'function',
+            },
           }],
 
           // 空白字符
           { include: '@whitespace' },
 
           // 分隔符和操作符
-          [/[{}()\[\]]/, '@brackets'],
+          [/[{}()[\]]/, '@brackets'],
           [/[<>](?!@symbols)/, '@brackets'],
           [/@symbols/, {
             cases: {
               '@operators': 'operator',
-              '@default': ''
-            }
+              '@default': '',
+            },
           }],
 
           // 数字
-          [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-          [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+          [/\d*\.\d+(e[\-+]?\d+)?/i, 'number.float'],
+          [/0x[0-9a-f]+/i, 'number.hex'],
           [/\d+/, 'number'],
 
           // 分隔符
@@ -78,36 +118,36 @@ export const setupSPELLanguage = (monaco) => {
 
           // SPEL特殊符号
           [/#\w+/, 'variable.predefined'],
-          [/\$[a-zA-Z_]\w*/, 'variable']
+          [/\$[a-z_]\w*/i, 'variable'],
         ],
 
         whitespace: [
           [/[ \t\r\n]+/, 'white'],
           [/\/\*/, 'comment', '@comment'],
-          [/\/\/.*$/, 'comment']
+          [/\/\/.*$/, 'comment'],
         ],
 
         comment: [
-          [/[^\/*]+/, 'comment'],
+          [/[^/*]+/, 'comment'],
           [/\*\//, 'comment', '@pop'],
-          [/[\/*]/, 'comment']
+          [/[/*]/, 'comment'],
         ],
 
         string_double: [
           [/[^\\"]+/, 'string'],
           [/@escapes/, 'string.escape'],
           [/\\./, 'string.escape.invalid'],
-          [/"/, 'string', '@pop']
+          [/"/, 'string', '@pop'],
         ],
 
         string_single: [
           [/[^\\']+/, 'string'],
           [/@escapes/, 'string.escape'],
           [/\\./, 'string.escape.invalid'],
-          [/'/, 'string', '@pop']
-        ]
-      }
-    });
+          [/'/, 'string', '@pop'],
+        ],
+      },
+    })
 
     // monaco.editor.defineTheme('spelTheme', {
     //   base: 'vs',
@@ -131,8 +171,9 @@ export const setupSPELLanguage = (monaco) => {
     // // 应用主题
     // monaco.editor.setTheme('spelTheme');
     isLanguageRegistered = true
-  } catch (error) {
-    console.error('SPEL语言设置失败:', error);
-    throw error;
+  }
+  catch (error) {
+    console.error('SPEL语言设置失败:', error)
+    throw error
   }
 }

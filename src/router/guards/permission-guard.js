@@ -7,8 +7,8 @@
  **********************************/
 
 import api from '@/api'
-import { useAuthStore, usePermissionStore, useUserStore, usePolicyRuleStore } from '@/store'
-import { getPermissions, getUserInfo, getPolicyRules } from '@/store/helper'
+import { useAuthStore, usePermissionStore, useUserStore } from '@/store'
+import { getPermissions, getUserInfo } from '@/store/helper'
 
 const WHITE_LIST = ['/login', '/404']
 export function createPermissionGuard(router) {
@@ -47,7 +47,7 @@ export function createPermissionGuard(router) {
 
     const routes = router.getRoutes()
 
-    if (routes.find(route => route.name === to.name))
+    if (routes.some(route => route.name === to.name))
       return true
 
     // 判断是无权限还是404

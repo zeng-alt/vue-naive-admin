@@ -13,7 +13,6 @@ mutation DeleteDictData($id: [ID]) {
 }
 `
 
-
 export const SAVE_DICT_TYPE = gql`
 mutation SaveDictType($dictTypeInput: DictTypeInput) {
   saveDictType(dictTypeInput: $dictTypeInput) {
@@ -74,7 +73,6 @@ query ConditionPageDictData($filter: DictDataCondition, $pageQuery: PageQuery) {
 }
 `
 
-
 export const CONDITION_PAGE_DICT_TYPE = gql`
 query ConditionPageDictType($filter: DictTypeCondition, $pageQuery: PageQuery) {
   conditionPageDictType(
@@ -113,8 +111,8 @@ export function saveDictType(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_DICT_TYPE,
     variables: {
-      dictTypeInput: data
-    }
+      dictTypeInput: data,
+    },
   })
 }
 
@@ -123,8 +121,8 @@ export function saveDictData(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_DICT_DATA,
     variables: {
-      dictDataInput: data
-    }
+      dictDataInput: data,
+    },
   })
 }
 

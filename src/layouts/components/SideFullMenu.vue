@@ -8,19 +8,19 @@
 
 <template>
   <div class="side-menu-container">
-  <n-menu
-    ref="menu"
-    class="side-menu"
-    accordion
-    :indent="18"
-    v-if="!appStore.collapsed"
-    :options="permissionStore.menus"
-    :render-label="renderLabel"
-    :value="activeKey"
-    @update:value="handleMenuSelect"
-  />
-  <!-- 折叠状态下的自定义菜单 -->
-  <div v-else class="collapsed-menu">
+    <n-menu
+      v-if="!appStore.collapsed"
+      ref="menu"
+      class="side-menu"
+      accordion
+      :indent="18"
+      :options="permissionStore.menus"
+      :render-label="renderLabel"
+      :value="activeKey"
+      @update:value="handleMenuSelect"
+    />
+    <!-- 折叠状态下的自定义菜单 -->
+    <div v-else class="collapsed-menu">
       <div
         v-for="item in permissionStore.menus"
         :key="item.key"
@@ -30,7 +30,7 @@
         <!-- 有子菜单的项目 -->
         <template v-if="item.children && item.children.length > 0">
           <!-- 父菜单未禁用时，使用下拉菜单 -->
-          <n-dropdown
+          <NDropdown
             v-if="!item.disabled"
             trigger="hover"
             :options="item.children"
@@ -41,18 +41,18 @@
           >
             <div class="collapsed-menu-content">
               <div class="collapsed-menu-icon">
-                <component v-if="item.icon" :is="item.icon" />
+                <component :is="item.icon" v-if="item.icon" />
               </div>
               <div class="collapsed-menu-label">
-                <n-ellipsis style="max-width: 70px; font-size: 10px;">
+                <NEllipsis style="max-width: 70px; font-size: 10px;">
                   {{ item.label.length > 6 ? item.label.substring(0, 6) : item.label }}
-                </n-ellipsis>
+                </NEllipsis>
               </div>
             </div>
-          </n-dropdown>
+          </NDropdown>
           <!-- 父菜单禁用时，显示工具提示（如果名称长）或直接显示 -->
           <template v-else>
-            <n-tooltip
+            <NTooltip
               v-if="item.label.length > 6"
               trigger="hover"
               :delay="300"
@@ -61,28 +61,28 @@
               <template #trigger>
                 <div class="collapsed-menu-content disabled">
                   <div class="collapsed-menu-icon">
-                    <component v-if="item.icon" :is="item.icon" />
+                    <component :is="item.icon" v-if="item.icon" />
                   </div>
                   <div class="collapsed-menu-label">
-                    <n-ellipsis style="max-width: 70px; font-size: 10px;">
+                    <NEllipsis style="max-width: 70px; font-size: 10px;">
                       {{ item.label }}
-                    </n-ellipsis>
+                    </NEllipsis>
                   </div>
                 </div>
               </template>
               <span>{{ item.label }}</span>
-            </n-tooltip>
+            </NTooltip>
             <div
               v-else
               class="collapsed-menu-content disabled"
             >
               <div class="collapsed-menu-icon">
-                <component v-if="item.icon" :is="item.icon" />
+                <component :is="item.icon" v-if="item.icon" />
               </div>
               <div class="collapsed-menu-label">
-                <n-ellipsis style="max-width: 70px; font-size: 10px;">
+                <NEllipsis style="max-width: 70px; font-size: 10px;">
                   {{ item.label }}
-                </n-ellipsis>
+                </NEllipsis>
               </div>
             </div>
           </template>
@@ -90,7 +90,7 @@
         <!-- 没有子菜单的项目 -->
         <template v-else>
           <!-- 菜单名很长的项目，使用工具提示显示完整名称 -->
-          <n-tooltip
+          <NTooltip
             v-if="item.label.length > 6"
             trigger="hover"
             :delay="300"
@@ -99,51 +99,50 @@
             <template #trigger>
               <div
                 class="collapsed-menu-content"
-                :class="{ 'disabled': item.disabled }"
+                :class="{ disabled: item.disabled }"
                 @click="!item.disabled && handleMenuSelect(item.key, item)"
               >
                 <div class="collapsed-menu-icon">
-                  <component v-if="item.icon" :is="item.icon" />
+                  <component :is="item.icon" v-if="item.icon" />
                 </div>
                 <div class="collapsed-menu-label">
-                  <n-ellipsis style="max-width: 70px; font-size: 10px;">
+                  <NEllipsis style="max-width: 70px; font-size: 10px;">
                     {{ item.label }}
-                  </n-ellipsis>
+                  </NEllipsis>
                 </div>
               </div>
             </template>
             <span>{{ item.label }}</span>
-          </n-tooltip>
+          </NTooltip>
           <!-- 菜单名不长的项目，直接显示 -->
           <div
             v-else
             class="collapsed-menu-content"
-            :class="{ 'disabled': item.disabled }"
+            :class="{ disabled: item.disabled }"
             @click="!item.disabled && handleMenuSelect(item.key, item)"
           >
             <div class="collapsed-menu-icon">
-              <component v-if="item.icon" :is="item.icon" />
+              <component :is="item.icon" v-if="item.icon" />
             </div>
             <div class="collapsed-menu-label">
-              <n-ellipsis style="max-width: 70px; font-size: 10px;">
+              <NEllipsis style="max-width: 70px; font-size: 10px;">
                 {{ item.label }}
-              </n-ellipsis>
+              </NEllipsis>
             </div>
           </div>
         </template>
       </div>
+    </div>
   </div>
-</div>
 </template>
 
 <script setup>
-
+import { NDropdown, NEllipsis, NTooltip } from 'naive-ui'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { useAppStore, usePermissionStore } from '@/store'
 import { isExternal } from '@/utils'
-import { NEllipsis, NDropdown, NTooltip } from "naive-ui";
-import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
@@ -154,7 +153,7 @@ const permissionStore = usePermissionStore()
 
 const activeKey = computed(() => route.meta?.parentKey || route.name)
 
-const inverted = ref(false);
+const inverted = ref(false)
 
 const menu = ref(null)
 watch(route, async () => {
@@ -201,7 +200,6 @@ function handleMenuSelect(key, item) {
     }
   }
 }
-
 
 .collapsed-menu {
   padding: 8px 0;

@@ -17,23 +17,23 @@ import { computed } from 'vue'
 const props = defineProps({
   dictData: {
     type: Array,
-    required: true
+    required: true,
   },
   dictKey: {
     type: [String, Number],
-    required: true
+    required: true,
   },
   size: {
     type: String,
-    default: 'small' // native-ui 支持 'small' | 'medium' | 'large'
+    default: 'small', // native-ui 支持 'small' | 'medium' | 'large'
   },
   defaultText: {
     type: String,
-    default: '-' // 当找不到对应项时显示
-  }
+    default: '-', // 当找不到对应项时显示
+  },
 })
 
 const item = computed(() =>
-  props.dictData.find((el) => el.value === props.dictKey)
+  props.dictData.find(el => el.value === props.dictKey),
 )
 </script>

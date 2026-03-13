@@ -1,16 +1,14 @@
-
 // vueform.config.(js|ts)
 
-import zh_CN from '@vueform/vueform/locales/zh_CN'
-import ja from '@vueform/vueform/locales/ja'
-import en from '@vueform/vueform/locales/en'
-import nl from '@vueform/vueform/locales/nl'
-import vueform from '@vueform/vueform/dist/vueform'
-import { defineConfig } from '@vueform/vueform'
 import builder from '@vueform/builder/plugin'
+import { defineConfig } from '@vueform/vueform'
+import vueform from '@vueform/vueform/dist/vueform'
+import en from '@vueform/vueform/locales/en'
+import ja from '@vueform/vueform/locales/ja'
+import nl from '@vueform/vueform/locales/nl'
+import zh_CN from '@vueform/vueform/locales/zh_CN'
 
-
-import '@vueform/vueform/dist/vueform.css';
+import '@vueform/vueform/dist/vueform.css'
 
 export default defineConfig({
   theme: vueform,

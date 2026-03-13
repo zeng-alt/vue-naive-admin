@@ -1,28 +1,26 @@
 <template>
-
   <div class="flex flex-col">
     <n-input
       v-if="type === 'String'"
       type="text"
       :value="value"
-      @update:value="handleValueUpdate"
       :placeholder="placeholder"
       :label-width="labelWidth"
       clearable
+      @update:value="handleValueUpdate"
     />
     <n-input
       v-else-if="type === 'Number'"
       type="number"
       :value="value"
-      @update:value="handleValueUpdate"
       :placeholder="placeholder"
       :label-width="labelWidth"
       clearable
+      @update:value="handleValueUpdate"
     />
     <n-select
       v-else-if="type === 'Boolean'"
       :value="value"
-      @update:value="handleValueUpdate"
       :options="[
         { label: '是', value: true },
         { label: '否', value: false },
@@ -30,26 +28,23 @@
       :placeholder="placeholder"
       :label-width="labelWidth"
       clearable
+      @update:value="handleValueUpdate"
     />
     <n-select
       v-else-if="type === 'Enum'"
       :value="value"
-      @update:value="handleValueUpdate"
       :options="enumOptions"
       :placeholder="placeholder"
       :label-width="labelWidth"
       clearable
+      @update:value="handleValueUpdate"
     />
-
   </div>
-
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { fetchDictData } from '@/apollo'
-
-const emit = defineEmits(['update:value'])
 
 const props = defineProps({
   /**
@@ -61,7 +56,7 @@ const props = defineProps({
   },
   dict: {
     type: String,
-    default: undefined
+    default: undefined,
   },
   placeholder: {
     type: String,
@@ -77,21 +72,24 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['update:value'])
+
 const enumOptions = ref([])
 
-const handleValueUpdate = (newValue) => {
+function handleValueUpdate(newValue) {
   emit('update:value', newValue)
 }
 
-const loadDictData = async () => {
+async function loadDictData() {
   if (props.type === 'Enum' && props.dict) {
     try {
       const res = await fetchDictData(props.dict)
       enumOptions.value = res.data.map(item => ({
         label: item.label,
-        value: item.value
+        value: item.value,
       }))
-    } catch (error) {
+    }
+    catch (error) {
       console.error('获取枚举数据失败:', error)
     }
   }

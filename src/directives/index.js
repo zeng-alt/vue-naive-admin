@@ -6,11 +6,10 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
-import { router } from '@/router'
+import { watchEffect, withDirectives } from 'vue'
 import { useEvaluationContext, usePolicyRule } from '@/composables'
-import { useUserStore, usePolicyRuleStore } from '@/store'
-import { withDirectives, watchEffect } from 'vue'
-
+import { router } from '@/router'
+import { useUserStore } from '@/store'
 
 const permission = {
   mounted(el, binding) {
@@ -31,7 +30,7 @@ const policyRule = {
   },
   updated(el, binding) {
     evaluatePolicyRule(el, binding)
-  }
+  },
 }
 
 function evaluatePolicyRule(el, binding) {
@@ -46,7 +45,8 @@ function evaluatePolicyRule(el, binding) {
   if (Array.isArray(binding.value)) {
     key = binding.value[0]
     variables = binding.value[1] || []
-  } else if (typeof binding.value === 'object' && binding.value !== null) {
+  }
+  else if (typeof binding.value === 'object' && binding.value !== null) {
     key = binding.value.key
     variables = binding.value.variables || []
   }
@@ -74,14 +74,14 @@ function evaluatePolicyRule(el, binding) {
   // 使用 watchEffect 监听 ruleRef.value 的变化
   watchEffect(() => {
     const rule = ruleRef.value
-    if (!rule) return // 数据还没准备好，继续等待
+    if (!rule)
+      return // 数据还没准备好，继续等待
 
     if (!rule.eval(context.value, variables)) {
       el.remove()
     }
   })
 }
-
 
 export function setupDirectives(app) {
   app.directive('permission', permission)

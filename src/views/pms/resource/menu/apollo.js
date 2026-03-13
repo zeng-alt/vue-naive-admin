@@ -109,7 +109,6 @@ export const DELETE_MENU_RESOURCE = gql`
   }
 `
 
-
 export const DELETE_PERMISSION = gql`
   mutation DeletePermissionIds($ids: [ID]) {
     deletePermissionIds(id: $ids)
@@ -120,8 +119,8 @@ export function saveMenuResource(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_MENU_RESOURCE,
     variables: {
-      menuResourceInput: data
-    }
+      menuResourceInput: data,
+    },
   })
 }
 
@@ -129,8 +128,8 @@ export function saveHttpResource(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_HTTP_RESOURCE,
     variables: {
-      httpResourceInput: data
-    }
+      httpResourceInput: data,
+    },
   })
 }
 
@@ -139,8 +138,8 @@ export function handleHttpDisconnect(data) {
     mutation: SAVE_HTTP_RESOURCE,
     variables: {
       httpResourceInput: data,
-      ignoringNull: false
-    }
+      ignoringNull: false,
+    },
   })
 }
 
@@ -149,8 +148,8 @@ export function handleGraphqlDisconnect(data) {
     mutation: SAVE_GRAPHQL_RESOURCE,
     variables: {
       graphqlResourceInput: data,
-      ignoringNull: false
-    }
+      ignoringNull: false,
+    },
   })
 }
 
@@ -158,8 +157,8 @@ export function saveGraphqlResource(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_GRAPHQL_RESOURCE,
     variables: {
-      graphqlResourceInput: data
-    }
+      graphqlResourceInput: data,
+    },
   })
 }
 
@@ -167,8 +166,8 @@ export function saveAllHttpResource(data = []) {
   return apolloClients.main.mutate({
     mutation: SAVE_ALL_HTTP_RESOURCE,
     variables: {
-      httpResourceInput: data
-    }
+      httpResourceInput: data,
+    },
   })
 }
 
@@ -176,8 +175,8 @@ export function saveAllGraphqlResource(data = []) {
   return apolloClients.main.mutate({
     mutation: SAVE_ALL_GRAPHQL_RESOURCE,
     variables: {
-      graphqlResourceInput: data
-    }
+      graphqlResourceInput: data,
+    },
   })
 }
 
@@ -185,18 +184,16 @@ export function deleteMenuResource(ids) {
   return apolloClients.main.mutate({
     mutation: DELETE_MENU_RESOURCE,
     variables: {
-      ids
-    }
+      ids,
+    },
   })
 }
-
 
 export function deletePermission(ids) {
   return apolloClients.main.mutate({
     mutation: DELETE_PERMISSION,
     variables: {
-      ids
-    }
+      ids,
+    },
   })
 }
-

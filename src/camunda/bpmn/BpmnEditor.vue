@@ -88,11 +88,17 @@
 <script setup>
 import BpmnModeler from 'camunda-bpmn-js/dist/camunda-platform-modeler.production.min.js'
 import { NButton, NButtonGroup, NIcon, NLayout, NLayoutContent, NLayoutSider } from 'naive-ui'
-import { onMounted, ref, onActivated, onDeactivated, nextTick } from 'vue'
+import { nextTick, onActivated, onDeactivated, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Panel from './editor/panel/Panel.vue'
 import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css'
 
+const props = defineProps({
+  bpmnXML: {
+    type: String,
+    default: null,
+  },
+})
 const { messages, locale } = useI18n()
 import { useDark } from '@vueuse/core'
 
@@ -101,15 +107,7 @@ const selectedElement = ref(null)
 
 let bpmnModeler
 
-const props = defineProps({
-  bpmnXML: {
-    type: String,
-    default: null,
-  },
-})
-
-console.log(props.bpmnXML);
-
+console.log(props.bpmnXML)
 
 onMounted(() => {
   function translate(template, replacements) {
@@ -247,14 +245,14 @@ onActivated(async () => {
   // 页面被 keep-alive 激活时，DOM 已经重新挂载
   await nextTick()
   if (bpmnModeler) {
-    bpmnModeler.attachTo('#canvas')   // 重新挂载
+    bpmnModeler.attachTo('#canvas') // 重新挂载
     console.log('bpmnModeler 已 attach 回 canvas')
   }
 })
 
 onDeactivated(() => {
   if (bpmnModeler) {
-    bpmnModeler.detach()   // 暂时卸载，不销毁实例
+    bpmnModeler.detach() // 暂时卸载，不销毁实例
     console.log('bpmnModeler 已 detach')
   }
 })

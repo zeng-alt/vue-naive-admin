@@ -3,28 +3,28 @@
     <h2>Spring Security SPEL 编辑器</h2>
     <div class="controls">
       <label>
-        <input type="checkbox" v-model="securityEnabled" />
+        <input v-model="securityEnabled" type="checkbox">
         启用Spring Security提示
       </label>
     </div>
     <SpelEditor
       v-model="securityExpression"
-      :height="'400px'"
+      height="400px"
       :security-enabled="securityEnabled"
     />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { SpelEditor } from '@/components';
+import { ref } from 'vue'
+import { SpelEditor } from '@/components'
 
-const securityExpression = ref("hasRole('ADMIN') and isFullyAuthenticated()");
-const securityEnabled = ref(true);
+const securityExpression = ref('hasRole(\'ADMIN\') and isFullyAuthenticated()')
+const securityEnabled = ref(true)
 
-const insertExample = (example) => {
-  securityExpression.value = example;
-};
+function insertExample(example) {
+  securityExpression.value = example
+}
 </script>
 
 <style>

@@ -8,7 +8,7 @@
           </NSpace>
         </NScrollbar>
         <div class="flex-shrink-0 p-10">
-          <NButton ghost type="primary" @click="handleReset" :size="size">
+          <NButton ghost type="primary" :size="size" @click="handleReset">
             <i class="i-fe:rotate-ccw mr-4" />
             重置
           </NButton>
@@ -49,10 +49,8 @@
 <script setup>
 import { useQuery } from '@vue/apollo-composable'
 import { NButton, NDataTable, NScrollbar, NSpace } from 'naive-ui'
-import { computed, ref, watch, getCurrentInstance } from 'vue'
+import { computed, getCurrentInstance, ref, watch } from 'vue'
 import { utils, writeFile } from 'xlsx'
-
-const { vnode } = getCurrentInstance()
 
 // props
 const props = defineProps({
@@ -68,15 +66,18 @@ const props = defineProps({
   size: {
     type: String,
     default: 'medium',
-    validator: (value) => ['tiny', 'small', 'medium', 'large'].includes(value)
+    validator: value => ['tiny', 'small', 'medium', 'large'].includes(value),
   },
   /** 默认选中的行 */
   checkedKeys: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
+
 const emit = defineEmits(['update:filters', 'onChecked', 'onDataChange', 'fetch'])
+
+const { vnode } = getCurrentInstance()
 
 const queryFunction = props.getData.definitions[0].selectionSet.selections[0].name.alias || props.getData.definitions[0].selectionSet.selections[0].name.value
 // cursor-based pagination state
@@ -108,7 +109,6 @@ const pageInfo = computed(() => result.value?.[queryFunction]?.pageInfo ?? {})
 //   emit('fetch', res) ?? res
 // })
 
-
 const dataList = ref([])
 
 watch(edges, () => {
@@ -123,7 +123,8 @@ watch(edges, () => {
     emit('fetch', raw, (processedData) => {
       dataList.value = processedData
     })
-  } else {
+  }
+  else {
     // 否则，自己处理 fallback 逻辑
     dataList.value = raw
   }
@@ -205,8 +206,6 @@ function handleExport(columns = props.columns, data = dataList.value) {
   writeFile(workBook, '数据报表.xlsx')
 }
 
-
-
 // 修改 paginationConfig
 const paginationConfig = computed(() => ({
   page: pageNumber.value,
@@ -226,10 +225,10 @@ const paginationConfig = computed(() => ({
   onUpdatePageSize: (pageSize) => {
     currentPageSize.value = pageSize
     pageNumber.value = 1
-    //variables.value.pageQuery.first = pageSize
+    // variables.value.pageQuery.first = pageSize
     variables.value.pageQuery.after = null
     handleSearch()
-  }
+  },
 }))
 
 // 修改 handleReset 函数

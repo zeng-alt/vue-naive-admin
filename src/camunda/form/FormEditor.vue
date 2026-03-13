@@ -1,20 +1,20 @@
 <!-- src/App.vue -->
 
 <template>
-  <VueformBuilder style="height: 100%;" ref="builder$" :builder-locale="builderLocale" @save="handleSave"/>
+  <VueformBuilder ref="builder$" style="height: 100%;" :builder-locale="builderLocale" @save="handleSave" />
 </template>
 
 <script setup>
-
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+
 const { locale } = useI18n()
 
 const builder$ = ref()
 
 const builderLocale = ref(locale.value)
 
-const changeLocale = (locale) => {
+function changeLocale(locale) {
   builderLocale.value = locale
 }
 
@@ -22,9 +22,9 @@ watch(locale, (newLocale, oldLocale) => {
   changeLocale(newLocale)
 })
 
-const handleSave = (builderObject, history) => {
-  console.log(builderObject);
-  console.log(history);
+function handleSave(builderObject, history) {
+  console.log(builderObject)
+  console.log(history)
 }
 
 function save() {
@@ -32,4 +32,3 @@ function save() {
   const history = builder$.value.History.history
 }
 </script>
-

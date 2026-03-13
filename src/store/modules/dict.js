@@ -1,9 +1,8 @@
-
 import { defineStore } from 'pinia'
 
 export const useDictStore = defineStore('dict', {
   state: () => ({
-    dict: new Map()
+    dict: new Map(),
   }),
   actions: {
     getDict(key) {
@@ -17,7 +16,8 @@ export const useDictStore = defineStore('dict', {
         return false
       try {
         this.dict.set(key, value)
-      } catch (e) {
+      }
+      catch (e) {
         console.error('setDict Error:', e)
         return false
       }
@@ -28,7 +28,8 @@ export const useDictStore = defineStore('dict', {
         return false
       try {
         this.dict.remove(key)
-      } catch (e) {
+      }
+      catch (e) {
         console.error('remove Error:', e)
         return false
       }

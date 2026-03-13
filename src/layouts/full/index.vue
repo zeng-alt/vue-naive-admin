@@ -8,14 +8,14 @@
         :native-scrollbar="false"
         :width="210"
         :collapsed="appStore.collapsed"
+        style="height: 100vh; overflow: visible;"
         @collapse="appStore.setCollapsed(true)"
         @expand="appStore.setCollapsed(false)"
-        style="height: 100vh; overflow: visible;"
       >
         <SideBar />
       </n-layout-sider>
 
-      <article class="w-0 flex-1 flex flex-col h-full overflow-hidden">
+      <article class="h-full w-0 flex flex-col flex-1 overflow-hidden">
         <div style="flex-shrink: 0;">
           <AppHeader style="height: 60px;" />
           <div style="padding: 12px;">

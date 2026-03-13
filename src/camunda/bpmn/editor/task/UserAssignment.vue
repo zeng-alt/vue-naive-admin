@@ -1,20 +1,22 @@
 <script lang="js" setup>
-import { ref, reactive } from 'vue'
-import { 
-  NForm, NFormItem, NInput, NSelect,
+import {
+  NForm,
+  NFormItem,
+  NInput,
   NInputNumber,
+  NSelect,
 } from 'naive-ui'
-
+import { reactive, ref } from 'vue'
 
 const props = defineProps({
   bpmnModeler: {
     type: Object,
-    required: true
+    required: true,
   },
   element: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 })
 
 // 表单引用
@@ -38,20 +40,20 @@ const formData = reactive({
   candidateGroups: undefined,
   dueDate: undefined,
   followUpDate: undefined,
-  priority: undefined
+  priority: undefined,
 })
 
 // 加载元素属性
-const loadElementProperties = (element) => {
+function loadElementProperties(element) {
   const businessObject = element.businessObject
-  
+
   formData.assignee = businessObject.assignee
   formData.candidateUsers = businessObject.candidateUsers
   formData.candidateGroups = businessObject.candidateGroups
   formData.dueDate = businessObject.dueDate
   formData.followUpDate = businessObject.followUpDate
   formData.priority = businessObject.priority
-  
+
   // 解析候选用户和组
   candidateUsersList.value = formData.candidateUsers ? formData.candidateUsers.split(',').map(u => u.trim()) : []
   candidateGroupsList.value = formData.candidateGroups ? formData.candidateGroups.split(',').map(g => g.trim()) : []
@@ -60,85 +62,88 @@ const loadElementProperties = (element) => {
 loadElementProperties(element)
 
 // 处理分配类型变化
-const handleAssignmentTypeChange = (type) => {
+function handleAssignmentTypeChange(type) {
   // 清空其他分配字段
   formData.assignee = ''
   formData.candidateUsers = ''
   formData.candidateGroups = ''
   candidateUsersList.value = []
   candidateGroupsList.value = []
-  
+
   updateElement()
 }
 
 // 处理候选用户变化
-const handleCandidateUsersChange = (users) => {
+function handleCandidateUsersChange(users) {
   formData.candidateUsers = users.join(',')
   updateElement()
 }
 
 // 处理候选组变化
-const handleCandidateGroupsChange = (groups) => {
+function handleCandidateGroupsChange(groups) {
   formData.candidateGroups = groups.join(',')
   updateElement()
 }
 
 // 更新BPMN元素
-const updateElement = async () => {
-  if (!props.element || !props.bpmnModeler) return
-  
+async function updateElement() {
+  if (!props.element || !props.bpmnModeler)
+    return
+
   try {
-    if (!element) return
-    
+    if (!element)
+      return
+
     if (formData.assignee) {
       modeling.updateProperties(element, {
         'camunda:assignee': formData.assignee || '',
-      });
+      })
     }
 
     if (formData.candidateUsers) {
       modeling.updateProperties(element, {
         'camunda:candidateUsers': formData.candidateUsers || '',
-      });
+      })
     }
 
     if (formData.candidateGroups) {
       modeling.updateProperties(element, {
-        'camunda:candidateGroups': formData.candidateGroups || ''
-      });
+        'camunda:candidateGroups': formData.candidateGroups || '',
+      })
     }
 
     if (formData.dueDate) {
       modeling.updateProperties(element, {
-        'camunda:dueDate': formData.dueDate || ''
-      });
+        'camunda:dueDate': formData.dueDate || '',
+      })
     }
 
     if (formData.followUpDate) {
       modeling.updateProperties(element, {
-        'camunda:followUpDate': formData.followUpDate || ''
-      });
+        'camunda:followUpDate': formData.followUpDate || '',
+      })
     }
 
     if (formData.priority) {
       modeling.updateProperties(element, {
-        'camunda:priority': formData.priority || ''
-      });
+        'camunda:priority': formData.priority || '',
+      })
     }
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('更新元素失败:', error)
     window.$error('更新元素失败')
   }
 }
 
 // 保存配置
-const saveConfiguration = async () => {
+async function saveConfiguration() {
   try {
     await formRef.value?.validate()
     await updateElement()
     window.$success('配置保存成功')
-  } catch (error) {
+  }
+  catch (error) {
     window.$error('请检查表单填写是否正确')
   }
 }
@@ -146,19 +151,16 @@ const saveConfiguration = async () => {
 // 暴露方法
 defineExpose({
   loadElementProperties,
-  updateElement
+  updateElement,
 })
 </script>
 
-
 <template>
   <div class="user-assignment-panel">
-
-    <n-form :model="formData" size="small">
-
+    <NForm :model="formData" size="small">
       <!-- 指定用户 -->
-      <n-form-item label="指定用户" path="assignee">
-        <n-select
+      <NFormItem label="指定用户" path="assignee">
+        <NSelect
           v-model:value="formData.assignee"
           filterable
           clearable
@@ -166,84 +168,83 @@ defineExpose({
           :options="[
             {
               label: 'Drive My Car',
-              value: 'song1'
+              value: 'song1',
             },
             {
               label: 'Norwegian Wood',
-              value: 'song2'
+              value: 'song2',
             },
           ]"
           @update:value="updateElement"
         />
-      </n-form-item>
+      </NFormItem>
 
       <!-- 候选用户 -->
-      <n-form-item label="候选用户" path="candidateUsers">
-        <n-select
+      <NFormItem label="候选用户" path="candidateUsers">
+        <NSelect
           v-model:value="candidateUsersList"
           filterable
           clearable
-          multiple 
+          multiple
           placeholder="候选用户"
           :options="[
             {
               label: 'Drive My Car',
-              value: 'song1'
+              value: 'song1',
             },
             {
               label: 'Norwegian Wood',
-              value: 'song2'
+              value: 'song2',
             },
           ]"
           @update:value="handleCandidateUsersChange"
         />
-      </n-form-item>
+      </NFormItem>
 
       <!-- 候选组 -->
-      <n-form-item label="候选组" path="candidateGroups">
-        <n-select
+      <NFormItem label="候选组" path="candidateGroups">
+        <NSelect
           v-model:value="candidateGroupsList"
           filterable
-          multiple 
+          multiple
           clearable
           placeholder="候选组"
           :options="[
             {
               label: 'Drive My Car',
-              value: 'song1'
+              value: 'song1',
             },
             {
               label: 'Norwegian Wood',
-              value: 'song2'
+              value: 'song2',
             },
           ]"
           @update:value="handleCandidateGroupsChange"
         />
-      </n-form-item>
-      <n-form-item label="截止时间" path="dueDate">
-        <n-input
+      </NFormItem>
+      <NFormItem label="截止时间" path="dueDate">
+        <NInput
           v-model:value="formData.dueDate"
           clearable
           placeholder="${someDate} or 2025-06-26T09:54:00"
           @update:value="updateElement"
         />
-      </n-form-item>
-      <n-form-item label="跟进日期" path="followUpDate">
-        <n-input
+      </NFormItem>
+      <NFormItem label="跟进日期" path="followUpDate">
+        <NInput
           v-model:value="formData.followUpDate"
           clearable
           placeholder="${someDate} or 2025-06-26T09:54:00"
           @update:value="updateElement"
         />
-      </n-form-item>
-      <n-form-item label="优先级" path="priority">
-        <n-input-number
-          clearable
+      </NFormItem>
+      <NFormItem label="优先级" path="priority">
+        <NInputNumber
           v-model:value="formData.priority"
+          clearable
           @update:value="updateElement"
         />
-      </n-form-item>
-    </n-form>
-
+      </NFormItem>
+    </NForm>
   </div>
 </template>

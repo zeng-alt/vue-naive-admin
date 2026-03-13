@@ -13,14 +13,14 @@
 </template>
 
 <script setup>
-import { computed, ref, onBeforeUnmount, watch } from 'vue';
+import MonacoEditor from '@guolao/vue-monaco-editor'
 import { useDark } from '@vueuse/core'
-import MonacoEditor from '@guolao/vue-monaco-editor';
-import * as monaco from 'monaco-editor';
-import { StandardContext, SpelExpressionEvaluator } from 'spel2js'
-import { setupSPELLanguage } from './spel-language.js';
-import { setupSPELSuggestions, setupContextAwareSuggestions, setupSPELHover } from './spel-suggestions.js';
-import { debounce } from '@/utils/common.js';
+import * as monaco from 'monaco-editor'
+import { SpelExpressionEvaluator, StandardContext } from 'spel2js'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { debounce } from '@/utils/common.js'
+import { setupSPELLanguage } from './spel-language.js'
+import { setupContextAwareSuggestions, setupSPELHover, setupSPELSuggestions } from './spel-suggestions.js'
 
 // 声明 props
 const props = defineProps({
@@ -44,29 +44,29 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '100%'
+    default: '100%',
   },
   width: {
     type: String,
-    default: '100%'
-  }
-});
+    default: '100%',
+  },
+})
 
 // 声明 emits
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue'])
 
 // 响应式变量
-const code = ref(props.modelValue);
+const code = ref(props.modelValue)
 
 watch(
   () => props.modelValue,
   (newVal) => {
     code.value = newVal
-  }
-);
+  },
+)
 
-const isDark = useDark();
-const theme = computed(() => isDark.value ? 'vs-dark' : 'vs');
+const isDark = useDark()
+const theme = computed(() => isDark.value ? 'vs-dark' : 'vs')
 
 // 编辑器选项
 const editorOptions = {
@@ -79,7 +79,7 @@ const editorOptions = {
   hover: {
     above: false,
     enabled: true,
-    optional: true
+    optional: true,
   },
   suggest: {
     preview: true,
@@ -107,98 +107,99 @@ const editorOptions = {
     showReferences: true,
     showFolders: true,
     showTypeParameters: true,
-    showSnippets: true
-  }
-};
+    showSnippets: true,
+  },
+}
 
 // 在编辑器组件中添加
-const evalExpression = () => {
+function evalExpression() {
   try {
     if (!code.value) {
-      console.warn("表达式为空")
-      return null;
-
+      console.warn('表达式为空')
+      return null
     }
     const standardContext = StandardContext.create(JSON.parse(props.authentication), JSON.parse(props.principal))
     standardContext.env = JSON.parse(props.env)
     const compiled = SpelExpressionEvaluator.compile(code.value)
     // 这里可以添加实际的SPEL验证逻辑
-    const result = compiled.eval(standardContext, JSON.parse(props.variables));
-    console.log('表达式运行通过:', result);
-    return result;
-  } catch (error) {
-    console.error('表达式运行错误:', error);
-    $message.error('表达式运行错误: ' + error.message);
-    return undefined;
+    const result = compiled.eval(standardContext, JSON.parse(props.variables))
+    console.log('表达式运行通过:', result)
+    return result
   }
-};
+  catch (error) {
+    console.error('表达式运行错误:', error)
+    $message.error(`表达式运行错误: ${error.message}`)
+    return undefined
+  }
+}
 
 // 创建一个防抖版本的表达式求值函数
-const debouncedEvalExpression = (callback) => {
+function debouncedEvalExpression(callback) {
   debounce(() => {
-    const result = evalExpression();
-    if (callback) callback(result);
-  }, 500, true)();
-};
+    const result = evalExpression()
+    if (callback)
+      callback(result)
+  }, 500, true)()
+}
 
-const editorInstance = ref(null);
+const editorInstance = ref(null)
 
-let spelRegistered = false;
+let spelRegistered = false
 
 // 挂载时的回调
-const handleEditorMount = (editor) => {
-  editorInstance.value = editor;
+function handleEditorMount(editor) {
+  editorInstance.value = editor
 
   try {
     // 初始化 SPEL 支持
 
     if (!spelRegistered) {
-      setupSPELLanguage(monaco);
-      setupSPELSuggestions(monaco);
-      setupSPELHover(monaco);
-      setupContextAwareSuggestions(monaco);
-      spelRegistered = true;
+      setupSPELLanguage(monaco)
+      setupSPELSuggestions(monaco)
+      setupSPELHover(monaco)
+      setupContextAwareSuggestions(monaco)
+      spelRegistered = true
     }
 
     // 监听内容变化
     editor.onDidChangeModelContent(() => {
-      code.value = editor.getValue();
-      emit('update:modelValue', code.value);
-    });
+      code.value = editor.getValue()
+      emit('update:modelValue', code.value)
+    })
 
     // Ctrl + Space 快捷建议
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
-      editor.trigger('', 'editor.action.triggerSuggest', '');
-    });
+      editor.trigger('', 'editor.action.triggerSuggest', '')
+    })
 
-    console.log('SPEL编辑器已成功加载');
-  } catch (error) {
-    console.error('编辑器初始化错误:', error);
+    console.log('SPEL编辑器已成功加载')
   }
-};
+  catch (error) {
+    console.error('编辑器初始化错误:', error)
+  }
+}
 
 // 卸载时清理资源
 onBeforeUnmount(() => {
-  console.log('准备卸载 SPEL 编辑器');
+  console.log('准备卸载 SPEL 编辑器')
   setTimeout(() => {
     if (editorInstance.value) {
-      editorInstance.value.dispose();
-      editorInstance.value = null;
+      editorInstance.value.dispose()
+      editorInstance.value = null
     }
-    console.log('已清理 SPEL 编辑器');
-  }, 0);
-});
+    console.log('已清理 SPEL 编辑器')
+  }, 0)
+})
 
 watch(() => props.modelValue, (newVal) => {
   if (editorInstance.value && newVal !== code.value) {
-    editorInstance.value.setValue(newVal);
+    editorInstance.value.setValue(newVal)
   }
-}, { flush: 'post' });
-
+}, { flush: 'post' })
 
 defineExpose({
   evalExpression,
-  debouncedEvalExpression
+  debouncedEvalExpression,
 })
 </script>
 

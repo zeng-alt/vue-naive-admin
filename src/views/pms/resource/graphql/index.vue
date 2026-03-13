@@ -62,8 +62,8 @@
           >
             <ConditionItem v-model:value="queryItems.code" size="small" label="编码" type="string" :label-width="50">
               <NInput
-                size="small"
                 v-model:value="queryItems.code.value"
+                size="small"
                 type="text"
                 placeholder="请输入graphql编码"
                 clearable
@@ -71,8 +71,8 @@
             </ConditionItem>
             <ConditionItem v-model:value="queryItems.name" size="small" label="名称" type="string" :label-width="50">
               <NInput
-                size="small"
                 v-model:value="queryItems.name.value"
+                size="small"
                 type="text"
                 placeholder="请输入graphql名称"
                 clearable
@@ -80,8 +80,8 @@
             </ConditionItem>
             <ConditionItem v-model:value="queryItems.functionName" size="small" label="方法名" type="string" :label-width="50">
               <NInput
-                size="small"
                 v-model:value="queryItems.functionName.value"
+                size="small"
                 type="text"
                 placeholder="请输入graphql方法名"
                 clearable
@@ -89,13 +89,13 @@
             </ConditionItem>
             <MeQueryItem label="协议" size="small" :label-width="50">
               <n-select
-                size="small"
                 v-model:value="queryItems.operation.value"
+                size="small"
                 clearable
                 :options="[
                   { label: 'Query', value: 'Query' },
                   { label: 'Mutation', value: 'Mutation' },
-                  { label: 'Subscription', value: 'Subscription' }
+                  { label: 'Subscription', value: 'Subscription' },
                 ]"
               />
             </MeQueryItem>
@@ -105,20 +105,20 @@
       </div>
     </div>
     <ResAddOrEdit ref="modalRef" :menus="treeData" @refresh="initData" />
-    <GraphqlRole ref="roleModalRef" @refresh="initData"/>
+    <GraphqlRole ref="roleModalRef" @refresh="initData" />
   </CommonPage>
 </template>
 
 <script setup>
-import { PAGE_GRAPHQL_RESOURCE, saveGraphqlResource, deleteGraphqlResource } from './apollo.js'
-import {  apolloClients } from '@/utils/graphql'
-import { GraphqlCrud,  MeQueryItem, ConditionItem } from '@/components'
 import { NButton, NTooltip } from 'naive-ui'
+import { ref } from 'vue'
+import { ConditionItem, GraphqlCrud, MeQueryItem } from '@/components'
+import { apolloClients } from '@/utils/graphql'
+import { deleteGraphqlResource, PAGE_GRAPHQL_RESOURCE } from './apollo.js'
+import GraphqlRole from './components/GraphqlRole.vue'
 // import { deleteMenuResource } from  './apollo'
 import GraphqlTree from './components/GraphqlTree.vue'
 import ResAddOrEdit from './components/ResAddOrEdit.vue'
-import GraphqlRole from './components/GraphqlRole.vue'
-import { ref } from 'vue'
 
 defineOptions({ name: 'GraphqlResourceMgt' })
 
@@ -127,20 +127,19 @@ const queryItems = ref({
   name: {},
   uri: {
     option: 'EQ',
-    value: undefined
+    value: undefined,
   },
   operation: {
     option: 'EQ',
-    value: undefined
+    value: undefined,
   },
-  functionName: {}
+  functionName: {},
 })
 const treeData = ref([])
 const treeLoading = ref(false)
 const $table = ref(null)
 const currentMenu = ref(null)
 async function initData(data) {
-
   if (currentMenu.value) {
     $table.value.handleSearch()
     return
@@ -148,10 +147,10 @@ async function initData(data) {
 
   treeLoading.value = true
 
-  const res = Object.keys(apolloClients).map(n => {
+  const res = Object.keys(apolloClients).map((n) => {
     return {
       code: n,
-      name: n + '服务'
+      name: `${n}服务`,
     }
   })
 
@@ -233,7 +232,7 @@ const btnsColumns = [
               ),
             default: () => '删除', // 这是提示的内容
           },
-        )
+        ),
       ]
     },
   },
@@ -245,7 +244,7 @@ watch(
     await nextTick()
     if (v)
       queryItems.value.uri.value = `/${v.code}/graphql`
-      $table.value.handleSearch()
+    $table.value.handleSearch()
   },
 )
 
@@ -296,7 +295,7 @@ function handleDeleteBtn(id) {
     async onPositiveClick() {
       try {
         d.loading = true
-        //await api.deletePermission(id)
+        // await api.deletePermission(id)
         await deleteGraphqlResource(id)
         $message.success('删除成功')
         $table.value.handleSearch()
@@ -309,5 +308,4 @@ function handleDeleteBtn(id) {
     },
   })
 }
-
 </script>

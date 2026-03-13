@@ -39,7 +39,7 @@
 
 <script setup>
 import { ToggleTheme, ToggleTranslation } from '@/components'
-import { BeginnerGuide, BreadCrumb, Fullscreen, MenuCollapse, UserAvatar } from '@/layouts/components'
+import { BeginnerGuide, BreadCrumb, Fullscreen, UserAvatar } from '@/layouts/components'
 
 function handleLinkClick(link) {
   window.open(link)

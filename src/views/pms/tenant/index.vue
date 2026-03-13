@@ -12,9 +12,9 @@
         <div :class="isDark ? 'modern-divider-dark' : 'modern-divider'">
           <div class="divider-handle">
             <div class="handle-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
+              <span />
+              <span />
+              <span />
             </div>
           </div>
         </div>
@@ -24,15 +24,15 @@
         <TenantList
           ref="tenantListRef"
           v-model:current-tenant="currentTenant"
-          @add="handleAdd"
           :split-size="splitSize"
+          @add="handleAdd"
         />
       </template>
 
       <template #2>
         <div class="right-panel">
           <n-scrollbar style="max-height: 600px">
-            <div v-if="currentTenant" class="flex flex-col w-full">
+            <div v-if="currentTenant" class="w-full flex flex-col">
               <!-- 头部操作区域 -->
               <div class="header-section">
                 <div class="title-area">
@@ -50,41 +50,41 @@
                 </div>
                 <div class="action-buttons">
                   <n-button
-                    size="small"
                     v-if="action === 'edit' || action === 'add'"
+                    size="small"
                     type="success"
-                    @click="handleSave()"
                     class="action-btn"
+                    @click="handleSave()"
                   >
                     <i class="i-material-symbols:save mr-4 text-14" />
                     保存
                   </n-button>
                   <n-button
+                    v-if="action !== 'edit' && action !== 'add'"
                     size="small"
-                    v-if="action != 'edit' && action != 'add'"
                     type="primary"
-                    @click="handleEdit()"
                     class="action-btn"
+                    @click="handleEdit()"
                   >
                     <i class="i-material-symbols:edit-outline mr-4 text-14" />
                     编辑
                   </n-button>
                   <n-button
-                    size="small"
                     v-if="action === 'add' || action === 'edit'"
+                    size="small"
                     type="warning"
-                    @click="handleCancel()"
                     class="action-btn"
+                    @click="handleCancel()"
                   >
                     <i class="i-material-symbols:block mr-4 text-14" />
                     取消
                   </n-button>
                   <n-button
+                    v-policyRule="{ key: 'TestDataSource', variables: { dataSource: currentTenant.tenantDataSource } }"
                     size="small"
                     type="info"
-                    @click="testDataSource()"
-                    v-policyRule="{key: 'TestDataSource', variables: {dataSource: currentTenant.tenantDataSource}}"
                     class="action-btn"
+                    @click="testDataSource()"
                   >
                     <i class="i-material-symbols:checklist mr-4 text-14" />
                     测试数据源
@@ -92,8 +92,8 @@
                   <n-button
                     size="small"
                     type="tertiary"
-                    @click="publishDataSource()"
                     class="action-btn"
+                    @click="publishDataSource()"
                   >
                     <i class="i-material-symbols:checklist mr-4 text-14" />
                     发布数据源
@@ -204,7 +204,7 @@
                       </n-descriptions-item>
                       <n-descriptions-item label="企业简介">
                         <template v-if="action === 'edit' || action === 'add'">
-                          <n-input type="textarea" v-model:value="editData.intro" />
+                          <n-input v-model:value="editData.intro" type="textarea" />
                         </template>
                         <template v-else>
                           {{ currentTenant.intro ?? '--' }}
@@ -260,7 +260,7 @@
                               { label: '数据行', value: 'COLUMN' },
                               { label: '数据库', value: 'DATABASE' },
                               { label: '数据schema', value: 'SCHEMA' },
-                              { label: '混合', value: 'MIXED' }
+                              { label: '混合', value: 'MIXED' },
                             ]"
                           />
                         </template>
@@ -284,8 +284,7 @@
 
             <!-- 空状态 -->
             <div v-else class="empty-state">
-              <n-empty size="large" description="请从左侧选择租户查看详情">
-              </n-empty>
+              <n-empty size="large" description="请从左侧选择租户查看详情" />
             </div>
           </n-scrollbar>
         </div>
@@ -295,55 +294,54 @@
 </template>
 
 <script setup>
-import TenantList from './components/TenantList.vue';
-import { CommonPage, QuestionLabel } from '@/components';
-import { ref } from 'vue'
-import { saveTenant } from './apollo'
-import api from './api'
-import cloneDeep from 'lodash/cloneDeep'
 import { useDark } from '@vueuse/core'
-import {useAppStore} from '@/store'
+import cloneDeep from 'lodash/cloneDeep'
+import { ref } from 'vue'
+import { CommonPage, QuestionLabel } from '@/components'
+import { useAppStore } from '@/store'
+import api from './api'
+import { saveTenant } from './apollo'
+import TenantList from './components/TenantList.vue'
 
+defineOptions({ name: 'TenantMgt' })
 const appStore = useAppStore()
 const primaryColor = computed(() => appStore.primaryColor)
 const isDark = useDark()
 
-defineOptions({ name: 'TenantMgt' })
-
-const action = ref("")
+const action = ref('')
 const formRef = ref(null)
 
 const rules = {
-  tenantKey: {
+  'tenantKey': {
     required: true,
     message: '请输入编码',
-    trigger: 'blur'
+    trigger: 'blur',
   },
-  companyName: {
+  'companyName': {
     required: true,
     message: '请输入企业名称',
-    trigger: 'blur'
+    trigger: 'blur',
   },
-  contactPhone: {
+  'contactPhone': {
     pattern: /^1[3-9]\d{9}$/,
     message: '请输入正确的手机号码',
-    trigger: 'blur'
+    trigger: 'blur',
   },
-  expireTime: {
+  'expireTime': {
     required: true,
     message: '请选择过期时间',
-    trigger: 'blur'
+    trigger: 'blur',
   },
   'tenantDataSource.db': {
     required: true,
     message: '请输入数据库名',
-    trigger: 'blur'
+    trigger: 'blur',
   },
   'tenantDataSource.password': {
     required: true,
     message: '请输入密码',
-    trigger: 'blur'
-  }
+    trigger: 'blur',
+  },
 }
 
 const splitSize = ref(0.25)
@@ -367,7 +365,7 @@ function handleAdd() {
   action.value = 'add'
   editData.value = {
     status: '1',
-    tenantDataSource: {}
+    tenantDataSource: {},
   }
 }
 
@@ -379,7 +377,8 @@ async function handleSave() {
     action.value = ''
     $message.success('保存成功')
     tenantListRef.value?.handleSearch()
-  } catch (error) {
+  }
+  catch (error) {
     console.error(error)
     $message.error('保存失败')
   }
@@ -389,7 +388,8 @@ async function handleEdit() {
   editData.value = cloneDeep(currentTenant.value)
   if (currentTenant.value.tenantDataSource) {
     editData.value.tenantDataSource.password = ''
-  } else {
+  }
+  else {
     editData.value.tenantDataSource = {}
   }
   action.value = 'edit'
@@ -398,11 +398,6 @@ async function handleEdit() {
 function handleSplitResize(size) {
   splitSize.value = size
 }
-
-const data = [{
-  id: 1,
-  whateverLabel: 'Tenant 1',
-}]
 </script>
 
 <style scoped>

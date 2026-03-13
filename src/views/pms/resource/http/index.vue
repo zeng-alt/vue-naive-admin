@@ -1,6 +1,6 @@
 <template>
   <CommonPage :show-header="showHeader">
-    <template #action v-show="showHeader">
+    <template v-if="showHeader" #action>
       <NButton v-permission="'AddUser'" type="primary" @click="handleAdd()">
         <i class="i-material-symbols:add mr-4 text-18" />
         创建HTTP资源
@@ -14,10 +14,10 @@
       :scroll-x="1200"
       :columns="columns"
       :expand="true"
-      @on-checked="onChecked"
       :get-data="CONDITION_PAGE_HTTP_RESOURCE"
+      @on-checked="onChecked"
     >
-      <MeQueryItem label="所属菜单" >
+      <MeQueryItem label="所属菜单">
         <n-tree-select
           v-model:value="queryItems.menuId.value"
           :options="treeData"
@@ -42,7 +42,7 @@
           placeholder="请输入名称"
           clearable
         >
-          <template #password-invisible-icon></template>
+          <template #password-invisible-icon />
         </NInput>
       </ConditionItem>
       <ConditionItem v-model:value="queryItems.code" label="编码" type="string" :label-width="50">
@@ -54,7 +54,6 @@
         />
       </ConditionItem>
     </GraphqlCrud>
-
 
     <MeModal ref="modalRef" width="800px">
       <n-form
@@ -79,13 +78,13 @@
             <template #label>
               <QuestionLabel label="名称" content="标题" />
             </template>
-            <n-input v-model:value="modalForm.name" />
+            <NInput v-model:value="modalForm.name" />
           </n-form-item-gi>
           <n-form-item-gi :span="12" path="code" :rule="required">
             <template #label>
               <QuestionLabel label="编码" content="如果是菜单则对应前端路由的name，使用大驼峰" />
             </template>
-            <n-input v-model:value="modalForm.code" :disabled="modalAction === 'edit'"/>
+            <NInput v-model:value="modalForm.code" :disabled="modalAction === 'edit'" />
           </n-form-item-gi>
           <n-form-item-gi :span="12" path="enable">
             <template #label>
@@ -94,14 +93,14 @@
                 content="如果是菜单，禁用后将不添加到路由表，无法进入此页面"
               />
             </template>
-            <n-switch v-model:value="modalForm.enable">
+            <NSwitch v-model:value="modalForm.enable">
               <template #checked>
                 启用
               </template>
               <template #unchecked>
                 禁用
               </template>
-            </n-switch>
+            </NSwitch>
           </n-form-item-gi>
 
           <n-form-item-gi :span="12" path="method" :rule="required">
@@ -109,8 +108,8 @@
               <QuestionLabel label="协议" content="如果是菜单则对应前端路由的name，使用大驼峰" />
             </template>
             <n-select
-              size="small"
               v-model:value="modalForm.method"
+              size="small"
               clearable
               :options="option"
             />
@@ -123,9 +122,9 @@
                 content="前端组件的路径，以 / 开头，父级菜单可不填"
               />
             </template>
-            <n-input v-model:value="modalForm.path" >
-              <template #separator></template>
-            </n-input>
+            <NInput v-model:value="modalForm.path">
+              <template #separator />
+            </NInput>
           </n-form-item-gi>
         </n-grid>
       </n-form>
@@ -134,42 +133,42 @@
 </template>
 
 <script setup>
+import { NButton, NInput, NSwitch, NTag, NTooltip } from 'naive-ui'
+import { ref } from 'vue'
 import { GraphqlCrud, MeModal, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
-import { NButton, NFormItem, NInput, NTooltip, NSwitch, NTag } from 'naive-ui'
-import { ref } from 'vue'
-import { CONDITION_PAGE_HTTP_RESOURCE, saveHttpResource, deletePermission } from './apollo'
 import api from '@/views/pms/resource/menu/api'
 import QuestionLabel from '@/views/pms/resource/menu/components/QuestionLabel.vue'
+import { CONDITION_PAGE_HTTP_RESOURCE, deletePermission, saveHttpResource } from './apollo'
 
-const emit = defineEmits(['checked'])
+defineOptions({ name: 'HttpResourceMgt' })
 
-const props = defineProps({
+defineProps({
   showHeader: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 })
+
+const emit = defineEmits(['checked'])
 
 function onChecked(rowKeys) {
   emit('checked', rowKeys || [])
 }
-
-defineOptions({ name: 'HttpResourceMgt' })
 
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
 const queryItems = ref({
   menuId: {
     option: 'EQ',
-    value: null
+    value: null,
   },
   name: {},
   code: {},
   method: {
     option: 'EQ',
-    value: null
-  }
+    value: null,
+  },
 })
 
 const option = [
@@ -180,7 +179,7 @@ const option = [
   { label: 'PATCH', value: 'PATCH' },
   { label: 'HEAD', value: 'HEAD' },
   { label: 'OPTIONS', value: 'OPTIONS' },
-  { label: 'TRACE', value: 'TRACE' }
+  { label: 'TRACE', value: 'TRACE' },
 ]
 
 const required = {
@@ -199,7 +198,7 @@ const {
   handleEdit,
 } = useCrud({
   name: '参数',
-  initForm: {enable: true},
+  initForm: { enable: true },
   doCreate: saveHttpResource,
   doDelete: deletePermission,
   doUpdate: saveHttpResource,
@@ -215,7 +214,7 @@ async function initData() {
   const map = new Map()
 
   function traverse(nodes) {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       map.set(node.id, node.name)
       if (node.children && node.children.length) {
         traverse(node.children)
@@ -233,10 +232,9 @@ function handleMenu(id) {
   return mapData.value.get(id)
 }
 
-
 async function handleEnable(item) {
   try {
-    await saveHttpResource({id: item.id, enable: !item.enable})
+    await saveHttpResource({ id: item.id, enable: !item.enable })
     $message.success('操作成功')
     $table.value?.handleSearch()
   }
@@ -274,10 +272,11 @@ const columns = [
             default: () => menuName,
           },
         )
-      } else  {
+      }
+      else {
         return '无父菜单'
       }
-    }
+    },
   },
   {
     title: '协议',
@@ -286,10 +285,10 @@ const columns = [
     ellipsis: { tooltip: true },
     render: (row) => {
       return h(
-          NTag,
-          { type: 'success' },
-          { default: () => row.method },
-        )
+        NTag,
+        { type: 'success' },
+        { default: () => row.method },
+      )
     },
   },
   {
@@ -326,7 +325,7 @@ const columns = [
     hideInExcel: true,
     render(row) {
       return [
-      h(
+        h(
           NTooltip,
           { trigger: 'hover' },
           {
@@ -371,7 +370,7 @@ const columns = [
               ),
             default: () => '删除', // 这是提示的内容
           },
-        )
+        ),
       ]
     },
   },

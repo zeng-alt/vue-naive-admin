@@ -1,8 +1,8 @@
-import { useAuthStore } from '@/store'
 import { ApolloClient, ApolloLink, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from '@apollo/client/link/context'
 import { onError } from '@apollo/client/link/error'
 import { ApolloClients, DefaultApolloClient } from '@vue/apollo-composable'
+import { useAuthStore } from '@/store'
 
 // 基础网关地址
 const GATEWAY_URL = import.meta.env.VITE_AXIOS_BASE_URL
@@ -28,7 +28,7 @@ const authLink = setContext((_, { headers }) => {
 })
 
 // 移除 mutation variables 中的 __typename
-const removeTypename = (obj) => {
+function removeTypename(obj) {
   if (obj === null || obj === undefined) {
     return obj
   }
@@ -61,7 +61,6 @@ const transformLink = new ApolloLink((operation, forward) => {
   return forward(operation)
 })
 
-
 let isConfirming = false
 
 // ——— 3. 网络错误拦截：拿到 HTTP status ———
@@ -79,18 +78,20 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
         // Maybe clear auth state and redirect to login
         console.warn(`[GraphQL Error Link] Unauthorized/Forbidden access detected for ${operation.operationName}.`)
         $message.error(`[GraphQL Error Link] Unauthorized/Forbidden ${message}`)
-      } else if (extensions?.classification === 'NOT_FOUND') {
+      }
+      else if (extensions?.classification === 'NOT_FOUND') {
         console.warn(`[GraphQL Error Link] Not found access detected for ${operation.operationName}.`)
-      } else if (extensions?.classification === 'BAD_REQUEST') {
+      }
+      else if (extensions?.classification === 'BAD_REQUEST') {
         console.warn(`${operation.operationName} - ${message}`)
         window.$notification?.warning({
           title: 'Error',
           content: message,
         })
-      } else if (extensions?.classification === 'INTERNAL_ERROR') {
-        window.$message?.error('服务器发生异常: ' + message)
       }
-
+      else if (extensions?.classification === 'INTERNAL_ERROR') {
+        window.$message?.error(`服务器发生异常: ${message}`)
+      }
 
       // You could potentially retry based on the error type here using forward(operation)
       const obs = forward(operation)
@@ -188,7 +189,7 @@ function createApolloClient(name) {
   // 按执行顺序依次是：认证 → 响应拦截 → HTTP 请求
   const link = ApolloLink.from([
     authLink,
-    transformLink,  // 添加转换链接
+    transformLink, // 添加转换链接
     errorLink,
     // responseInterceptorLink,
     httpLink,

@@ -50,8 +50,8 @@ export function saveHttpResource(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_HTTP_RESOURCE,
     variables: {
-      httpResourceInput: data
-    }
+      httpResourceInput: data,
+    },
   })
 }
 
@@ -59,7 +59,7 @@ export function deletePermission(ids) {
   return apolloClients.main.mutate({
     mutation: DELETE_PERMISSION,
     variables: {
-      ids
-    }
+      ids,
+    },
   })
 }

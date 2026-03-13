@@ -1,8 +1,7 @@
-import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
+import { apolloClients } from '@/utils/graphql'
 
-
-export const FUZZY_PAGE_TENANT  = gql`
+export const FUZZY_PAGE_TENANT = gql`
 query fuzzyPageTenant($filter: TenantInput, $pageQuery: PageQuery) {
   fuzzyPageTenant(
     filter: $filter,
@@ -62,8 +61,8 @@ export function saveTenant(data) {
   return apolloClients.tenant.mutate({
     mutation: SAVE_TENANT,
     variables: {
-      tenantInput: data
-    }
+      tenantInput: data,
+    },
   })
 }
 

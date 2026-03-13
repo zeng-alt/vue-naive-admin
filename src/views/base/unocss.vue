@@ -22,7 +22,7 @@
     </p>
 
     <div mt-20 w-350 f-c-c flex-col>
-      <div flex flex-wrap justify-around rounded-10 p-10 card-border>
+      <div flex flex-wrap justify-around card-border rounded-10 p-10>
         <div m-20 h-50 w-50 f-c-c rounded-5 p-10 border="1 solid">
           <span h-6 w-6 rounded-3 bg-black dark:bg-white />
         </div>

@@ -7,7 +7,7 @@
           @refresh="refresh"
         />
       </n-spin>
-      <div class="ml-40 w-0 flex-1" >
+      <div class="ml-40 w-0 flex-1">
         <template v-if="dictTypeId">
           <div class="flex justify-between">
             <h3 class="mb-12">
@@ -38,8 +38,8 @@
           >
             <MeQueryItem size="small" label="字典标签" type="string" :label-width="70" :content-width="150">
               <n-input
-                size="small"
                 v-model:value="queryItems.dictLabel"
+                size="small"
                 type="text"
                 placeholder="请输入字典标签"
                 clearable
@@ -47,8 +47,8 @@
             </MeQueryItem>
             <MeQueryItem size="small" label="字典值" type="string" :label-width="50" :content-width="150">
               <n-input
-                size="small"
                 v-model:value="queryItems.dictValue"
+                size="small"
                 type="text"
                 placeholder="字典值"
                 clearable
@@ -77,7 +77,7 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <n-input v-model:value="modalForm.dictLabel" :disabled="modalAction == 'view'"/>
+          <n-input v-model:value="modalForm.dictLabel" :disabled="modalAction === 'view'" />
         </n-form-item>
         <n-form-item
           label="字典键值"
@@ -109,7 +109,8 @@
           <n-input-number v-model:value="modalForm.dictSort" :min="0" />
         </n-form-item>
         <n-grid :cols="24" :x-gap="24">
-          <n-form-item-gi :span="12"
+          <n-form-item-gi
+            :span="12"
             label="回显样式"
             path="listClass"
             :rule="{
@@ -117,11 +118,12 @@
               trigger: ['input', 'blur'],
             }"
           >
-            <n-select v-model:value="modalForm.listClass" :options="options"/>
-
+            <n-select v-model:value="modalForm.listClass" :options="options" />
           </n-form-item-gi>
-          <n-form-item-gi :span="12" >
-            <n-tag :show="modalForm.dictLabel" :type="modalForm.listClass" :bordered="false">{{ modalForm.dictLabel }}</n-tag>
+          <n-form-item-gi :span="12">
+            <n-tag :show="modalForm.dictLabel" :type="modalForm.listClass" :bordered="false">
+              {{ modalForm.dictLabel }}
+            </n-tag>
           </n-form-item-gi>
         </n-grid>
 
@@ -161,18 +163,17 @@
           <n-input v-model:value="modalForm.remark" type="textarea" />
         </n-form-item>
       </n-form>
-
     </MeModal>
   </CommonPage>
 </template>
 
 <script setup>
-import DictList from './components/DictList.vue'
-import { useCrud } from '@/composables'
-import { NTooltip, NButton, NSwitch } from 'naive-ui'
-import { GraphqlCrud, MeQueryItem, MeModal } from '@/components'
-import { FUZZY_PAGE_DICT_DATA, saveDictData, deleteDictData } from './apollo'
+import { NButton, NSwitch, NTooltip } from 'naive-ui'
 import { ref, watch } from 'vue'
+import { GraphqlCrud, MeModal, MeQueryItem } from '@/components'
+import { useCrud } from '@/composables'
+import { deleteDictData, FUZZY_PAGE_DICT_DATA, saveDictData } from './apollo'
+import DictList from './components/DictList.vue'
 
 defineOptions({ name: 'DictMgt' })
 
@@ -180,58 +181,54 @@ const $table = ref(null)
 const treeLoading = ref(false)
 const dictTypeId = ref(undefined)
 
-
 const queryItems = ref({
-  dictType: {}
+  dictType: {},
 })
 
 const options = [
   {
-    label: "默认",
-    value: "default",
+    label: '默认',
+    value: 'default',
   },
   {
-    label: "次要",
-    value: "tertiary"
+    label: '次要',
+    value: 'tertiary',
   },
   {
-    label: "主要",
-    value: "primary"
+    label: '主要',
+    value: 'primary',
   },
   {
-    label: "信息",
-    value: "info",
+    label: '信息',
+    value: 'info',
   },
   {
-    label: "成功",
-    value: "success",
+    label: '成功',
+    value: 'success',
   },
   {
-    label: "警告",
-    value: "warning",
+    label: '警告',
+    value: 'warning',
   },
   {
-    label: "错误",
-    value: "error",
+    label: '错误',
+    value: 'error',
   },
 ]
 
 const initForm = {
-    dictType: {
-      id: dictTypeId.value
-    },
-    listClass: "tertiary",
-    isDefault: false,
-    status: true,
-    dictSort: 0,
+  dictType: {
+    id: dictTypeId.value,
+  },
+  listClass: 'tertiary',
+  isDefault: false,
+  status: true,
+  dictSort: 0,
 }
 
 watch(() => dictTypeId.value, () => {
   initForm.dictType.id = dictTypeId.value
 })
-
-
-
 
 const {
   modalRef,
@@ -367,7 +364,7 @@ const columns = [
               ),
             default: () => '删除', // 这是提示的内容
           },
-        )
+        ),
       ]
     },
   },
@@ -389,17 +386,16 @@ async function handleEnable(row) {
 }
 
 function handleClick(data) {
-  queryItems.value.dictType = {id: data.id}
+  queryItems.value.dictType = { id: data.id }
   dictTypeId.value = data.id
   console.log(data)
 }
 
 function handleFiltersChange(data) {
-  data.dictType  = {id: dictTypeId.value}
+  data.dictType = { id: dictTypeId.value }
 }
 
 function refresh() {
   queryItems.value.dictType = {}
 }
-
 </script>

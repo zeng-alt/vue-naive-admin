@@ -1,6 +1,5 @@
-import { useQuery } from '@vue/apollo-composable'
-import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
+import { apolloClients } from '@/utils/graphql'
 
 export const SAVE_ROLE = gql`
   mutation SaveRole($roleInput: RoleInput) {
@@ -52,8 +51,8 @@ export function saveRole(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_ROLE,
     variables: {
-      roleInput: data
-    }
+      roleInput: data,
+    },
   })
 }
 

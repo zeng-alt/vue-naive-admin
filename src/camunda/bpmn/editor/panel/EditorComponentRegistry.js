@@ -33,7 +33,7 @@ class ComponentRegistry {
 
   // 获取所有已注册的组件类型
   getRegisteredTypes() {
-    return Array.from(this.components.keys())
+    return [...this.components.keys()]
   }
 
   // 注销组件

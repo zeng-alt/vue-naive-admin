@@ -1,26 +1,26 @@
 <template>
   <div>
-    <n-space vertical :size="12">
-      <div class="flex justify-between items-center">
+    <NSpace vertical :size="12">
+      <div class="flex items-center justify-between">
         <h3>字典</h3>
         <div class="flex gap-2">
-          <n-tooltip trigger="hover">
+          <NTooltip trigger="hover">
             <template #trigger>
-              <n-button type="warning" @click="refresh()" quaternary>
+              <NButton type="warning" quaternary @click="refresh()">
                 <i class="i-material-symbols:refresh mr-2" />
-              </n-button>
+              </NButton>
             </template>
             重置
-          </n-tooltip>
+          </NTooltip>
         </div>
       </div>
 
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <div class="flex gap-4">
           <ConditionItem v-model:value="queryItems.dictCode" size="small" type="string" :content-width="200">
             <NInput
-              size="small"
               v-model:value="queryItems.dictCode.value"
+              size="small"
               type="text"
               placeholder="字典键"
               clearable
@@ -28,8 +28,8 @@
           </ConditionItem>
           <ConditionItem v-model:value="queryItems.dictName" size="small" type="string" :content-width="200">
             <NInput
-              size="small"
               v-model:value="queryItems.dictName.value"
+              size="small"
               type="text"
               placeholder="字典名"
               clearable
@@ -37,16 +37,15 @@
           </ConditionItem>
         </div>
 
-        <n-tooltip trigger="hover">
+        <NTooltip trigger="hover">
           <template #trigger>
-            <n-button type="primary" quaternary @click="handleAdd()">
+            <NButton type="primary" quaternary @click="handleAdd()">
               <i class="i-material-symbols:add mr-4 text-14" />
-            </n-button>
+            </NButton>
           </template>
           新增
-        </n-tooltip>
+        </NTooltip>
       </div>
-
 
       <!-- <n-infinite-scroll
         style="height: 240px"
@@ -150,128 +149,128 @@
       </n-infinite-scroll> -->
 
       <div class="table-container" @scroll="handleScroll">
-        <n-list
+        <NList
           bordered
           hoverable
           clickable
         >
           <template #header>
             <div class="flex items-center gap-2">
-              <n-tag
+              <NTag
                 size="medium"
                 class="w-32"
                 type="primary"
               >
                 字典键
-              </n-tag>
+              </NTag>
               <div class="flex-1">
-                <n-tag
+                <NTag
                   size="medium"
                   class="w-full"
                   type="primary"
                 >
                   字典名
-                </n-tag>
+                </NTag>
               </div>
               <div class="flex-1">
-                <n-tag
+                <NTag
                   size="medium"
                   class="w-full"
                   type="primary"
                 >
                   备注
-                </n-tag>
+                </NTag>
               </div>
               <div class="w-20 text-right">
                 <span class="whitespace-nowrap">操作</span>
               </div>
             </div>
           </template>
-          <n-list-item
+          <NListItem
             v-for="item in dataList"
-            clickable
             :key="item.id"
+            clickable
             :class="{ 'selected-item': selectedRowId === item.id }"
           >
             <div class="flex items-center gap-2">
-              <n-button
-                @click="handleRowClick(item)"
+              <NButton
                 size="tiny"
                 class="w-32 cursor-pointer"
+                @click="handleRowClick(item)"
               >
                 {{ item.dictCode }}
-              </n-button>
+              </NButton>
               <div
                 class="flex-1 cursor-pointer"
                 @dblclick="item.isEditingDictName = true"
               >
-                <n-input
+                <NInput
                   v-if="item.isEditingDictName"
-                  size="tiny"
                   v-model:value="item.dictName"
+                  size="tiny"
                   type="text"
                   placeholder="字典名"
                   clearable
                   class="flex-1"
                   @blur="handleUpdate(item, 'dictName'); item.isEditingDictName = false"
                 />
-                <div v-else class="text">{{ item.dictName || '--' }}</div>
+                <div v-else class="text">
+                  {{ item.dictName || '--' }}
+                </div>
               </div>
               <div
                 class="flex-1 cursor-pointer"
                 @dblclick="item.isEditingRemark = true"
               >
-                <n-input
+                <NInput
                   v-if="item.isEditingRemark"
-                  size="tiny"
                   v-model:value="item.remark"
+                  size="tiny"
                   type="textarea"
                   placeholder="备注"
                   clearable
                   class="flex-1"
                   @blur="handleUpdate(item, 'remark'); item.isEditingRemark = false"
                 />
-                <n-ellipsis style="max-width: 150px" v-else class="text" :tooltip="{ placement: 'top' }">
+                <n-ellipsis v-else style="max-width: 150px" class="text" :tooltip="{ placement: 'top' }">
                   {{ item.remark || '--' }}
                 </n-ellipsis>
               </div>
               <div class="w-20 text-right">
-                <n-tooltip trigger="hover">
+                <NTooltip trigger="hover">
                   <template #trigger>
-                    <n-button type="primary" size="tiny" quaternary @click="handleDelete(item)">
+                    <NButton type="primary" size="tiny" quaternary @click="handleDelete(item)">
                       <i class="i-fe:x" />
-                    </n-button>
+                    </NButton>
                   </template>
                   删除
-                </n-tooltip>
+                </NTooltip>
               </div>
             </div>
-          </n-list-item>
-        </n-list>
+          </NListItem>
+        </NList>
       </div>
-
-    </n-space>
+    </NSpace>
   </div>
 
-  <ResAddOrEdit  ref="typeModalRef" @refresh="refresh"></ResAddOrEdit>
+  <ResAddOrEdit ref="typeModalRef" @refresh="refresh" />
 </template>
 
 <script setup>
-import { CONDITION_PAGE_DICT_TYPE, deleteDictType, saveDictType } from '../apollo'
-import { ref, watch, computed, nextTick } from 'vue'
-import { ConditionItem } from '@/components'
-import { NButton, NSpace, NInput, NTooltip, NList, NListItem, NTag } from 'naive-ui'
 import { useQuery } from '@vue/apollo-composable'
+import { NButton, NInput, NList, NListItem, NSpace, NTag, NTooltip } from 'naive-ui'
+import { computed, nextTick, ref, watch } from 'vue'
+import { ConditionItem } from '@/components'
 import { defaultPrimaryColor } from '@/settings'
 import { useAppStore } from '@/store'
+import { CONDITION_PAGE_DICT_TYPE, deleteDictType, saveDictType } from '../apollo'
 import ResAddOrEdit from './ResAddOrEdit.vue'
 
 defineOptions({ name: 'DictDataMgt' })
 
+const emit = defineEmits(['click', 'refresh'])
 const appStore = useAppStore()
 const isDark = computed(() => appStore.isDark)
-
-const emit = defineEmits(['click', 'refresh'])
 
 const loading = ref(true)
 const noMore = ref(false)
@@ -285,12 +284,12 @@ function handleLoad() {
 const queryItems = ref({
   dictCode: {
     value: '',
-    option: 'EQ'
+    option: 'EQ',
   },
   dictName: {
     value: '',
-    option: 'EQ'
-  }
+    option: 'EQ',
+  },
 })
 
 const after = ref(null)
@@ -304,13 +303,13 @@ const variables = computed(() => ({
   filter: {
     dictCode: {
       value: queryItems.value.dictCode.value,
-      option: queryItems.value.dictCode.option
+      option: queryItems.value.dictCode.option,
     },
     dictName: {
       value: queryItems.value.dictName.value,
-      option: queryItems.value.dictName.option
-    }
-  }
+      option: queryItems.value.dictName.option,
+    },
+  },
 }))
 
 const { result, refetch } = useQuery(CONDITION_PAGE_DICT_TYPE, variables)
@@ -332,14 +331,15 @@ watch(edges, (newEdges) => {
       dataList.value = [...dataList.value, ...newEdges.map(e => ({
         ...e.node,
         isEditingDictName: false,
-        isEditingRemark: false
+        isEditingRemark: false,
       }))]
-    } else {
+    }
+    else {
       // 首次加载或重置时，替换数据
       dataList.value = newEdges.map(e => ({
         ...e.node,
         isEditingDictName: false,
-        isEditingRemark: false
+        isEditingRemark: false,
       }))
     }
     hasNextPage.value = !!pageInfo.value.hasNextPage
@@ -349,17 +349,17 @@ watch(edges, (newEdges) => {
 const detailResult = ref([])
 const selectedRowId = ref(null)
 
-const refresh = async () => {
+async function refresh() {
   // 重置查询条件
   queryItems.value = {
     dictCode: {
       value: '',
-      option: 'EQ'
+      option: 'EQ',
     },
     dictName: {
       value: '',
-      option: 'EQ'
-    }
+      option: 'EQ',
+    },
   }
   // 先重置 after
   after.value = null
@@ -373,26 +373,24 @@ const refresh = async () => {
   console.log('refresh')
 }
 
-const handleUpdate = (data, key) => {
+function handleUpdate(data, key) {
   // TODO: 处理更新逻辑
   console.log('更新数据:', data, key)
   saveDictType({
     id: data.id,
-    [key]: data[key]
+    [key]: data[key],
   })
 }
 
-
 const typeModalRef = ref(null)
 
-const handleAdd = () => {
+function handleAdd() {
   typeModalRef.value?.handleOpen({
     title: '新增字典',
   })
 }
 
-const handleDelete = (data) => {
-
+function handleDelete(data) {
   const d = $dialog.warning({
     content: '确定删除？',
     title: '提示',
@@ -415,7 +413,7 @@ const handleDelete = (data) => {
   })
 }
 
-const handleRowClick = (row) => {
+function handleRowClick(row) {
   selectedRowId.value = row.id
   emit('click', row)
 }
@@ -428,7 +426,7 @@ watch(detailResult, (value) => {
 })
 
 // 处理滚动事件
-const handleScroll = (e) => {
+function handleScroll(e) {
   const { scrollTop, scrollHeight, clientHeight } = e.target
 
   // 判断是否向下滚动
@@ -454,8 +452,9 @@ const handleScroll = (e) => {
 }
 
 // 加载更多数据
-const loadMore = async () => {
-  if (isLoading.value) return
+async function loadMore() {
+  if (isLoading.value)
+    return
 
   if (!hasNextPage.value) {
     $message.warning('没有更多数据了')
@@ -467,11 +466,11 @@ const loadMore = async () => {
     // 触发查询更新
     after.value = pageInfo.value.endCursor
     refetch()
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
-
 </script>
 
 <style scoped>

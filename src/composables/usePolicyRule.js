@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { usePolicyRuleStore } from '@/store'
 import api from '@/api'
+import { usePolicyRuleStore } from '@/store'
 
 export function usePolicyRule(key) {
   const result = ref(null)
@@ -10,13 +10,15 @@ export function usePolicyRule(key) {
 
   if (localData) {
     result.value = localData
-  } else {
+  }
+  else {
     api.getPolicyRule(key, true).then((data) => {
       if (data) {
         store.setPolicyRules(key, data.condition)
         result.value = store.getPolicyRule(key)
-      } else {
-        console.warn(key + ' 权限规则数据为空')
+      }
+      else {
+        console.warn(`${key} 权限规则数据为空`)
         result.value = SpelExpressionEvaluator.compile(true)
         // throw new Error(key + ' 获取权限规则数据为空')
       }

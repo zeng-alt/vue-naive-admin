@@ -1,8 +1,7 @@
-import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
+import { apolloClients } from '@/utils/graphql'
 
-
-export const FUZZY_PAGE_PERMISSION_RULE  = gql`
+export const FUZZY_PAGE_PERMISSION_RULE = gql`
 query FuzzyPagePermissionRule($filter: PermissionRuleInput, $pageQuery: PageQuery) {
   fuzzyPagePermissionRule(
     filter: $filter,
@@ -41,7 +40,6 @@ query FindPolicyRule($filter: PolicyRuleInput) {
 }
 `
 
-
 export const SAVE_POLICY_RULE = gql`
 mutation SavePolicyRule($policyRuleInput: PolicyRuleInput) {
   savePolicyRule(
@@ -53,22 +51,21 @@ mutation SavePolicyRule($policyRuleInput: PolicyRuleInput) {
 }
 `
 
-export function findPolicyRule(permissionId, preAuth=true,  fetchPolicy = 'cache-first') {
+export function findPolicyRule(permissionId, preAuth = true, fetchPolicy = 'cache-first') {
   return apolloClients.main.query({
     query: Find_POLICY_RULE,
     variables: {
-      filter: {preAuth: preAuth, permission: {id: permissionId}}
+      filter: { preAuth, permission: { id: permissionId } },
     },
-    fetchPolicy
+    fetchPolicy,
   })
 }
-
 
 export function savePolicyRule(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_POLICY_RULE,
     variables: {
-      policyRuleInput: data
+      policyRuleInput: data,
     },
   })
 }

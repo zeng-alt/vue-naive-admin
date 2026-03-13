@@ -1,9 +1,8 @@
-
 import { defineStore } from 'pinia'
 
 export const useParameterStore = defineStore('parameter', {
   state: () => ({
-    parameter: new Map()
+    parameter: new Map(),
   }),
   actions: {
     getParameter(key) {
@@ -17,7 +16,8 @@ export const useParameterStore = defineStore('parameter', {
         return false
       try {
         this.parameter.set(key, value)
-      } catch (e) {
+      }
+      catch (e) {
         console.error('setDict Error:', e)
         return false
       }
@@ -28,7 +28,8 @@ export const useParameterStore = defineStore('parameter', {
         return false
       try {
         this.parameter.remove(key)
-      } catch (e) {
+      }
+      catch (e) {
         console.error('remove Error:', e)
         return false
       }

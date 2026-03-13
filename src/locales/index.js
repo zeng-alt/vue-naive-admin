@@ -8,7 +8,7 @@ export async function setupI18n(app) {
 
   // 仅加载默认语言和当前保存的语言（如果不同）
   const messages = {
-    [DEFAULT_LOCALE]: await loadLocaleMessages(DEFAULT_LOCALE)
+    [DEFAULT_LOCALE]: await loadLocaleMessages(DEFAULT_LOCALE),
   }
 
   if (savedLocale !== DEFAULT_LOCALE) {
@@ -43,4 +43,3 @@ export async function setI18nLanguage(i18n, locale) {
   localStorage.setItem('locale', locale)
   document.querySelector('html').setAttribute('lang', locale)
 }
-

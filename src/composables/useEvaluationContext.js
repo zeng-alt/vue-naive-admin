@@ -1,11 +1,11 @@
+import dayjs from 'dayjs'
+import { StandardContext } from 'spel2js'
 // composables/useSpelContext.js
 import { computed } from 'vue'
 import { useUserStore } from '@/store'
-import { StandardContext } from 'spel2js'
-import dayjs from 'dayjs'
 
 // 获取客户端真实IP
-const getClientIP = () => {
+function getClientIP() {
   // 从请求头中获取IP
   const headers = window.performance?.getEntriesByType('resource')?.[0]?.requestHeaders
   if (headers) {
@@ -28,8 +28,8 @@ const getClientIP = () => {
 const clientIP = getClientIP()
 
 // 获取当前环境变量
-const getEnvVariables = () => {
-  const now = dayjs();
+function getEnvVariables() {
+  const now = dayjs()
   // const now = dayjs().format('YYYY-MM-DD HH:mm:ss');
   return {
     now,
@@ -51,19 +51,19 @@ export function useEvaluationContext() {
       authenticated: true,
       details: {
         remoteAddress: clientIP,
-        sessionId: null
+        sessionId: null,
       },
       authorities: [],
-      principal
+      principal,
     }
 
     const standardContext = StandardContext.create(authentication, principal)
     standardContext.env = env
 
-    return standardContext;
+    return standardContext
   })
 
   return {
-    context
+    context,
   }
 }

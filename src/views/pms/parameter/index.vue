@@ -33,7 +33,6 @@
       </ConditionItem>
     </GraphqlCrud>
 
-
     <MeModal ref="modalRef" width="520px">
       <n-form
         ref="modalFormRef"
@@ -101,12 +100,12 @@
 </template>
 
 <script setup>
+import { NButton, NFormItem, NInput, NTooltip } from 'naive-ui'
+import { ref } from 'vue'
 import { GraphqlCrud, MeModal } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils'
-import { NButton, NFormItem, NInput, NTooltip } from 'naive-ui'
-import { ref } from 'vue'
-import { PAGE_PARAMETER, deleteParameter, saveParameter } from './apollo'
+import { deleteParameter, PAGE_PARAMETER, saveParameter } from './apollo'
 
 defineOptions({ name: 'ParameterMgt' })
 
@@ -125,8 +124,6 @@ const {
   handleAdd,
   handleDelete,
   handleEdit,
-  handleOpen,
-  handleSave,
 } = useCrud({
   name: '参数',
   initForm: {},
@@ -184,7 +181,7 @@ const columns = [
     hideInExcel: true,
     render(row) {
       return [
-      h(
+        h(
           NTooltip,
           { trigger: 'hover' },
           {
@@ -229,7 +226,7 @@ const columns = [
               ),
             default: () => '删除', // 这是提示的内容
           },
-        )
+        ),
       ]
     },
   },

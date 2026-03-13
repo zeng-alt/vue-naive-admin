@@ -1,6 +1,5 @@
 <template>
-
-  <div class="flex justify-between items-center">
+  <div class="flex items-center justify-between">
     <h3 class="page-title">
       <i class="i-material-symbols:list mr-8" />
       租户列表
@@ -8,15 +7,15 @@
     <div class="flex gap-2">
       <n-tooltip trigger="hover">
         <template #trigger>
-          <n-button type="primary" @click="handleAdd()" quaternary>
+          <NButton type="primary" quaternary @click="handleAdd()">
             <i class="i-material-symbols:add mr-4 text-14" />
-          </n-button>
+          </NButton>
         </template>
         新增
       </n-tooltip>
     </div>
   </div>
-  <div class="flex mr-20">
+  <div class="mr-20 flex">
     <n-input
       v-model:value="queryItem.companyName"
       placeholder="公司名称 模糊查询[_或%]"
@@ -45,12 +44,12 @@
               <i class="i-material-symbols:business text-4xl" />
             </template>
             <template #extra>
-              <n-button type="primary" @click="handleAdd()" strong>
+              <NButton type="primary" strong @click="handleAdd()">
                 <template #icon>
                   <i class="i-material-symbols:add" />
                 </template>
                 创建第一个租户
-              </n-button>
+              </NButton>
             </template>
           </n-empty>
         </div>
@@ -78,12 +77,12 @@
 </template>
 
 <script setup>
-import { NButton, NEllipsis } from 'naive-ui'
-import { deleteTenant } from '../apollo.js'
-import { ref, withModifiers, onMounted, h } from 'vue'
 import { useLazyQuery } from '@vue/apollo-composable'
-import { FUZZY_PAGE_TENANT } from '../apollo.js'
+import { NButton, NEllipsis } from 'naive-ui'
+import { h, onMounted, ref, withModifiers } from 'vue'
 import { apolloClients } from '@/utils/graphql'
+import { deleteTenant } from '../apollo.js'
+import { FUZZY_PAGE_TENANT } from '../apollo.js'
 
 const props = defineProps({
   currentTenant: {
@@ -92,8 +91,8 @@ const props = defineProps({
   },
   splitSize: {
     type: Number,
-    default: 0.25
-  }
+    default: 0.25,
+  },
 })
 
 const emit = defineEmits(['update:currentTenant', 'add'])
@@ -104,10 +103,10 @@ function onSelect(keys, option, { action, node }) {
 
 const queryItem = {
   companyName: undefined,
-  licenseNumber: undefined
+  licenseNumber: undefined,
 }
 
-const pageQuery  = {
+const pageQuery = {
   after: undefined,
   first: 10,
 }
@@ -117,8 +116,8 @@ const { result, load, refetch } = useLazyQuery(
   { filter: queryItem, pageQuery },
   {
     clientId: 'tenant',
-    fetchPolicy: 'network-only'
-  }
+    fetchPolicy: 'network-only',
+  },
 )
 
 const treeData = ref([])
@@ -135,13 +134,14 @@ watch(result, (newResult) => {
 
 async function handleLoad() {
   if (loading.value || noMore.value) {
-    return;
+    return
   }
   try {
     loading.value = true
-    await refetch({filter: queryItem, pageQuery})
+    await refetch({ filter: queryItem, pageQuery })
     loading.value = false
-  } catch (e) {
+  }
+  catch (e) {
     console.error(e)
     loading.value = false
   }
@@ -155,7 +155,6 @@ async function handleDelete(item) {
         $message.loading('正在删除', { key: 'deleteTenant' })
         await deleteTenant(item.id)
         $message.success('删除成功', { key: 'deleteTenant' })
-        emit('refresh')
         handleSearch()
         emit('update:currentTenant', null)
       }
@@ -165,7 +164,6 @@ async function handleDelete(item) {
       }
     },
   })
-
 }
 
 function handleAdd() {
@@ -177,15 +175,15 @@ function handleSearch() {
   treeData.value = []
   pageQuery.after = undefined
   noMore.value = false
-  refetch({filter: queryItem, pageQuery})
+  refetch({ filter: queryItem, pageQuery })
 }
 
-function renderLabel({ option, selected })  {
+function renderLabel({ option, selected }) {
   return h('div', {
     class: [
       'flex items-center gap-2',
-      selected ? 'n-tree-node-content--selected' : ''
-    ]
+      selected ? 'n-tree-node-content--selected' : '',
+    ],
   }, [
     h(NEllipsis, { style: { width: '80px' } }, { default: () => option.companyName || '--' }),
     props.splitSize >= 0.2 && h(NEllipsis, { style: { width: '80px', marginLeft: '10px' } }, { default: () => option.licenseNumber || '--' }),
@@ -193,7 +191,7 @@ function renderLabel({ option, selected })  {
     props.splitSize >= 0.4 && h(NEllipsis, { style: { width: '120px', marginLeft: '20px' } }, { default: () => option.contactPhone || '--' }),
     props.splitSize >= 0.5 && h(NEllipsis, { style: { width: '150px', marginLeft: '20px' } }, { default: () => option.address || '--' }),
     props.splitSize >= 0.6 && h(NEllipsis, { style: { width: '100px', marginLeft: '20px' } }, { default: () => option.domain || '--' }),
-    props.splitSize >= 0.7 && h(NEllipsis, { style: { width: '80px', marginLeft: '20px' } }, { default: () => option.accountCount || '--' })
+    props.splitSize >= 0.7 && h(NEllipsis, { style: { width: '80px', marginLeft: '20px' } }, { default: () => option.accountCount || '--' }),
   ])
 }
 
@@ -218,16 +216,14 @@ function renderSuffix({ option }) {
   ]
 }
 
-
 onMounted(() => {
   apolloClients.tenant.cache.evict({ fieldName: 'fuzzyPageTenant' })
   apolloClients.tenant.cache.gc()
   load()
 })
 
-
 defineExpose({
-  handleSearch
+  handleSearch,
 })
 
 // onUnmounted(() => {

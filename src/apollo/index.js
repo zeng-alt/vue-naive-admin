@@ -51,21 +51,19 @@ export function getTenants(data) {
   return apolloClients.tenant.query({
     query: GET_TENANTS,
     variables: {
-      tenantInput: data
-    }
+      tenantInput: data,
+    },
   })
 }
-
 
 export function getParameter(data) {
   return apolloClients.main.query({
     query: GET_PARAMETER,
     variables: {
-      parameterInput: data
-    }
+      parameterInput: data,
+    },
   })
 }
-
 
 // 获取枚举列表
 export async function fetchDictData(dictCode) {
@@ -76,7 +74,7 @@ export async function fetchDictData(dictCode) {
       }
     `,
     variables: {
-      dictDataInput: {dictType: {dictCode}}
-    }
+      dictDataInput: { dictType: { dictCode } },
+    },
   })
 }

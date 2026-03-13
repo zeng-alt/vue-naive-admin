@@ -26,7 +26,7 @@
       <li
         v-for="item in icons"
         :key="item"
-        class="w-160 f-c-c flex-col cursor-pointer rounded-12 px-12 py-24 card-border auto-bg"
+        class="w-160 f-c-c flex-col cursor-pointer card-border rounded-12 auto-bg px-12 py-24"
         @click="copy(`&lt;i class=&quot;${item}&quot; /&gt;`)"
       >
         <i :class="`${item}?mask`" class="text-28 text-gray-600 hover:bg-primary" />

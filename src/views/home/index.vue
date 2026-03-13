@@ -30,7 +30,7 @@
       <n-card class="ml-12 w-70%" title="✨ 欢迎使用 Vue Naive Admin 2.0">
         <template #header-extra>
           <a
-            class="text-14 text-primary text-highlight hover:underline hover:opacity-80"
+            class="text-highlight text-14 text-primary hover:underline hover:opacity-80"
             href="https://isme.top"
             target="_blank"
           >
@@ -68,7 +68,7 @@
     <div class="mt-12 flex">
       <n-card class="w-50%" title="💯 特性" segmented>
         <template #header-extra>
-          <span class="opacity-90 text-highlight">👏 历经十几次重构和细节打磨</span>
+          <span class="text-highlight opacity-90">👏 历经十几次重构和细节打磨</span>
         </template>
 
         <ul class="opacity-90">

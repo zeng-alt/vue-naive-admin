@@ -5,7 +5,6 @@
 </template>
 
 <script setup>
-import { NButton, NSpace } from 'naive-ui'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -25,13 +24,6 @@ watch(locale, (newLocale, oldLocale) => {
 
 function handleSave(builderObject, history) {
   console.log(builderObject)
-  console.log(history)
-}
-
-function save() {
-  const builder = builder$.value.builder
-  const history = builder$.value.History.history
-  console.log(builder)
   console.log(history)
 }
 </script>

@@ -30,11 +30,11 @@
       <template #header-extra>
         <n-button
           v-if="(modalOptions.enableDraft || enableDraft) && modalOptions.showDraftSave && !isViewMode"
-          @click="handleSaveDraft"
           quaternary
           type="tertiary"
+          @click="handleSaveDraft"
         >
-        <i class="i-material-symbols:draft mr-4 text-18" />
+          <i class="i-material-symbols:draft mr-4 text-18" />
           暂存
         </n-button>
       </template>
@@ -66,8 +66,6 @@
 
 <script setup>
 import { initDrag } from './utils'
-
-const emit = defineEmits(['open', 'close', 'save-draft', 'restore-draft'])
 
 const props = defineProps({
   width: {
@@ -145,6 +143,9 @@ const props = defineProps({
     default: () => false,
   },
 })
+
+const emit = defineEmits(['open', 'close', 'save-draft', 'restore-draft'])
+
 // 声明一个show变量，用于控制模态框的显示与隐藏
 const show = ref(false)
 // 声明一个modalOptions变量，用于存储模态框的配置信息
@@ -216,13 +217,12 @@ async function handleSaveDraft() {
       // 重新检查暂存状态
       checkDraftStatus()
       emit('save-draft')
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('保存暂存失败:', error)
     }
   }
 }
-
 
 // 定义一个handleOk函数，用于处理模态框确定操作
 async function handleOk(data) {

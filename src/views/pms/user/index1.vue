@@ -110,10 +110,10 @@
 </template>
 
 <script setup>
+import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import { MeCrud, MeModal, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils'
-import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import api from './api'
 
 defineOptions({ name: 'UserMgt' })

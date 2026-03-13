@@ -6,10 +6,10 @@
  - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  --------------------------------->
 
- <template>
+<template>
   <div>
     <n-space vertical :size="12">
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <h3>graphql服务</h3>
         <div class="flex items-center">
           <NButton class="ml-12" size="small" :disabled="!currentMenu" type="error" @click="handleCancelAuthorization()">
@@ -42,7 +42,6 @@
     </n-space>
     <GraphqlRole ref="roleModalRef" />
   </div>
-
 </template>
 
 <script setup>
@@ -85,5 +84,4 @@ function handleAuthorization() {
 function onSelect(keys, option, { action, node }) {
   emit('update:currentMenu', action === 'select' ? node : null)
 }
-
 </script>

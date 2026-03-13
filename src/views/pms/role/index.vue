@@ -18,17 +18,17 @@
     <GraphqlCrud
       ref="$table"
       v-model:filters="queryItems"
-      @fetch="handleFetch"
       :condition="true"
       :expand="true"
       :scroll-x="1200"
       :columns="columns"
       :get-data="PAGE_ROLE"
+      @fetch="handleFetch"
     >
       <ConditionItem v-model:value="queryItems.name" type="string" label="角色名" :label-width="50">
         <n-input v-model:value="queryItems.name.value" type="text" placeholder="请输入角色名" clearable />
       </ConditionItem>
-      <ConditionItem label="状态" v-model:value="queryItems.enable" type="string" :label-width="50">
+      <ConditionItem v-model:value="queryItems.enable" label="状态" type="string" :label-width="50">
         <n-select
           v-model:value="queryItems.enable.value"
           clearable
@@ -40,8 +40,7 @@
       </ConditionItem>
     </GraphqlCrud>
 
-
-    <MeModal ref="modalRef" @close="closeModal" width="600px">
+    <MeModal ref="modalRef" width="600px" @close="closeModal">
       <n-form
         ref="modalFormRef"
         label-placement="left"
@@ -73,25 +72,32 @@
         </n-form-item>
 
         <n-form-item path="permissionIds">
-          <n-card title="权限列表" size="large" >
+          <n-card title="权限列表" size="large">
             <template #header-extra>
-              <n-button size="small" @click="handleSelectAll" class="mr-12">
+              <NButton size="small" class="mr-12" @click="handleSelectAll">
                 {{ isAllSelected ? '全不选' : '全选' }}
-              </n-button>
-              <n-button size="small" @click="handleExpandAll" class="mr-12">
+              </NButton>
+              <NButton size="small" class="mr-12" @click="handleExpandAll">
                 {{ isAllExpanded ? '折叠' : '展开' }}
-              </n-button>
+              </NButton>
 
-              <n-switch
-                class="mr-12"
+              <NSwitch
                 v-model:value="cascade"
+                class="mr-12"
                 size="small"
                 @update-value="(value) => value && handleCheckedKeysChange(modalForm.permissionIds, permissionTree)"
               >
-                <template #checked><p class="text-12">父子联动</p></template>
-                <template #unchecked><p class="text-12">父子联动</p></template>
-              </n-switch>
-
+                <template #checked>
+                  <p class="text-12">
+                    父子联动
+                  </p>
+                </template>
+                <template #unchecked>
+                  <p class="text-12">
+                    父子联动
+                  </p>
+                </template>
+              </NSwitch>
             </template>
             <n-tree
               key-field="id"
@@ -118,23 +124,21 @@
             </template>
           </NSwitch>
         </n-form-item>
-
       </n-form>
     </MeModal>
 
-    <RoleGraphql ref="graphqlRoleRef" @refresh="()=> $table.handleSearch()" width="1000px"/>
+    <RoleGraphql ref="graphqlRoleRef" width="1000px" @refresh="() => $table.handleSearch()" />
   </CommonPage>
-
 </template>
 
 <script setup>
-import { MeModal, ConditionItem, GraphqlCrud } from '@/components'
+import { NButton, NSwitch } from 'naive-ui'
+import { nextTick, ref, watch } from 'vue'
+import { ConditionItem, GraphqlCrud, MeModal } from '@/components'
 import { useCrud } from '@/composables'
 import api from './api'
-import {PAGE_ROLE, saveRole, deleteRole} from './apollo'
+import { PAGE_ROLE, saveRole } from './apollo'
 import RoleGraphql from './components/RoleGraphql.vue'
-import { ref, watch, nextTick } from 'vue'
-import {NSwitch, NButton} from 'naive-ui'
 
 defineOptions({ name: 'RoleMgt' })
 
@@ -146,7 +150,7 @@ const $table = ref(null)
 /** QueryBar筛选参数（可选） */
 const queryItems = ref({
   name: {},
-  enable: {}
+  enable: {},
 })
 
 onMounted(() => {
@@ -242,14 +246,6 @@ const columns = [
   },
 ]
 
-function handleGraphql(row) {
-  graphqlRoleRef.value?.handleOpen({
-    title: `分配graphql到 - ${row.name}`,
-    row,
-    okText: '分配',
-  })
-}
-
 async function handleEnable(row) {
   // row.enableLoading = true
   try {
@@ -267,9 +263,9 @@ async function handleEnable(row) {
 const permissionAllId = ref(([]))
 const permissionTree = ref([])
 
-const getAllIds = (nodes) => {
+function getAllIds(nodes) {
   let ids = []
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     if (node.children) {
       ids = [...ids, ...getAllIds(node.children)]
     }
@@ -281,13 +277,13 @@ const getAllIds = (nodes) => {
 }
 
 // api.getAllPermissionTree().then(( data = [] ) => (permissionTree.value = data))
-api.getAllPermissionTree().then(res => {
+api.getAllPermissionTree().then((res) => {
   // 确保所有 ID 都是字符串类型
   const convertIdsToString = (nodes) => {
     return nodes.map(node => ({
       ...node,
       id: String(node.id),
-      children: node.children ? convertIdsToString(node.children) : undefined
+      children: node.children ? convertIdsToString(node.children) : undefined,
     }))
   }
 
@@ -303,7 +299,8 @@ function findNodeById(tree, id) {
     }
     if (node.children) {
       const found = findNodeById(node.children, id)
-      if (found) return found
+      if (found)
+        return found
     }
   }
   return null
@@ -312,7 +309,8 @@ function findNodeById(tree, id) {
 // 获取指定节点及其所有子节点的 id
 function getAllChildrenKeys(node) {
   const keys = []
-  if (!node) return keys
+  if (!node)
+    return keys
   if (node.children) {
     for (const child of node.children) {
       keys.push(child.id)
@@ -327,19 +325,19 @@ function handleCheckedKeysChange(checkedKeys, tree) {
   if (cascade.value) {
     const allKeys = new Set(checkedKeys)
 
-    checkedKeys.forEach(id => {
+    checkedKeys.forEach((id) => {
       const node = findNodeById(tree, id)
       if (node) {
         getAllChildrenKeys(node).forEach(childId => allKeys.add(childId))
       }
     })
 
-    modalForm.value.permissionIds = Array.from(allKeys)
-  } else {
+    modalForm.value.permissionIds = [...allKeys]
+  }
+  else {
     modalForm.value.permissionIds = checkedKeys
   }
 }
-
 
 function handleFetch(data, callback) {
   const processed = handlePermission(data)
@@ -347,14 +345,13 @@ function handleFetch(data, callback) {
 }
 
 function handlePermission(role = []) {
-  return role.map(r => {
+  return role.map((r) => {
     return {
       ...r,
-      permissionIds: r.rolePermissions?.map(r => String(r.permission.id)) || []
+      permissionIds: r.rolePermissions?.map(r => String(r.permission.id)) || [],
     }
   })
 }
-
 
 const isAllExpanded = ref(true)
 const isAllSelected = ref(false)
@@ -363,7 +360,8 @@ const isAllSelected = ref(false)
 function handleSelectAll() {
   if (isAllSelected.value) {
     modalForm.value.permissionIds = []
-  } else {
+  }
+  else {
     // 获取所有叶子节点的 id
     modalForm.value.permissionIds = permissionAllId.value
   }
@@ -400,5 +398,4 @@ watch(() => permissionTree.value, (newVal) => {
     })
   }
 }, { deep: true })
-
 </script>

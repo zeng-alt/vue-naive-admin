@@ -78,11 +78,11 @@
 </template>
 
 <script setup>
+import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
 import { ConditionItem, GraphqlCrud } from '@/components'
 import { formatDateTime } from '@/utils'
-import api from './api'
 import { PAGE_USER } from '../user/apollo'
-import {NAvatar, NSwitch, NButton, NTag} from 'naive-ui'
+import api from './api'
 
 defineOptions({ name: 'RoleUser' })
 const route = useRoute()

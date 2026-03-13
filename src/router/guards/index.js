@@ -8,9 +8,9 @@
 
 import { createPageLoadingGuard } from './page-loading-guard'
 import { createPageTitleGuard } from './page-title-guard'
+import { createParameterGuard } from './parameter-guard'
 import { createPermissionGuard } from './permission-guard'
 import { createTabGuard } from './tab-guard'
-import { createParameterGuard } from './parameter-guard'
 
 export function setupRouterGuards(router) {
   createPageLoadingGuard(router)

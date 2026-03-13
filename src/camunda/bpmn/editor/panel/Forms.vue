@@ -13,7 +13,9 @@
     >
       <!-- 头部 -->
       <div style="padding: 20px; border-bottom: 1px solid #e8e8e8">
-        <h2 style="margin: 0; color: #333">Camunda Forms 编辑器</h2>
+        <h2 style="margin: 0; color: #333">
+          Camunda Forms 编辑器
+        </h2>
         <div style="display: flex; gap: 16px; margin-top: 16px">
           <n-input
             v-model:value="formConfig.formKey"
@@ -50,7 +52,9 @@
                   margin-bottom: 16px;
                 "
               >
-                <h3 style="margin: 0">表单字段</h3>
+                <h3 style="margin: 0">
+                  表单字段
+                </h3>
                 <n-button
                   type="primary"
                   size="small"
@@ -87,42 +91,47 @@
                   "
                 >
                   <div>
-                    <div style="font-weight: 500">{{ field.label }}</div>
+                    <div style="font-weight: 500">
+                      {{ field.label }}
+                    </div>
                     <div style="font-size: 12px; color: #666; margin-top: 4px">
                       ID: {{ field.id }} | 类型:
                       {{
                         fieldTypes.find((t) => t.value === field.type)?.label
                       }}
                       <span v-if="field.required" style="color: #f56565">
-                        *必填</span
-                      >
+                        *必填</span>
                     </div>
                   </div>
                   <div style="display: flex; gap: 4px">
                     <n-button
                       size="tiny"
-                      @click="moveField(index, 'up')"
                       :disabled="index === 0"
-                      >↑</n-button
+                      @click="moveField(index, 'up')"
                     >
+                      ↑
+                    </n-button>
                     <n-button
                       size="tiny"
-                      @click="moveField(index, 'down')"
                       :disabled="index === formConfig.fields.length - 1"
-                      >↓</n-button
+                      @click="moveField(index, 'down')"
                     >
+                      ↓
+                    </n-button>
                     <n-button
                       size="tiny"
                       type="info"
                       @click="openFieldEditor(index)"
-                      >编辑</n-button
                     >
+                      编辑
+                    </n-button>
                     <n-button
                       size="tiny"
                       type="error"
                       @click="deleteField(index)"
-                      >删除</n-button
                     >
+                      删除
+                    </n-button>
                   </div>
                 </div>
               </div>
@@ -137,7 +146,9 @@
                 padding: 16px;
               "
             >
-              <h3 style="margin: 0 0 16px 0">表单预览</h3>
+              <h3 style="margin: 0 0 16px 0">
+                表单预览
+              </h3>
               <div
                 v-if="formConfig.fields.length === 0"
                 style="text-align: center; color: #999; padding: 40px"
@@ -222,13 +233,13 @@
               >
                 <n-input v-model:value="option.label" placeholder="显示文本" />
                 <n-input v-model:value="option.value" placeholder="选项值" />
-                <n-button size="small" type="error" @click="removeOption(index)"
-                  >删除</n-button
-                >
+                <n-button size="small" type="error" @click="removeOption(index)">
+                  删除
+                </n-button>
               </div>
-              <n-button size="small" @click="addOption" style="width: 100%"
-                >添加选项</n-button
-              >
+              <n-button size="small" style="width: 100%" @click="addOption">
+                添加选项
+              </n-button>
             </div>
           </n-form-item>
         </template>
@@ -260,8 +271,12 @@
 
       <template #footer>
         <div style="display: flex; gap: 8px; justify-content: flex-end">
-          <n-button @click="showFieldModal = false">取消</n-button>
-          <n-button type="primary" @click="saveField">保存</n-button>
+          <n-button @click="showFieldModal = false">
+            取消
+          </n-button>
+          <n-button type="primary" @click="saveField">
+            保存
+          </n-button>
         </div>
       </template>
     </n-modal>

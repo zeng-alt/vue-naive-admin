@@ -1,5 +1,4 @@
-
- <template>
+<template>
   <MeModal ref="modalRef">
     <n-form
       ref="modalFormRef"
@@ -50,7 +49,7 @@
             :options="[
               { label: 'Query', value: 'Query' },
               { label: 'Mutation', value: 'Mutation' },
-              { label: 'Subscription', value: 'Subscription' }
+              { label: 'Subscription', value: 'Subscription' },
             ]"
           />
         </n-form-item-gi>
@@ -68,8 +67,8 @@
 
 <script setup>
 import { MeModal } from '@/components'
-import {  apolloClients } from '@/utils/graphql'
 import { useForm, useModal } from '@/composables'
+import { apolloClients } from '@/utils/graphql'
 import { saveGraphqlResource } from '../apollo'
 import QuestionLabel from './QuestionLabel.vue'
 
@@ -94,17 +93,15 @@ const required = {
 const treeData = ref([])
 
 function initData() {
-  const res = Object.keys(apolloClients).map(n => {
+  const res = Object.keys(apolloClients).map((n) => {
     return {
       value: `/${n}/graphql`,
-      label: n + '服务'
+      label: `${n}服务`,
     }
   })
 
   treeData.value = res || []
 }
-
-
 
 const defaultForm = {}
 const [modalFormRef, modalForm, validation] = useForm()
@@ -125,11 +122,10 @@ async function onSave() {
   await validation()
   okLoading.value = true
   try {
-    let newFormData
-    let data = { ...modalForm.value}
+    const data = { ...modalForm.value }
 
     const res = await saveGraphqlResource(data)
-    newFormData = res.data?.saveMenuResource
+    const newFormData = res.data?.saveMenuResource
 
     okLoading.value = false
     $message.success('保存成功')

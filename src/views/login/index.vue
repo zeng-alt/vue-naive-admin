@@ -9,7 +9,7 @@
 <template>
   <div class="wh-full flex-col bg-[url(@/assets/images/login_bg.webp)] bg-cover">
     <div
-      class="m-auto max-w-700 min-w-345 f-c-c rounded-8 bg-opacity-20 bg-cover p-12 card-shadow auto-bg"
+      class="m-auto max-w-700 min-w-345 f-c-c rounded-8 auto-bg bg-opacity-20 bg-cover p-12 card-shadow"
     >
       <div class="hidden w-380 px-20 py-35 md:block">
         <img src="@/assets/images/login_banner.webp" class="w-full" alt="login_banner">
@@ -34,20 +34,19 @@
         </div> -->
 
         <div v-if="tenantEnabled" class="mt-32 flex items-center">
-        <n-popselect v-model:value="selectedTenant" :options="tenants" trigger="click">
-
-          <n-input
-            :v-model:value="selectedTenant"
-            default-value="master"
-            class="h-40 items-center"
-          >
-            <template #prefix>
-              <i class="i-fe:building mr-12 text-16px opacity-60" />
-            </template>
-            <template #separator></template>
-          </n-input>
-        </n-popselect>
-      </div>
+          <n-popselect v-model:value="selectedTenant" :options="tenants" trigger="click">
+            <n-input
+              :v-model:value="selectedTenant"
+              default-value="master"
+              class="h-40 items-center"
+            >
+              <template #prefix>
+                <i class="i-fe:building mr-12 text-16px opacity-60" />
+              </template>
+              <template #separator />
+            </n-input>
+          </n-popselect>
+        </div>
         <n-input
           v-model:value="loginInfo.username"
           autofocus
@@ -60,7 +59,7 @@
             <i class="i-fe:user mr-12 opacity-20" />
           </template>
           <template #separator />
-          <template #password-invisible-icon></template>
+          <template #password-invisible-icon />
         </n-input>
         <n-input
           v-model:value="loginInfo.password"
@@ -132,13 +131,12 @@
 </template>
 
 <script setup>
-import { GET_PARAMETER, GET_TENANTS,  getParameter, getTenants } from '@/apollo'
+import { useStorage } from '@vueuse/core'
+import { onBeforeMount, ref } from 'vue'
+import { getParameter, getTenants } from '@/apollo'
 import { useAuthStore } from '@/store'
 import { lStorage, request, throttle } from '@/utils'
-import { useQuery } from '@vue/apollo-composable'
-import { useStorage } from '@vueuse/core'
 import api from './api'
-import { ref, onBeforeMount } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -171,7 +169,7 @@ async function getCaptchaEnabled() {
 
 async function getAllTenants() {
   const { data } = await getTenants({})
-  let list =  data.queryTenant || []
+  const list = data.queryTenant || []
   tenants.value = [
     { value: 'master', label: '总部' },
     ...(list.map(item => ({ value: item.tenantKey, label: item.companyName }))),
@@ -182,7 +180,7 @@ onBeforeMount(async () => {
   await Promise.all([
     getTenantEnabled(),
     getCaptchaEnabled(),
-    getAllTenants()
+    getAllTenants(),
   ])
 })
 

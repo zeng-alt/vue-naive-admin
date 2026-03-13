@@ -1,5 +1,5 @@
-import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
+import { apolloClients } from '@/utils/graphql'
 
 export const SAVE_PARAMETER = gql`
   mutation SaveParameter($parameterInput: ParameterInput) {
@@ -49,8 +49,8 @@ export function saveParameter(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_PARAMETER,
     variables: {
-      parameterInput: data
-    }
+      parameterInput: data,
+    },
   })
 }
 
@@ -62,4 +62,3 @@ export function deleteParameter(ids) {
     },
   })
 }
-

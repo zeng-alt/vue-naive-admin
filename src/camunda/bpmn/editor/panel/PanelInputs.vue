@@ -1,313 +1,378 @@
 <template>
   <div>
-    <n-tabs type="line" size="medium">
+    <NTabs type="line" size="medium">
       <!-- 输入映射 -->
-      <n-tab-pane name="inputMappings" tab="输入映射">
+      <NTabPane name="inputMappings" tab="输入映射">
         <div class="input-mappings">
           <div class="section-header">
             <span class="section-title">输入参数映射</span>
-            <n-button size="small" type="primary" @click="addInputMapping">
+            <NButton size="small" type="primary" @click="addInputMapping">
               <template #icon>
-                <n-icon>
+                <NIcon>
                   <AddOutline />
-                </n-icon>
+                </NIcon>
               </template>
               添加映射
-            </n-button>
+            </NButton>
           </div>
 
           <div v-if="inputData.inputMappings.length === 0" class="empty-state">
-            <n-empty description="暂无输入映射配置">
+            <NEmpty description="暂无输入映射配置">
               <template #extra>
-                <n-button size="small" @click="addInputMapping">
+                <NButton size="small" @click="addInputMapping">
                   创建第一个输入映射
-                </n-button>
+                </NButton>
               </template>
-            </n-empty>
+            </NEmpty>
           </div>
 
           <div v-for="(mapping, index) in inputData.inputMappings" :key="mapping.id" class="mapping-item">
-            <n-card size="small" :bordered="true">
+            <NCard size="small" :bordered="true">
               <template #header>
                 <div class="mapping-header">
                   <span>映射 {{ index + 1 }}</span>
-                  <n-button size="small" type="error" text @click="removeInputMapping(index)">
+                  <NButton size="small" type="error" text @click="removeInputMapping(index)">
                     <template #icon>
-                      <n-icon>
+                      <NIcon>
                         <DeleteOutline />
-                      </n-icon>
+                      </NIcon>
                     </template>
-                  </n-button>
+                  </NButton>
                 </div>
               </template>
 
-              <n-space vertical>
-                <n-form-item label="源变量" :show-feedback="false">
-                  <n-input-group>
-                    <n-select v-model:value="mapping.sourceType" :options="sourceTypeOptions" style="width: 30%"
-                      @update:value="updateElement" />
-                    <n-input v-model:value="mapping.source" placeholder="输入源变量或表达式" style="width: 70%"
-                      @blur="updateElement" />
-                  </n-input-group>
+              <NSpace vertical>
+                <NFormItem label="源变量" :show-feedback="false">
+                  <NInputGroup>
+                    <NSelect
+                      v-model:value="mapping.sourceType" :options="sourceTypeOptions" style="width: 30%"
+                      @update:value="updateElement"
+                    />
+                    <NInput
+                      v-model:value="mapping.source" placeholder="输入源变量或表达式" style="width: 70%"
+                      @blur="updateElement"
+                    />
+                  </NInputGroup>
                   <template #feedback>
-                    <n-text depth="3" style="font-size: 12px">
+                    <NText depth="3" style="font-size: 12px">
                       {{ getSourceTypeDescription(mapping.sourceType) }}
-                    </n-text>
+                    </NText>
                   </template>
-                </n-form-item>
+                </NFormItem>
 
-                <n-form-item label="目标参数" :show-feedback="false">
-                  <n-input v-model:value="mapping.target" placeholder="输入目标参数名称" @blur="updateElement" />
-                </n-form-item>
+                <NFormItem label="目标参数" :show-feedback="false">
+                  <NInput v-model:value="mapping.target" placeholder="输入目标参数名称" @blur="updateElement" />
+                </NFormItem>
 
-                <n-form-item label="数据类型" :show-feedback="false">
-                  <n-select v-model:value="mapping.dataType" :options="dataTypeOptions" placeholder="选择数据类型"
-                    @update:value="updateElement" />
-                </n-form-item>
+                <NFormItem label="数据类型" :show-feedback="false">
+                  <NSelect
+                    v-model:value="mapping.dataType" :options="dataTypeOptions" placeholder="选择数据类型"
+                    @update:value="updateElement"
+                  />
+                </NFormItem>
 
-                <n-form-item label="配置" :show-feedback="false">
-                  <n-space>
-                    <n-checkbox v-model:checked="mapping.required" @update:checked="updateElement">
+                <NFormItem label="配置" :show-feedback="false">
+                  <NSpace>
+                    <NCheckbox v-model:checked="mapping.required" @update:checked="updateElement">
                       必需参数
-                    </n-checkbox>
-                    <n-checkbox v-model:checked="mapping.readOnly" @update:checked="updateElement">
+                    </NCheckbox>
+                    <NCheckbox v-model:checked="mapping.readOnly" @update:checked="updateElement">
                       只读
-                    </n-checkbox>
-                    <n-checkbox v-model:checked="mapping.local" @update:checked="updateElement">
+                    </NCheckbox>
+                    <NCheckbox v-model:checked="mapping.local" @update:checked="updateElement">
                       本地变量
-                    </n-checkbox>
-                  </n-space>
-                </n-form-item>
+                    </NCheckbox>
+                  </NSpace>
+                </NFormItem>
 
                 <!-- 默认值配置 -->
-                <n-form-item label="默认值" :show-feedback="false">
-                  <n-input v-if="!['object', 'array'].includes(mapping.dataType)" v-model:value="mapping.defaultValue"
-                    :placeholder="getDefaultValuePlaceholder(mapping.dataType)" @blur="updateElement" />
-                  <n-input v-else v-model:value="mapping.defaultValue" type="textarea" placeholder="输入JSON格式的默认值"
-                    :rows="3" @blur="updateElement" />
-                </n-form-item>
+                <NFormItem label="默认值" :show-feedback="false">
+                  <NInput
+                    v-if="!['object', 'array'].includes(mapping.dataType)" v-model:value="mapping.defaultValue"
+                    :placeholder="getDefaultValuePlaceholder(mapping.dataType)" @blur="updateElement"
+                  />
+                  <NInput
+                    v-else v-model:value="mapping.defaultValue" type="textarea" placeholder="输入JSON格式的默认值"
+                    :rows="3" @blur="updateElement"
+                  />
+                </NFormItem>
 
                 <!-- 验证规则 -->
-                <n-collapse>
-                  <n-collapse-item title="验证规则" name="validation">
-                    <n-space vertical>
-                      <n-form-item label="最小值" :show-feedback="false" v-if="mapping.dataType === 'number'">
-                        <n-input-number v-model:value="mapping.validation.min" placeholder="最小值"
-                          @blur="updateElement" />
-                      </n-form-item>
+                <NCollapse>
+                  <NCollapseItem title="验证规则" name="validation">
+                    <NSpace vertical>
+                      <NFormItem v-if="mapping.dataType === 'number'" label="最小值" :show-feedback="false">
+                        <NInputNumber
+                          v-model:value="mapping.validation.min" placeholder="最小值"
+                          @blur="updateElement"
+                        />
+                      </NFormItem>
 
-                      <n-form-item label="最大值" :show-feedback="false" v-if="mapping.dataType === 'number'">
-                        <n-input-number v-model:value="mapping.validation.max" placeholder="最大值"
-                          @blur="updateElement" />
-                      </n-form-item>
+                      <NFormItem v-if="mapping.dataType === 'number'" label="最大值" :show-feedback="false">
+                        <NInputNumber
+                          v-model:value="mapping.validation.max" placeholder="最大值"
+                          @blur="updateElement"
+                        />
+                      </NFormItem>
 
-                      <n-form-item label="最小长度" :show-feedback="false" v-if="mapping.dataType === 'string'">
-                        <n-input-number v-model:value="mapping.validation.minLength" placeholder="最小长度"
-                          @blur="updateElement" />
-                      </n-form-item>
+                      <NFormItem v-if="mapping.dataType === 'string'" label="最小长度" :show-feedback="false">
+                        <NInputNumber
+                          v-model:value="mapping.validation.minLength" placeholder="最小长度"
+                          @blur="updateElement"
+                        />
+                      </NFormItem>
 
-                      <n-form-item label="最大长度" :show-feedback="false" v-if="mapping.dataType === 'string'">
-                        <n-input-number v-model:value="mapping.validation.maxLength" placeholder="最大长度"
-                          @blur="updateElement" />
-                      </n-form-item>
+                      <NFormItem v-if="mapping.dataType === 'string'" label="最大长度" :show-feedback="false">
+                        <NInputNumber
+                          v-model:value="mapping.validation.maxLength" placeholder="最大长度"
+                          @blur="updateElement"
+                        />
+                      </NFormItem>
 
-                      <n-form-item label="正则表达式" :show-feedback="false" v-if="mapping.dataType === 'string'">
-                        <n-input v-model:value="mapping.validation.pattern" placeholder="输入正则表达式"
-                          @blur="updateElement" />
-                      </n-form-item>
+                      <NFormItem v-if="mapping.dataType === 'string'" label="正则表达式" :show-feedback="false">
+                        <NInput
+                          v-model:value="mapping.validation.pattern" placeholder="输入正则表达式"
+                          @blur="updateElement"
+                        />
+                      </NFormItem>
 
-                      <n-form-item label="自定义验证" :show-feedback="false">
-                        <n-input v-model:value="mapping.validation.customExpression" placeholder="输入验证表达式"
-                          @blur="updateElement" />
-                      </n-form-item>
-                    </n-space>
-                  </n-collapse-item>
-                </n-collapse>
+                      <NFormItem label="自定义验证" :show-feedback="false">
+                        <NInput
+                          v-model:value="mapping.validation.customExpression" placeholder="输入验证表达式"
+                          @blur="updateElement"
+                        />
+                      </NFormItem>
+                    </NSpace>
+                  </NCollapseItem>
+                </NCollapse>
 
                 <!-- 描述信息 -->
-                <n-form-item label="描述" :show-feedback="false">
-                  <n-input v-model:value="mapping.description" type="textarea" placeholder="输入参数描述信息" :rows="2"
-                    @blur="updateElement" />
-                </n-form-item>
-              </n-space>
-            </n-card>
+                <NFormItem label="描述" :show-feedback="false">
+                  <NInput
+                    v-model:value="mapping.description" type="textarea" placeholder="输入参数描述信息" :rows="2"
+                    @blur="updateElement"
+                  />
+                </NFormItem>
+              </NSpace>
+            </NCard>
           </div>
         </div>
-      </n-tab-pane>
+      </NTabPane>
 
       <!-- 脚本变量 -->
-      <n-tab-pane name="scriptVariables" tab="脚本变量">
+      <NTabPane name="scriptVariables" tab="脚本变量">
         <div class="script-variables">
           <div class="section-header">
             <span class="section-title">脚本输入变量</span>
-            <n-button size="small" type="primary" @click="addScriptVariable">
+            <NButton size="small" type="primary" @click="addScriptVariable">
               <template #icon>
-                <n-icon>
+                <NIcon>
                   <AddOutline />
-                </n-icon>
+                </NIcon>
               </template>
               添加变量
-            </n-button>
+            </NButton>
           </div>
 
           <div v-if="inputData.scriptVariables.length === 0" class="empty-state">
-            <n-empty description="暂无脚本变量配置" />
+            <NEmpty description="暂无脚本变量配置" />
           </div>
 
           <div v-for="(variable, index) in inputData.scriptVariables" :key="variable.id" class="variable-item">
-            <n-card size="small" :bordered="true">
+            <NCard size="small" :bordered="true">
               <template #header>
                 <div class="variable-header">
                   <span>变量 {{ index + 1 }}</span>
-                  <n-button size="small" type="error" text @click="removeScriptVariable(index)">
+                  <NButton size="small" type="error" text @click="removeScriptVariable(index)">
                     <template #icon>
-                      <n-icon>
+                      <NIcon>
                         <DeleteOutline />
-                      </n-icon>
+                      </NIcon>
                     </template>
-                  </n-button>
+                  </NButton>
                 </div>
               </template>
 
-              <n-space vertical>
-                <n-form-item label="变量名" :show-feedback="false">
-                  <n-input v-model:value="variable.name" placeholder="输入变量名" @blur="updateElement" />
-                </n-form-item>
+              <NSpace vertical>
+                <NFormItem label="变量名" :show-feedback="false">
+                  <NInput v-model:value="variable.name" placeholder="输入变量名" @blur="updateElement" />
+                </NFormItem>
 
-                <n-form-item label="变量值" :show-feedback="false">
-                  <n-input-group>
-                    <n-select v-model:value="variable.valueType" :options="valueTypeOptions" style="width: 25%"
-                      @update:value="updateElement" />
-                    <n-input v-if="variable.valueType !== 'script'" v-model:value="variable.value" placeholder="输入变量值"
-                      style="width: 75%" @blur="updateElement" />
-                    <n-input v-else v-model:value="variable.value" type="textarea" placeholder="输入脚本代码" :rows="3"
-                      style="width: 75%" @blur="updateElement" />
-                  </n-input-group>
-                </n-form-item>
+                <NFormItem label="变量值" :show-feedback="false">
+                  <NInputGroup>
+                    <NSelect
+                      v-model:value="variable.valueType" :options="valueTypeOptions" style="width: 25%"
+                      @update:value="updateElement"
+                    />
+                    <NInput
+                      v-if="variable.valueType !== 'script'" v-model:value="variable.value" placeholder="输入变量值"
+                      style="width: 75%" @blur="updateElement"
+                    />
+                    <NInput
+                      v-else v-model:value="variable.value" type="textarea" placeholder="输入脚本代码" :rows="3"
+                      style="width: 75%" @blur="updateElement"
+                    />
+                  </NInputGroup>
+                </NFormItem>
 
-                <n-form-item label="脚本格式" :show-feedback="false" v-if="variable.valueType === 'script'">
-                  <n-select v-model:value="variable.scriptFormat" :options="scriptFormatOptions"
-                    @update:value="updateElement" />
-                </n-form-item>
+                <NFormItem v-if="variable.valueType === 'script'" label="脚本格式" :show-feedback="false">
+                  <NSelect
+                    v-model:value="variable.scriptFormat" :options="scriptFormatOptions"
+                    @update:value="updateElement"
+                  />
+                </NFormItem>
 
-                <n-form-item label="作用域" :show-feedback="false">
-                  <n-radio-group v-model:value="variable.scope" @update:value="updateElement">
-                    <n-space>
-                      <n-radio value="global">全局</n-radio>
-                      <n-radio value="local">本地</n-radio>
-                      <n-radio value="task">任务</n-radio>
-                    </n-space>
-                  </n-radio-group>
-                </n-form-item>
-              </n-space>
-            </n-card>
+                <NFormItem label="作用域" :show-feedback="false">
+                  <NRadioGroup v-model:value="variable.scope" @update:value="updateElement">
+                    <NSpace>
+                      <NRadio value="global">
+                        全局
+                      </NRadio>
+                      <NRadio value="local">
+                        本地
+                      </NRadio>
+                      <NRadio value="task">
+                        任务
+                      </NRadio>
+                    </NSpace>
+                  </NRadioGroup>
+                </NFormItem>
+              </NSpace>
+            </NCard>
           </div>
         </div>
-      </n-tab-pane>
+      </NTabPane>
 
       <!-- 条件配置 -->
-      <n-tab-pane name="conditions" tab="条件配置">
+      <NTabPane name="conditions" tab="条件配置">
         <div class="conditions">
-          <n-form>
-            <n-form-item label="执行条件">
-              <n-input v-model:value="inputData.executionCondition" type="textarea"
-                placeholder="输入执行条件表达式，如：${variable > 10}" :rows="3" @blur="updateElement" />
+          <NForm>
+            <NFormItem label="执行条件">
+              <NInput
+                v-model:value="inputData.executionCondition" type="textarea"
+                placeholder="输入执行条件表达式，如：${variable > 10}" :rows="3" @blur="updateElement"
+              />
               <template #feedback>
-                <n-text depth="3">使用表达式语言定义节点执行条件</n-text>
+                <NText depth="3">
+                  使用表达式语言定义节点执行条件
+                </NText>
               </template>
-            </n-form-item>
+            </NFormItem>
 
-            <n-form-item label="跳过表达式">
-              <n-input v-model:value="inputData.skipExpression" placeholder="输入跳过条件表达式" @blur="updateElement" />
+            <NFormItem label="跳过表达式">
+              <NInput v-model:value="inputData.skipExpression" placeholder="输入跳过条件表达式" @blur="updateElement" />
               <template #feedback>
-                <n-text depth="3">满足条件时跳过当前节点</n-text>
+                <NText depth="3">
+                  满足条件时跳过当前节点
+                </NText>
               </template>
-            </n-form-item>
+            </NFormItem>
 
-            <n-form-item label="异步执行">
-              <n-space>
-                <n-checkbox v-model:checked="inputData.asyncBefore" @update:checked="updateElement">
+            <NFormItem label="异步执行">
+              <NSpace>
+                <NCheckbox v-model:checked="inputData.asyncBefore" @update:checked="updateElement">
                   异步前置
-                </n-checkbox>
-                <n-checkbox v-model:checked="inputData.asyncAfter" @update:checked="updateElement">
+                </NCheckbox>
+                <NCheckbox v-model:checked="inputData.asyncAfter" @update:checked="updateElement">
                   异步后置
-                </n-checkbox>
-                <n-checkbox v-model:checked="inputData.exclusive" @update:checked="updateElement">
+                </NCheckbox>
+                <NCheckbox v-model:checked="inputData.exclusive" @update:checked="updateElement">
                   排他执行
-                </n-checkbox>
-              </n-space>
-            </n-form-item>
+                </NCheckbox>
+              </NSpace>
+            </NFormItem>
 
-            <n-form-item label="重试配置" v-if="inputData.asyncBefore || inputData.asyncAfter">
-              <n-space vertical style="width: 100%">
-                <n-input-group>
-                  <n-input-group-label style="width: 80px">重试次数</n-input-group-label>
-                  <n-input-number v-model:value="inputData.retryTimeCycle.retries" :min="0" placeholder="重试次数"
-                    @blur="updateElement" />
-                </n-input-group>
-                <n-input-group>
-                  <n-input-group-label style="width: 80px">重试间隔</n-input-group-label>
-                  <n-input v-model:value="inputData.retryTimeCycle.timeCycle" placeholder="如：PT1M（1分钟）"
-                    @blur="updateElement" />
-                </n-input-group>
-              </n-space>
-            </n-form-item>
-          </n-form>
+            <NFormItem v-if="inputData.asyncBefore || inputData.asyncAfter" label="重试配置">
+              <NSpace vertical style="width: 100%">
+                <NInputGroup>
+                  <NInputGroupLabel style="width: 80px">
+                    重试次数
+                  </NInputGroupLabel>
+                  <NInputNumber
+                    v-model:value="inputData.retryTimeCycle.retries" :min="0" placeholder="重试次数"
+                    @blur="updateElement"
+                  />
+                </NInputGroup>
+                <NInputGroup>
+                  <NInputGroupLabel style="width: 80px">
+                    重试间隔
+                  </NInputGroupLabel>
+                  <NInput
+                    v-model:value="inputData.retryTimeCycle.timeCycle" placeholder="如：PT1M（1分钟）"
+                    @blur="updateElement"
+                  />
+                </NInputGroup>
+              </NSpace>
+            </NFormItem>
+          </NForm>
         </div>
-      </n-tab-pane>
-    </n-tabs>
+      </NTabPane>
+    </NTabs>
 
     <!-- 操作按钮 -->
-    <n-space justify="end" style="margin-top: 24px">
-      <n-button @click="resetInputs">重置</n-button>
-      <n-button type="primary" @click="saveInputs">保存配置</n-button>
-      <n-button type="info" @click="exportConfig">导出配置</n-button>
-      <n-button type="warning" @click="validateInputs">验证配置</n-button>
-    </n-space>
-
+    <NSpace justify="end" style="margin-top: 24px">
+      <NButton @click="resetInputs">
+        重置
+      </NButton>
+      <NButton type="primary" @click="saveInputs">
+        保存配置
+      </NButton>
+      <NButton type="info" @click="exportConfig">
+        导出配置
+      </NButton>
+      <NButton type="warning" @click="validateInputs">
+        验证配置
+      </NButton>
+    </NSpace>
 
     <!-- 导出配置对话框 -->
-    <n-modal v-model:show="showExportModal" title="导出配置" size="large" :mask-closable="false">
-      <n-card title="输入参数配置JSON" :bordered="false">
-        <n-input :value="exportedConfig" type="textarea" readonly :rows="20"
-          style="font-family: 'Courier New', monospace" />
+    <NModal v-model:show="showExportModal" title="导出配置" size="large" :mask-closable="false">
+      <NCard title="输入参数配置JSON" :bordered="false">
+        <NInput
+          :value="exportedConfig" type="textarea" readonly :rows="20"
+          style="font-family: 'Courier New', monospace"
+        />
         <template #action>
-          <n-space justify="end">
-            <n-button @click="showExportModal = false">关闭</n-button>
-            <n-button type="primary" @click="copyConfig">复制配置</n-button>
-          </n-space>
+          <NSpace justify="end">
+            <NButton @click="showExportModal = false">
+              关闭
+            </NButton>
+            <NButton type="primary" @click="copyConfig">
+              复制配置
+            </NButton>
+          </NSpace>
         </template>
-      </n-card>
-    </n-modal>
+      </NCard>
+    </NModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted, computed } from 'vue'
 import {
+  NButton,
   NCard,
-  NTabs,
-  NTabPane,
+  NCheckbox,
+  NCollapse,
+  NCollapseItem,
+  NEmpty,
   NForm,
   NFormItem,
+  NIcon,
   NInput,
   NInputGroup,
   NInputGroupLabel,
   NInputNumber,
-  NSelect,
-  NButton,
-  NSpace,
-  NIcon,
-  NCheckbox,
+  NModal,
   NRadio,
   NRadioGroup,
-  NCollapse,
-  NCollapseItem,
-  NModal,
-  NEmpty,
+  NSelect,
+  NSpace,
+  NTabPane,
+  NTabs,
   NText,
-  useMessage
+  useMessage,
 } from 'naive-ui'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 // Props
 interface Props {
@@ -317,7 +382,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   element: null,
-  modeler: null
+  modeler: null,
 })
 
 // Emits
@@ -339,8 +404,8 @@ const inputData = reactive({
   exclusive: true,
   retryTimeCycle: {
     retries: 3,
-    timeCycle: 'PT1M'
-  }
+    timeCycle: 'PT1M',
+  },
 })
 
 // 配置选项
@@ -348,7 +413,7 @@ const sourceTypeOptions = [
   { label: '变量', value: 'variable' },
   { label: '表达式', value: 'expression' },
   { label: '常量', value: 'constant' },
-  { label: '脚本', value: 'script' }
+  { label: '脚本', value: 'script' },
 ]
 
 const dataTypeOptions = [
@@ -358,51 +423,51 @@ const dataTypeOptions = [
   { label: '日期', value: 'date' },
   { label: '对象', value: 'object' },
   { label: '数组', value: 'array' },
-  { label: '文件', value: 'file' }
+  { label: '文件', value: 'file' },
 ]
 
 const valueTypeOptions = [
   { label: '字符串', value: 'string' },
   { label: '表达式', value: 'expression' },
-  { label: '脚本', value: 'script' }
+  { label: '脚本', value: 'script' },
 ]
 
 const scriptFormatOptions = [
   { label: 'JavaScript', value: 'javascript' },
   { label: 'Groovy', value: 'groovy' },
   { label: 'Python', value: 'python' },
-  { label: 'JUEL', value: 'juel' }
+  { label: 'JUEL', value: 'juel' },
 ]
 
 // 生成唯一ID
-const generateId = () => {
-  return 'input_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)
+function generateId() {
+  return `input_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
 }
 
 // 获取源类型描述
-const getSourceTypeDescription = (sourceType: string) => {
+function getSourceTypeDescription(sourceType: string) {
   const descriptions: Record<string, string> = {
     variable: '引用流程变量，如：myVariable',
     expression: '使用表达式，如：${variable + 10}',
     constant: '使用常量值，如：固定的字符串或数字',
-    script: '执行脚本代码返回值'
+    script: '执行脚本代码返回值',
   }
   return descriptions[sourceType] || ''
 }
 
 // 获取默认值占位符
-const getDefaultValuePlaceholder = (dataType: string) => {
+function getDefaultValuePlaceholder(dataType: string) {
   const placeholders: Record<string, string> = {
     string: '输入字符串默认值',
     number: '输入数字默认值',
     boolean: 'true 或 false',
-    date: '输入日期格式，如：2023-12-01'
+    date: '输入日期格式，如：2023-12-01',
   }
   return placeholders[dataType] || '输入默认值'
 }
 
 // 添加输入映射
-const addInputMapping = () => {
+function addInputMapping() {
   const newMapping = {
     id: generateId(),
     source: '',
@@ -419,43 +484,44 @@ const addInputMapping = () => {
       minLength: null,
       maxLength: null,
       pattern: '',
-      customExpression: ''
+      customExpression: '',
     },
-    description: ''
+    description: '',
   }
   inputData.inputMappings.push(newMapping)
   updateElement()
 }
 
 // 删除输入映射
-const removeInputMapping = (index: number) => {
+function removeInputMapping(index: number) {
   inputData.inputMappings.splice(index, 1)
   updateElement()
 }
 
 // 添加脚本变量
-const addScriptVariable = () => {
+function addScriptVariable() {
   const newVariable = {
     id: generateId(),
     name: '',
     value: '',
     valueType: 'string',
     scriptFormat: 'javascript',
-    scope: 'local'
+    scope: 'local',
   }
   inputData.scriptVariables.push(newVariable)
   updateElement()
 }
 
 // 删除脚本变量
-const removeScriptVariable = (index: number) => {
+function removeScriptVariable(index: number) {
   inputData.scriptVariables.splice(index, 1)
   updateElement()
 }
 
 // 更新BPMN元素
-const updateElement = () => {
-  if (!props.element || !props.modeler) return
+function updateElement() {
+  if (!props.element || !props.modeler)
+    return
 
   const modeling = props.modeler.get('modeling')
   const moddle = props.modeler.get('moddle')
@@ -464,7 +530,7 @@ const updateElement = () => {
   modeling.updateProperties(props.element, {
     'camunda:asyncBefore': inputData.asyncBefore,
     'camunda:asyncAfter': inputData.asyncAfter,
-    'camunda:exclusive': inputData.exclusive
+    'camunda:exclusive': inputData.exclusive,
   })
 
   // 创建或更新扩展元素
@@ -475,7 +541,7 @@ const updateElement = () => {
 
   // 清除现有的输入相关配置
   extensionElements.values = extensionElements.values?.filter((element: any) =>
-    !['camunda:InputOutput', 'camunda:Script', 'camunda:ExecutionListener'].includes(element.$type)
+    !['camunda:InputOutput', 'camunda:Script', 'camunda:ExecutionListener'].includes(element.$type),
   ) || []
 
   // 添加输入输出映射
@@ -491,7 +557,8 @@ const updateElement = () => {
         script.scriptFormat = 'javascript'
         script.value = mapping.source
         inputParameter.definition = script
-      } else {
+      }
+      else {
         inputParameter.value = mapping.source
       }
 
@@ -524,20 +591,20 @@ const updateElement = () => {
     conditionExpression.body = inputData.executionCondition
 
     modeling.updateProperties(props.element, {
-      conditionExpression: conditionExpression
+      conditionExpression,
     })
   }
 
   // 更新扩展元素
   modeling.updateProperties(props.element, {
-    extensionElements: extensionElements.values.length > 0 ? extensionElements : undefined
+    extensionElements: extensionElements.values.length > 0 ? extensionElements : undefined,
   })
 
   emit('inputs-updated', { ...inputData })
 }
 
 // 重置输入配置
-const resetInputs = () => {
+function resetInputs() {
   Object.assign(inputData, {
     inputMappings: [],
     scriptVariables: [],
@@ -548,21 +615,21 @@ const resetInputs = () => {
     exclusive: true,
     retryTimeCycle: {
       retries: 3,
-      timeCycle: 'PT1M'
-    }
+      timeCycle: 'PT1M',
+    },
   })
   updateElement()
   message.success('输入配置已重置')
 }
 
 // 保存输入配置
-const saveInputs = () => {
+function saveInputs() {
   updateElement()
   message.success('输入配置已保存')
 }
 
 // 验证输入配置
-const validateInputs = () => {
+function validateInputs() {
   const errors: string[] = []
 
   // 验证输入映射
@@ -587,7 +654,8 @@ const validateInputs = () => {
 
   if (errors.length > 0) {
     message.error(`配置验证失败：\n${errors.join('\n')}`)
-  } else {
+  }
+  else {
     message.success('配置验证通过')
   }
 }
@@ -597,23 +665,25 @@ const exportedConfig = computed(() => {
   return JSON.stringify(inputData, null, 2)
 })
 
-const exportConfig = () => {
+function exportConfig() {
   showExportModal.value = true
 }
 
 // 复制配置
-const copyConfig = async () => {
+async function copyConfig() {
   try {
     await navigator.clipboard.writeText(exportedConfig.value)
     message.success('配置已复制到剪贴板')
-  } catch (error) {
+  }
+  catch (error) {
     message.error('复制失败，请手动复制')
   }
 }
 
 // 加载现有配置
-const loadInputData = () => {
-  if (!props.element) return
+function loadInputData() {
+  if (!props.element)
+    return
 
   const businessObject = props.element.businessObject
 
@@ -627,7 +697,7 @@ const loadInputData = () => {
   if (extensionElements) {
     // 加载输入映射
     const inputOutput = extensionElements.values?.find(
-      (element: any) => element.$type === 'camunda:InputOutput'
+      (element: any) => element.$type === 'camunda:InputOutput',
     )
 
     if (inputOutput && inputOutput.inputParameters) {
@@ -648,9 +718,9 @@ const loadInputData = () => {
             minLength: null,
             maxLength: null,
             pattern: '',
-            customExpression: ''
+            customExpression: '',
           },
-          description: ''
+          description: '',
         }
 
         // 检查是否为脚本类型
@@ -665,18 +735,18 @@ const loadInputData = () => {
 
     // 加载脚本变量（从执行监听器中）
     const executionListeners = extensionElements.values?.filter(
-      (element: any) => element.$type === 'camunda:ExecutionListener'
+      (element: any) => element.$type === 'camunda:ExecutionListener',
     ) || []
 
     inputData.scriptVariables = executionListeners
       .filter((listener: any) => listener.script)
       .map((listener: any) => ({
         id: generateId(),
-        name: 'scriptVar_' + Date.now(),
+        name: `scriptVar_${Date.now()}`,
         value: listener.script.value,
         valueType: 'script',
         scriptFormat: listener.script.scriptFormat || 'javascript',
-        scope: 'local'
+        scope: 'local',
       }))
   }
 

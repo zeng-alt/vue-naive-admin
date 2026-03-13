@@ -6,8 +6,6 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
-import KeepAlive from "./views/base/keep-alive.vue"
-
 export const defaultLayout = 'normal'
 
 // export const defaultPrimaryColor = '#316C72'
@@ -25,7 +23,6 @@ export const naiveThemeOverrides = {
     primaryColorSuppl: '#316C72E3',
   },
 }
-
 
 export const basePermissions = [
   {

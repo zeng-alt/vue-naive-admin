@@ -2,11 +2,15 @@
   <div class="custom-split-wrapper">
     <n-split direction="horizontal" style="height: 300px;">
       <template #1>
-        <div class="left-pane mr-20">左边内容</div>
+        <div class="left-pane mr-20">
+          左边内容
+        </div>
       </template>
 
       <template #2>
-        <div class="right-pane ml-20">右边内容</div>
+        <div class="right-pane ml-20">
+          右边内容
+        </div>
       </template>
 
       <template #resize-trigger>

@@ -1,5 +1,4 @@
 import { request } from '@/utils'
-import axios from 'axios'
 
 export default {
   serviceAuthorize: data => request.post('/main/v1/role/service/authorize', data),

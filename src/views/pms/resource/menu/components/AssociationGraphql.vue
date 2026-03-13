@@ -1,6 +1,5 @@
 <template>
   <MeModal ref="modalRef" width="1000px">
-
     <GraphqlCrud
       ref="$table"
       v-model:filters="queryItems"
@@ -13,13 +12,13 @@
     >
       <MeQueryItem label="服务" :label-width="50">
         <n-select
-          size="small"
           v-model:value="queryItems.uri.value"
+          size="small"
           clearable
           :options="options"
         />
       </MeQueryItem>
-      <MeQueryItem label="所属菜单" >
+      <MeQueryItem label="所属菜单">
         <n-tree-select
           v-model:value="queryItems.menuId.value"
           :options="treeData"
@@ -31,20 +30,20 @@
       </MeQueryItem>
       <MeQueryItem label="协议" size="small" :label-width="50">
         <n-select
-          size="small"
           v-model:value="queryItems.operation.value"
+          size="small"
           clearable
           :options="[
             { label: 'Query', value: 'Query' },
             { label: 'Mutation', value: 'Mutation' },
-            { label: 'Subscription', value: 'Subscription' }
+            { label: 'Subscription', value: 'Subscription' },
           ]"
         />
       </MeQueryItem>
       <ConditionItem v-model:value="queryItems.code" size="small" label="编码" type="string" :label-width="50">
         <NInput
-          size="small"
           v-model:value="queryItems.code.value"
+          size="small"
           type="text"
           placeholder="请输入graphql编码"
           clearable
@@ -52,8 +51,8 @@
       </ConditionItem>
       <ConditionItem v-model:value="queryItems.name" size="small" label="名称" type="string" :label-width="50">
         <NInput
-          size="small"
           v-model:value="queryItems.name.value"
+          size="small"
           type="text"
           placeholder="请输入graphql名称"
           clearable
@@ -61,51 +60,51 @@
       </ConditionItem>
       <ConditionItem v-model:value="queryItems.functionName" size="small" label="方法名" type="string" :label-width="50">
         <NInput
-          size="small"
           v-model:value="queryItems.functionName.value"
+          size="small"
           type="text"
           placeholder="请输入graphql方法名"
           clearable
         />
       </ConditionItem>
-
     </GraphqlCrud>
-
   </MeModal>
 </template>
 
 <script setup>
-import { PAGE_GRAPHQL_RESOURCE } from '@/views/pms/resource/graphql/apollo'
-import { apolloClients } from '@/utils/graphql'
-import { useModal } from '@/composables'
-import { GraphqlCrud,  MeQueryItem, ConditionItem, MeModal } from '@/components'
 import { ref } from 'vue'
+import { ConditionItem, GraphqlCrud, MeModal, MeQueryItem } from '@/components'
+import { useModal } from '@/composables'
+import { apolloClients } from '@/utils/graphql'
+import { PAGE_GRAPHQL_RESOURCE } from '@/views/pms/resource/graphql/apollo'
 
 defineOptions({ name: 'AssociationGraphql' })
 
 const props = defineProps({
   treeData: {
     type: Array,
-    default: []
-  }
+    default: [],
+  },
 })
+
+const emit = defineEmits(['checked'])
 
 const queryItems = ref({
   code: {},
   name: {},
   uri: {
     option: 'EQ',
-    value: undefined
+    value: undefined,
   },
   menuId: {
     option: 'EQ',
-    value: undefined
+    value: undefined,
   },
   operation: {
     option: 'EQ',
-    value: undefined
+    value: undefined,
   },
-  functionName: {}
+  functionName: {},
 })
 
 const treeLoading = ref(false)
@@ -114,10 +113,10 @@ const options = ref([])
 const mapData = ref(new Map())
 async function initData() {
   treeLoading.value = true
-  const res = Object.keys(apolloClients).map(n => {
+  const res = Object.keys(apolloClients).map((n) => {
     return {
       value: `/${n}/graphql`,
-      label: n + '服务'
+      label: `${n}服务`,
     }
   })
 
@@ -127,7 +126,7 @@ async function initData() {
   const map = new Map()
 
   function traverse(nodes) {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       map.set(node.id, node.name)
       if (node.children && node.children.length) {
         traverse(node.children)
@@ -142,9 +141,7 @@ async function initData() {
 
 initData()
 
-const emit = defineEmits(['checked'])
-
-const [modalRef, okLoading] = useModal()
+const [modalRef] = useModal()
 
 function handleOpen(options = {}) {
   modalRef.value.open({ ...options })
@@ -177,18 +174,17 @@ const btnsColumns = [
             default: () => menuName,
           },
         )
-      } else  {
+      }
+      else {
         return '无父菜单'
       }
-    }
+    },
   },
   { title: '方法名', key: 'functionName', width: 200 },
   { title: '协议', key: 'operation', width: 120 },
 ]
 
-
 defineExpose({
   handleOpen,
 })
-
 </script>

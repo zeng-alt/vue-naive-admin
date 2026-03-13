@@ -8,8 +8,7 @@
 
 import { cloneDeep } from 'lodash-es'
 // import { useDraftStore } from '@/store'
-import { useForm, useModal, useDraft } from '.'
-import { debounceAndThrottle } from '@/utils'
+import { useDraft, useForm, useModal } from '.'
 
 const ACTIONS = {
   view: '查看',
@@ -25,11 +24,8 @@ export function useCrud({
   doUpdate,
   refresh,
   enableDraft = true,
-  draftKey = name
+  draftKey = name,
 }) {
-
-
-
   const modalAction = ref('')
   const [modalRef, okLoading] = useModal()
   const [modalFormRef, modalForm, validation] = useForm(initForm)
@@ -45,14 +41,15 @@ export function useCrud({
   }
 
   const isSave = () => {
-    return enableDraft && modalAction.value !== 'view'  && !isModalOpening.value
+    return enableDraft && modalAction.value !== 'view' && !isModalOpening.value
   }
 
-  const draftStore = useDraft(modalForm, currentRecordId, getDraftKey, isSave, )
+  const draftStore = useDraft(modalForm, currentRecordId, getDraftKey, isSave)
 
   /** 自动保存暂存 */
   function autoSaveDraft() {
-    if (!enableDraft || modalAction.value === 'view') return
+    if (!enableDraft || modalAction.value === 'view')
+      return
 
     const key = getDraftKey()
     // draftStore.saveDraft(key, {
@@ -64,21 +61,24 @@ export function useCrud({
 
   /** 加载暂存数据 */
   function loadDraft() {
-    if (!enableDraft) return null
+    if (!enableDraft)
+      return null
 
     return draftStore.loadDraft()
   }
 
   /** 检查是否有暂存数据 */
   function hasDraft() {
-    if (!enableDraft) return false
+    if (!enableDraft)
+      return false
 
     return draftStore.hasDraft()
   }
 
   /** 清除暂存数据 */
   function clearDraft() {
-    if (!enableDraft) return
+    if (!enableDraft)
+      return
 
     draftStore.clearDraft()
   }
@@ -133,7 +133,7 @@ export function useCrud({
 
   /** 新增 */
   function handleAdd(row = {}, title) {
-    handleOpen({ action: 'add', title, row: Object.assign({}, cloneDeep(initForm), cloneDeep(row)) })
+    handleOpen({ action: 'add', title, row: { ...cloneDeep(initForm), ...cloneDeep(row) } })
   }
 
   /** 修改 */

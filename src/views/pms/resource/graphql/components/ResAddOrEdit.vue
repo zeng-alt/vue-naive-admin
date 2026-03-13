@@ -20,15 +20,15 @@
           <n-input :value="`${graphqlCode}服务`" :disabled="true" />
         </n-form-item-gi>
         <n-form-item-gi :span="12" label="所属菜单" path="menuId">
-            <n-tree-select
-              v-model:value="modalForm.menuId"
-              :options="treeData"
-              label-field="name"
-              key-field="id"
-              placeholder="根菜单"
-              clearable
-            />
-          </n-form-item-gi>
+          <n-tree-select
+            v-model:value="modalForm.menuId"
+            :options="treeData"
+            label-field="name"
+            key-field="id"
+            placeholder="根菜单"
+            clearable
+          />
+        </n-form-item-gi>
         <n-form-item-gi :span="12" path="name" :rule="required">
           <template #label>
             <QuestionLabel label="名称" content="标题" />
@@ -47,13 +47,13 @@
             <QuestionLabel label="协议" content="如果是菜单则对应前端路由的name，使用大驼峰" />
           </template>
           <n-select
-            size="small"
             v-model:value="modalForm.operation"
+            size="small"
             clearable
             :options="[
               { label: 'Query', value: 'Query' },
               { label: 'Mutation', value: 'Mutation' },
-              { label: 'Subscription', value: 'Subscription' }
+              { label: 'Subscription', value: 'Subscription' },
             ]"
           />
         </n-form-item-gi>
@@ -64,32 +64,30 @@
           </template>
           <n-input v-model:value="modalForm.functionName" />
         </n-form-item-gi>
-
       </n-grid>
     </n-form>
   </MeModal>
 </template>
 
 <script setup>
-import { saveGraphqlResource } from '../apollo.js'
 import { MeModal } from '@/components'
 import { useForm, useModal } from '@/composables'
-import QuestionLabel from './QuestionLabel.vue'
 import api from '@/views/pms/resource/menu/api'
+import { saveGraphqlResource } from '../apollo.js'
+import QuestionLabel from './QuestionLabel.vue'
 
-const treeData = ref([])
-async function initData() {
-  const res = await api.getMenuTree()
-  treeData.value = res || []
-}
-
-const props = defineProps({
+defineProps({
   menus: {
     type: Array,
     required: true,
   },
 })
 const emit = defineEmits(['refresh'])
+const treeData = ref([])
+async function initData() {
+  const res = await api.getMenuTree()
+  treeData.value = res || []
+}
 
 const graphqlCode = ref('')
 
@@ -105,7 +103,7 @@ const [modalRef, okLoading] = useModal()
 
 const modalAction = ref('')
 function handleOpen(options = {}) {
-  const { action, row = {}, code, ...rest  } = options
+  const { action, row = {}, code, ...rest } = options
   initData()
   graphqlCode.value = code
   modalAction.value = action

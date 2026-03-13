@@ -36,10 +36,10 @@
 </template>
 
 <script setup>
-import { useTabStore } from '@/store'
-import ContextMenu from './ContextMenu.vue'
-
 import { useI18n } from 'vue-i18n'
+import { useTabStore } from '@/store'
+
+import ContextMenu from './ContextMenu.vue'
 
 const { t } = useI18n()
 

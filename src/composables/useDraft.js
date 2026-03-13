@@ -1,11 +1,10 @@
-
+import { onUnmounted, watch } from 'vue'
 import { useDraftStore } from '@/store'
 import { debounceAndThrottle } from '@/utils'
-import { watch, onUnmounted } from 'vue'
 
-export  function useDraft(modalForm, recordId, getKeyHandler, autoSaveCondition) {
+export function useDraft(modalForm, recordId, getKeyHandler, autoSaveCondition) {
   if (typeof getKeyHandler !== 'function') {
-    throw new Error('getKeyHandler must be a function')
+    throw new TypeError('getKeyHandler must be a function')
   }
 
   const draftStore = useDraftStore()
@@ -42,14 +41,13 @@ export  function useDraft(modalForm, recordId, getKeyHandler, autoSaveCondition)
       if (typeof autoSaveCondition === 'function' && autoSaveCondition())
         handler() // 防抖，避免频繁保存
     },
-    { deep: true }
+    { deep: true },
   )
 
   // 组件卸载时清理定时器
   onUnmounted(() => {
     cancel()
   })
-
 
   return { saveDraft, loadDraft, clearDraft, hasDraft, restoreDraft }
 }

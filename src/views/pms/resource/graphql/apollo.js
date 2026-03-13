@@ -1,5 +1,5 @@
-import { apolloClients } from '@/utils/graphql'
 import gql from 'graphql-tag'
+import { apolloClients } from '@/utils/graphql'
 
 export const SAVE_GRAPHQL_RESOURCE = gql`
   mutation saveGraphqlResource($graphqlResourceInput: GraphqlResourceInput) {
@@ -48,8 +48,8 @@ export function saveGraphqlResource(data) {
   return apolloClients.main.mutate({
     mutation: SAVE_GRAPHQL_RESOURCE,
     variables: {
-      graphqlResourceInput: data
-    }
+      graphqlResourceInput: data,
+    },
   })
 }
 
@@ -61,4 +61,3 @@ export function deleteGraphqlResource(ids) {
     },
   })
 }
-

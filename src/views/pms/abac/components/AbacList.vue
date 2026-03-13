@@ -1,9 +1,8 @@
 <template>
-
-  <div class="flex justify-between items-center mr-20">
+  <div class="mr-20 flex items-center justify-between">
     <h3>租户列表</h3>
   </div>
-  <div class="flex mr-20 mt-10">
+  <div class="mr-20 mt-10 flex">
     <n-input
       v-model:value="queryItem.name"
       placeholder="权限名称 模糊查询[_或%]"
@@ -11,14 +10,13 @@
       @keydown.enter="handleSearch"
     />
     <n-select
+      v-model:value="queryItem.resourceType"
       class="ml-10"
       placeholder="权限类型"
       clearable
-      v-model:value="queryItem.resourceType"
       :options="dict.resource_type"
       @update:value="handleSearch"
-      >
-    </n-select>
+    />
   </div>
   <n-infinite-scroll class="mr-20" style="height: 400px;" @load="handleLoad">
     <n-tree
@@ -34,8 +32,8 @@
       :on-update:selected-keys="onSelect"
       default-expand-all block-line selectable
     >
-      <template slot="empty">
-        <n-empty description="你什么也找不到"/>
+      <template #empty>
+        <n-empty description="你什么也找不到" />
       </template>
     </n-tree>
     <div v-if="loading" class="text">
@@ -45,27 +43,26 @@
       没有更多了
     </div>
   </n-infinite-scroll>
-
 </template>
 
 <script setup>
-import { NButton, NEllipsis } from 'naive-ui'
 import { useLazyQuery } from '@vue/apollo-composable'
-import { FUZZY_PAGE_PERMISSION_RULE } from '../apollo.js'
-import { apolloClients } from '@/utils/graphql'
+import { NButton, NEllipsis } from 'naive-ui'
+import { h, onMounted, ref, watch, withModifiers } from 'vue'
 import { useDict } from '@/composables/useDict.js'
-import { ref, withModifiers, onMounted, h, watch } from 'vue'
+import { apolloClients } from '@/utils/graphql'
+import { FUZZY_PAGE_PERMISSION_RULE } from '../apollo.js'
 
-const props = defineProps({
+defineProps({
   currentAbac: {
     type: Object,
     default: () => null,
   },
 })
 
-const dict = useDict('resource_type');
-
 const emit = defineEmits(['update:currentAbac', 'add', 'selectAbac'])
+
+const dict = useDict('resource_type')
 
 function onSelect(keys, option, { action, node }) {
   emit('update:currentAbac', action === 'select' ? node : null)
@@ -74,10 +71,10 @@ function onSelect(keys, option, { action, node }) {
 
 const queryItem = {
   name: undefined,
-  resourceType : undefined
+  resourceType: undefined,
 }
 
-const pageQuery  = {
+const pageQuery = {
   after: undefined,
   first: 13,
 }
@@ -86,8 +83,8 @@ const { result, load, refetch } = useLazyQuery(
   FUZZY_PAGE_PERMISSION_RULE,
   { filter: queryItem, pageQuery },
   {
-    fetchPolicy: 'network-only'
-  }
+    fetchPolicy: 'network-only',
+  },
 )
 
 const treeData = ref([])
@@ -96,9 +93,10 @@ const loading = ref(false)
 const manualTrigger = ref(true)
 
 watch(result, (newResult) => {
-  if (!manualTrigger.value) return  // 不是主动触发的，忽略
+  if (!manualTrigger.value)
+    return // 不是主动触发的，忽略
   if (newResult?.fuzzyPagePermissionRule?.edges) {
-    let value = newResult.fuzzyPagePermissionRule.edges.map(e => e.node)
+    const value = newResult.fuzzyPagePermissionRule.edges.map(e => e.node)
     treeData.value = [...treeData.value, ...value]
     pageQuery.after = newResult.fuzzyPagePermissionRule.pageInfo.endCursor
     noMore.value = !newResult.fuzzyPagePermissionRule?.pageInfo?.hasNextPage
@@ -108,14 +106,15 @@ watch(result, (newResult) => {
 
 async function handleLoad() {
   if (loading.value || noMore.value) {
-    return;
+    return
   }
   try {
     manualTrigger.value = true
     loading.value = true
-    await refetch({filter: queryItem, pageQuery})
+    await refetch({ filter: queryItem, pageQuery })
     loading.value = false
-  } catch (e) {
+  }
+  catch (e) {
     console.error(e)
     loading.value = false
   }
@@ -139,7 +138,6 @@ async function handleDelete(item) {
       }
     },
   })
-
 }
 
 function handleAdd() {
@@ -152,16 +150,15 @@ function handleSearch() {
   treeData.value = []
   pageQuery.after = undefined
   noMore.value = false
-  refetch({filter: queryItem, pageQuery})
-
+  refetch({ filter: queryItem, pageQuery })
 }
 
-function renderLabel({ option, selected })  {
+function renderLabel({ option, selected }) {
   return h('div', {
     class: [
       'flex items-center gap-2',
-      selected ? 'n-tree-node-content--selected' : ''
-    ]
+      selected ? 'n-tree-node-content--selected' : '',
+    ],
   }, [
     h(NEllipsis, { style: { width: '150px' } }, { default: () => option.code || '--' }),
     h(NEllipsis, { style: { width: '180px', marginLeft: '20px' } }, { default: () => option.name || '--' }),
@@ -189,18 +186,15 @@ function renderSuffix({ option }) {
   ]
 }
 
-
 onMounted(() => {
   apolloClients.main.cache.evict({ fieldName: 'fuzzyPagePermissionRule' })
   apolloClients.tenant.cache.gc()
   load()
 })
 
-
 defineExpose({
-  handleSearch
+  handleSearch,
 })
-
 </script>
 
 <style scoped>

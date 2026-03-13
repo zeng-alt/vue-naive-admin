@@ -3,7 +3,7 @@
     <div class="flex gap-4">
       <!-- 左侧菜单树 -->
       <div class="w-300 flex-shrink-0">
-        <n-card title="菜单权限" :bordered="false" hoverable size="small">
+        <NCard title="菜单权限" :bordered="false" hoverable size="small">
           <n-spin :show="loading">
             <n-tree
               key-field="id"
@@ -19,29 +19,29 @@
               class="cus-scroll max-h-600 w-full"
             />
           </n-spin>
-        </n-card>
+        </NCard>
       </div>
 
       <!-- 右侧角色表格 -->
       <div class="flex-1">
-        <n-card title="角色列表" hoverable size="small">
+        <NCard title="角色列表" hoverable size="small">
           <GraphqlCrud
             ref="$table"
-            size="small"
             v-model:filters="queryItems"
+            size="small"
             :condition="true"
             :scroll-x="-1"
             :columns="columns"
             :get-data="PAGE_ROLE"
             @on-checked="onChecked"
           >
-            <ConditionItem size="small" v-model:value="queryItems.name" type="string" label="角色名" :label-width="50" :content-width="150">
-              <n-input size="small" v-model:value="queryItems.name.value" type="text" placeholder="请输入角色名" clearable />
+            <ConditionItem v-model:value="queryItems.name" size="small" type="string" label="角色名" :label-width="50" :content-width="150">
+              <n-input v-model:value="queryItems.name.value" size="small" type="text" placeholder="请输入角色名" clearable />
             </ConditionItem>
-            <ConditionItem size="small" label="状态" v-model:value="queryItems.enable" type="string" :label-width="50" :content-width="150">
+            <ConditionItem v-model:value="queryItems.enable" size="small" label="状态" type="string" :label-width="50" :content-width="150">
               <n-select
-                size="small"
                 v-model:value="queryItems.enable.value"
+                size="small"
                 clearable
                 :options="[
                   { label: '启用', value: true },
@@ -50,19 +50,19 @@
               />
             </ConditionItem>
           </GraphqlCrud>
-        </n-card>
+        </NCard>
       </div>
     </div>
   </MeModal>
 </template>
 
 <script setup>
-import api from '@/views/pms/role/api.js'
-import { MeModal, GraphqlCrud, ConditionItem, CommonPage } from '@/components'
-import { PAGE_ROLE, saveRole } from '@/views/pms/role/apollo.js'
-import { useModal } from '@/composables'
+import { NCard, NSwitch } from 'naive-ui'
 import { ref } from 'vue'
-import { NSwitch, NCard } from 'naive-ui'
+import { ConditionItem, GraphqlCrud, MeModal } from '@/components'
+import { useModal } from '@/composables'
+import api from '@/views/pms/role/api.js'
+import { PAGE_ROLE, saveRole } from '@/views/pms/role/apollo.js'
 
 const emit = defineEmits(['refresh'])
 
@@ -73,7 +73,7 @@ const modalAction = ref('')
 /** QueryBar筛选参数（可选） */
 const queryItems = ref({
   name: {},
-  enable: {}
+  enable: {},
 })
 
 const permissionTree = ref([])
@@ -90,10 +90,12 @@ async function loadPermissionTree() {
   try {
     const res = await api.getAllPermissionTree()
     permissionTree.value = res ?? []
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加载权限树失败:', error)
     $message.error('加载权限树失败')
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -114,8 +116,7 @@ async function onSave() {
 
   okLoading.value = true
   try {
-
-    await api.authorizePermission({  roleIds: roleIds.value, permissionIds: permissionIds.value })
+    await api.authorizePermission({ roleIds: roleIds.value, permissionIds: permissionIds.value })
     okLoading.value = false
     $message.success('分配菜单成功')
     emit('refresh')

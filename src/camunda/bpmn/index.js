@@ -1,4 +1,4 @@
-import "./editor/index.js"
+import './editor/index.js'
 
 export function setupBpmn(app) {
 

@@ -6,17 +6,17 @@
  - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  --------------------------------->
 
- <template>
+<template>
   <div>
     <n-space vertical :size="12">
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <h3>菜单</h3>
         <div class="flex gap-2">
           <n-tooltip trigger="hover">
             <template #trigger>
-              <n-button type="primary" @click="assignMenu()" quaternary>
+              <NButton type="primary" quaternary @click="assignMenu()">
                 <i class="i-material-symbols:person-check mr-4 text-14" />
-              </n-button>
+              </NButton>
             </template>
             分配菜单
           </n-tooltip>
@@ -54,8 +54,8 @@
 import { NButton } from 'naive-ui'
 import { ref, withModifiers } from 'vue'
 import { deleteMenuResource } from '../apollo'
-import ResAddOrEdit from './ResAddOrEdit.vue'
 import AssignMenu from './AssignMenu.vue'
+import ResAddOrEdit from './ResAddOrEdit.vue'
 
 defineProps({
   treeData: {
@@ -144,7 +144,7 @@ function assignMenu() {
   assignMenuRef.value?.handleOpen({
     action: 'assign',
     title: '分配菜单权限',
-    okText: '分配'
+    okText: '分配',
   })
 }
 </script>

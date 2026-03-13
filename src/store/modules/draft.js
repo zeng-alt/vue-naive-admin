@@ -7,19 +7,19 @@ export const useDraftStore = defineStore('draft', {
 
   getters: {
     // 获取指定模块的暂存数据
-    getDraft: (state) => (key) => {
+    getDraft: state => (key) => {
       return state.drafts.get(key) || null
     },
 
     // 检查是否有暂存数据
-    hasDraft: (state) => (key) => {
+    hasDraft: state => (key) => {
       return state.drafts.has(key) && state.drafts.get(key) !== null
     },
 
     // 获取所有暂存的key列表
     getDraftKeys: (state) => {
-      return Array.from(state.drafts.keys())
-    }
+      return [...state.drafts.keys()]
+    },
   },
 
   actions: {
@@ -28,7 +28,7 @@ export const useDraftStore = defineStore('draft', {
       this.drafts.set(key, {
         data: JSON.parse(JSON.stringify(data)), // 深拷贝
         timestamp: Date.now(),
-        id: data.id || null // 保存记录ID，用于区分新增和编辑
+        id: data.id || null, // 保存记录ID，用于区分新增和编辑
       })
     },
 
@@ -56,7 +56,7 @@ export const useDraftStore = defineStore('draft', {
           this.drafts.delete(key)
         }
       }
-    }
+    },
   },
 
   // 持久化配置（如果使用 pinia-plugin-persistedstate）
@@ -67,15 +67,15 @@ export const useDraftStore = defineStore('draft', {
       serialize: (state) => {
         // 将 Map 转换为普通对象进行序列化
         return JSON.stringify({
-          drafts: Object.fromEntries(state.drafts)
+          drafts: Object.fromEntries(state.drafts),
         })
       },
       deserialize: (str) => {
         const data = JSON.parse(str)
         return {
-          drafts: new Map(Object.entries(data.drafts || {}))
+          drafts: new Map(Object.entries(data.drafts || {})),
         }
-      }
-    }
-  }
+      },
+    },
+  },
 })

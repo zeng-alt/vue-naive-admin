@@ -70,12 +70,12 @@
           </n-descriptions>
 
           <div class="mt-32 flex justify-between">
-            <div class="flex-1 flex items-center gap-4">
+            <div class="flex flex-1 items-center gap-4">
               <n-tabs v-model:value="currentType" type="line" size="small">
                 <n-tab-pane name="http" tab="HTTP">
                   <GraphqlCrud
                     ref="$table"
-                    :filters="{menuId: {option: 'EQ', value: currentMenu.id}}"
+                    :filters="{ menuId: { option: 'EQ', value: currentMenu.id } }"
                     :columns="btnsColumns"
                     :condition="true"
                     :scroll-x="-1"
@@ -85,7 +85,7 @@
                 <n-tab-pane name="graphql" tab="GraphQL">
                   <GraphqlCrud
                     ref="$graphqlTable"
-                    :filters="{menuId: {option: 'EQ', value: currentMenu.id}}"
+                    :filters="{ menuId: { option: 'EQ', value: currentMenu.id } }"
                     :columns="btnsColumns"
                     :condition="true"
                     :scroll-x="-1"
@@ -93,18 +93,17 @@
                   />
                 </n-tab-pane>
                 <template #suffix>
-                  <NButton size="small" type="primary" @click="handleAddBtn" class="ml-12">
+                  <NButton size="small" type="primary" class="ml-12" @click="handleAddBtn">
                     <i class="i-fe:plus mr-4 text-14" />
                     新增
                   </NButton>
-                  <NButton size="small" type="success" @click="handleIntroduce" class="ml-12">
+                  <NButton size="small" type="success" class="ml-12" @click="handleIntroduce">
                     <i class="i-material-symbols:electricalServices mr-4 text-14" />
                     关联
                   </NButton>
                 </template>
               </n-tabs>
             </div>
-
           </div>
         </template>
         <n-empty v-else class="h-450 f-c-c" size="large" description="请选择菜单查看详情" />
@@ -115,21 +114,21 @@
     <MeModal ref="httpModalRef" width="1000px">
       <HttpResource :show-header="false" @checked="onChecked" />
     </MeModal>
-    <AssociationGraphql ref="associationGraphqlRef" @checked="onChecked" :treeData="treeData"></AssociationGraphql>
+    <AssociationGraphql ref="associationGraphqlRef" :tree-data="treeData" @checked="onChecked" />
   </CommonPage>
 </template>
 
 <script setup>
-import { useModal } from '@/composables'
-import { MeModal, GraphqlCrud } from '@/components'
 import { NButton, NSwitch } from 'naive-ui'
+import { GraphqlCrud, MeModal } from '@/components'
+import { useModal } from '@/composables'
+import HttpResource from '@/views/pms/resource/http/index.vue'
 import api from './api'
-import { handleGraphqlDisconnect, saveAllHttpResource, saveAllGraphqlResource, handleHttpDisconnect, deletePermission, CONDITION_PAGE_HTTP_RESOURCE, CONDITION_PAGE_GRAPHQL_RESOURCE } from  './apollo'
+import { CONDITION_PAGE_GRAPHQL_RESOURCE, CONDITION_PAGE_HTTP_RESOURCE, deletePermission, handleGraphqlDisconnect, handleHttpDisconnect, saveAllGraphqlResource, saveAllHttpResource } from './apollo'
+import AssociationGraphql from './components/AssociationGraphql.vue'
+import GraphqlAddOrEdit from './components/GraphqlAddOrEdit.vue'
 import MenuTree from './components/MenuTree.vue'
 import ResAddOrEdit from './components/ResAddOrEdit.vue'
-import GraphqlAddOrEdit from './components/GraphqlAddOrEdit.vue'
-import HttpResource from '@/views/pms/resource/http/index.vue'
-import AssociationGraphql from './components/AssociationGraphql.vue'
 
 defineOptions({ name: 'MenuResourceMgt' })
 
@@ -254,7 +253,8 @@ watch(
     await nextTick()
     if (currentType.value === 'http') {
       $table.value?.handleSearch()
-    } else {
+    }
+    else {
       $graphqlTable.value?.handleSearch()
     }
   },
@@ -264,7 +264,7 @@ const associationGraphqlRef = ref(null)
 const graphqlModalRef = ref(null)
 
 function handleAddBtn() {
-  if (currentType.value == 'http') {
+  if (currentType.value === 'http') {
     modalRef.value?.handleOpen({
       action: 'add',
       type: 'BUTTON',
@@ -272,7 +272,8 @@ function handleAddBtn() {
       row: { type: 'BUTTON', menuId: currentMenu.value.id },
       okText: '保存',
     })
-  } else {
+  }
+  else {
     graphqlModalRef.value?.handleOpen({
       action: 'add',
       type: 'BUTTON',
@@ -284,7 +285,7 @@ function handleAddBtn() {
 }
 
 function handleEditBtn(row) {
-  if (currentType.value == 'http') {
+  if (currentType.value === 'http') {
     modalRef.value?.handleOpen({
       action: 'edit',
       type: 'BUTTON',
@@ -292,7 +293,8 @@ function handleEditBtn(row) {
       row,
       okText: '保存',
     })
-  } else {
+  }
+  else {
     graphqlModalRef.value?.handleOpen({
       action: 'edit',
       type: 'BUTTON',
@@ -300,9 +302,7 @@ function handleEditBtn(row) {
       row,
       okText: '保存',
     })
-
   }
-
 }
 
 function handleDisconnect(row) {
@@ -314,19 +314,21 @@ function handleDisconnect(row) {
     async onPositiveClick() {
       try {
         d.loading = true
-        if (currentType.value == 'http') {
-          await handleHttpDisconnect({...row, menuId: null })
+        if (currentType.value === 'http') {
+          await handleHttpDisconnect({ ...row, menuId: null })
           $table.value.handleSearch()
-        } else {
-          await handleGraphqlDisconnect({...row, menuId: null})
+        }
+        else {
+          await handleGraphqlDisconnect({ ...row, menuId: null })
           $graphqlTable.value.handleSearch()
         }
         $message.success('断联成功')
-      } catch (error) {
+      }
+      catch (error) {
         console.error(error)
         d.loading = false
       }
-    }
+    },
   })
 }
 
@@ -339,15 +341,17 @@ function handleDeleteBtn(id) {
     async onPositiveClick() {
       try {
         d.loading = true
-        //await api.deletePermission(id)
+        // await api.deletePermission(id)
         await deletePermission(id)
         $message.success('删除成功')
-        if (currentType.value == 'http') {
+        if (currentType.value === 'http') {
           $table.value.handleSearch()
-        } else {
+        }
+        else {
           $graphqlTable.value.handleSearch()
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error(error)
         d.loading = false
       }
@@ -372,17 +376,18 @@ async function handleEnable(item) {
 }
 
 async function handleIntroduce() {
-  if (currentType.value == 'http') {
+  if (currentType.value === 'http') {
     httpModalRef.value.open({
       title: '关联HTTP资源',
       action: 'introduce',
-      onOk: handleAssociationBtn
+      onOk: handleAssociationBtn,
     })
-  } else {
+  }
+  else {
     associationGraphqlRef.value.handleOpen({
       title: '关联Graphql资源',
       action: 'introduce',
-      onOk: handleAssociationBtn
+      onOk: handleAssociationBtn,
     })
   }
 }
@@ -394,14 +399,15 @@ function onChecked(ids) {
 }
 
 async function handleAssociationBtn() {
-  let data = permissionIds.value.map(num => ({
+  const data = permissionIds.value.map(num => ({
     id: num,
     menuId: currentMenu.value.id,
   })) || []
-  if (currentType.value == 'http') {
+  if (currentType.value === 'http') {
     await saveAllHttpResource(data)
     $table.value.handleSearch()
-  } else {
+  }
+  else {
     await saveAllGraphqlResource(data)
     $graphqlTable.value.handleSearch()
   }

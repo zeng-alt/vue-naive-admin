@@ -1,12 +1,10 @@
-
 import { defineStore } from 'pinia'
-import { SpelExpressionEvaluator } from 'spel2js';
-
+import { SpelExpressionEvaluator } from 'spel2js'
 
 export const usePolicyRuleStore = defineStore('policyRule', {
   state: () => ({
     // key -> compiled SpEL expression
-    policyRules: new Map()
+    policyRules: new Map(),
   }),
   actions: {
     /**
@@ -15,12 +13,13 @@ export const usePolicyRuleStore = defineStore('policyRule', {
      */
     async setPolicyRules(policyRules) {
       const compiledRules = new Map()
-      await Promise.all(policyRules.map(item => {
-        return new Promise(resolve => {
+      await Promise.all(policyRules.map((item) => {
+        return new Promise((resolve) => {
           try {
             const compiled = SpelExpressionEvaluator.compile(item.condition)
             compiledRules.set(item.key, compiled)
-          } catch (e) {
+          }
+          catch (e) {
             console.error(`❌ 解析失败: ${item.key}`, e)
           }
           resolve()
@@ -29,7 +28,6 @@ export const usePolicyRuleStore = defineStore('policyRule', {
 
       this.policyRules = compiledRules
     },
-
 
     async setPolicyRules(key, policyRule) {
       const compiled = SpelExpressionEvaluator.compile(policyRule)

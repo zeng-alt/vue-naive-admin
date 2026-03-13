@@ -34,7 +34,7 @@ export function throttle(fn, wait) {
   let previous = 0
 
   return function (...argArr) {
-    const now = +new Date()
+    const now = Date.now()
     context = this
     args = argArr
     if (now - previous > wait) {
@@ -84,7 +84,6 @@ export function debounce(method, wait, immediate) {
   }
 }
 
-
 /**
  * 防抖 + 节流组合函数
  * @param {Function} fn 要执行的函数
@@ -114,7 +113,8 @@ export function debounceAndThrottle(fn, debounceWait = 2000, throttleWait = 1000
       return
     }
 
-    if (timeout) clearTimeout(timeout)
+    if (timeout)
+      clearTimeout(timeout)
     timeout = setTimeout(run, debounceWait)
   }
 
@@ -127,11 +127,9 @@ export function debounceAndThrottle(fn, debounceWait = 2000, throttleWait = 1000
 
   return {
     handler,
-    cancel
+    cancel,
   }
 }
-
-
 
 /**
  * @param {number} time 毫秒数
@@ -154,19 +152,19 @@ export function useResize(el, cb) {
   return observer
 }
 
-
 // 动态加载语言文件
 export async function loadLocaleMessages(locale) {
   try {
     const response = await fetch(`/locales/${locale}.js`)
     const text = await response.text()
-    
+
     // 解析 JavaScript 模块内容
     const moduleContent = text.replace('export default', 'return')
     const messages = new Function(moduleContent)()
-    
+
     return messages
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Failed to load locale ${locale}:`, error)
     return {}
   }

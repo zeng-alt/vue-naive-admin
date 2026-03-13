@@ -36,7 +36,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'medium',
-    validator: (value) => ['tiny', 'small', 'medium', 'large'].includes(value)
+    validator: value => ['tiny', 'small', 'medium', 'large'].includes(value),
   },
   contentWidth: {
     type: Number,
@@ -119,9 +119,9 @@ const operatorOptions = computed(() => {
 /**
  * 获取 icon class
  */
-const getOperatorIcon = (key) => {
+function getOperatorIcon(key) {
   const flat = [...(operatorMap[props.type] || [])]
-  return flat.find((item) => item.key === key)?.icon || 'i-fa:equals'
+  return flat.find(item => item.key === key)?.icon || 'i-fa:equals'
 }
 
 // 处理操作符选择

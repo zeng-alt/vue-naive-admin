@@ -37,7 +37,7 @@
           <template #label>
             <QuestionLabel label="编码" content="如果是菜单则对应前端路由的name，使用大驼峰" />
           </template>
-          <n-input v-model:value="modalForm.code" :disabled="modalAction === 'edit'"/>
+          <n-input v-model:value="modalForm.code" :disabled="modalAction === 'edit'" />
         </n-form-item-gi>
         <n-form-item-gi
           v-if="modalForm.type === 'MENU'"
@@ -163,13 +163,13 @@
           <n-select v-model:value="modalForm.menuStyle" :options="options" />
         </n-form-item-gi>
 
-        <n-form-item-gi :span="12" v-if="modalType === 'BUTTON'" path="method" :rule="required">
+        <n-form-item-gi v-if="modalType === 'BUTTON'" :span="12" path="method" :rule="required">
           <template #label>
             <QuestionLabel label="协议" content="如果是菜单则对应前端路由的name，使用大驼峰" />
           </template>
           <n-select
-            size="small"
             v-model:value="modalForm.method"
+            size="small"
             clearable
             :options="[
               { label: 'GET', value: 'GET' },
@@ -179,7 +179,7 @@
               { label: 'PATCH', value: 'PATCH' },
               { label: 'HEAD', value: 'HEAD' },
               { label: 'OPTIONS', value: 'OPTIONS' },
-              { label: 'TRACE', value: 'TRACE' }
+              { label: 'TRACE', value: 'TRACE' },
             ]"
           />
         </n-form-item-gi>
@@ -203,8 +203,7 @@ import icons from 'isme:icons'
 import pagePathes from 'isme:page-pathes'
 import { MeModal } from '@/components'
 import { useForm, useModal } from '@/composables'
-import api from '../api'
-import { saveMenuResource, saveGraphqlResource, saveHttpResource } from '../apollo'
+import { saveHttpResource, saveMenuResource } from '../apollo'
 import QuestionLabel from './QuestionLabel.vue'
 
 const props = defineProps({
@@ -253,10 +252,11 @@ function handleOpen(options = {}) {
   const { action, type, row = {}, ...rest } = options
   modalAction.value = action
   modalType.value = type
-  let defaultForm = null;
+  let defaultForm = null
   if (type === 'MENU') {
-    defaultForm = { enable: true, show: true, layout: '',  menuStyle: 'default' }
-  } else {
+    defaultForm = { enable: true, show: true, layout: '', menuStyle: 'default' }
+  }
+  else {
     defaultForm = { enable: true }
   }
   modalForm.value = { ...defaultForm, ...row }
@@ -269,13 +269,14 @@ async function onSave() {
   okLoading.value = true
   try {
     let newFormData
-    let data = null;
+    let data = null
     if (modalType.value === 'MENU') {
-      data = { ...modalForm.value,  parentMenu: {id: modalForm.value.menuId}}
+      data = { ...modalForm.value, parentMenu: { id: modalForm.value.menuId } }
       delete data.menuId
       delete data.method
-    } else {
-      data = { ...modalForm.value,  menuId: modalForm.value.menuId}
+    }
+    else {
+      data = { ...modalForm.value, menuId: modalForm.value.menuId }
       delete data.type
     }
     // 删除parentId字段
@@ -288,17 +289,16 @@ async function onSave() {
       delete data.parentMenu
     }
 
-
     // const res = await api.addPermission(modalForm.value)
-    let res  = null;
+    let res = null
     if (modalType.value === 'MENU') {
       res = await saveMenuResource(data)
       newFormData = res.data?.saveMenuResource
-    } else {
+    }
+    else {
       res = await saveHttpResource(data)
       newFormData = res.data?.saveHttpResource
     }
-
 
     okLoading.value = false
     $message.success('保存成功')

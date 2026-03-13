@@ -1,18 +1,17 @@
-
-import { defineConfig, ja_JP, nl_NL, en_US} from '@vueform/builder'
-import {loadLocaleMessages} from '@/utils/common'
+import { defineConfig, en_US, ja_JP, nl_NL } from '@vueform/builder'
+import { loadLocaleMessages } from '@/utils/common'
 // You might place this anywhere else in your project
-import '@vueform/builder/vueform.css';
+import '@vueform/builder/vueform.css'
 
 const messages = await loadLocaleMessages('zh_CN')
-
 
 export default defineConfig({
   expressions: {
     enabled: true,
   },
   builderLocales: {
-    ja_JP, nl_NL,
+    ja_JP,
+    nl_NL,
     zh_CN: messages.form,
     en_US,
   },
@@ -25,4 +24,3 @@ export default defineConfig({
   defaultWidth: 700,
   import: true,
 })
-

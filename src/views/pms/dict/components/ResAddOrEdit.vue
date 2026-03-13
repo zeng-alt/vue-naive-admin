@@ -1,4 +1,3 @@
-
 <template>
   <MeModal ref="modalRef">
     <n-form
@@ -9,7 +8,6 @@
       :model="modalForm"
     >
       <n-grid :cols="24" :x-gap="24">
-
         <n-form-item-gi :span="12" path="dictName" :rule="required">
           <template #label>
             <QuestionLabel label="字典名称" content="标题" />
@@ -20,10 +18,10 @@
           <template #label>
             <QuestionLabel label="字典编码" content="使用大驼峰" />
           </template>
-          <n-input v-model:value="modalForm.dictCode"/>
+          <n-input v-model:value="modalForm.dictCode" />
         </n-form-item-gi>
         <n-form-item-gi :span="24" path="remark" label="备注">
-          <n-input type="textarea" v-model:value="modalForm.remark"/>
+          <n-input v-model:value="modalForm.remark" type="textarea" />
         </n-form-item-gi>
       </n-grid>
     </n-form>
@@ -34,7 +32,6 @@
 import { MeModal, QuestionLabel } from '@/components'
 import { useForm, useModal } from '@/composables'
 import { saveDictType } from '../apollo'
-
 
 const emit = defineEmits(['refresh'])
 

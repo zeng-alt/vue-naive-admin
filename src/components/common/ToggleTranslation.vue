@@ -1,8 +1,8 @@
 <template>
   <i
     id="toggleTheme"
-    class="mr-16 cursor-pointer"
-    :class="'i-fe:TranslationOutlined'"
+    class="i-fe:TranslationOutlined mr-16 cursor-pointer"
+
     @click="switchLang"
   />
 </template>

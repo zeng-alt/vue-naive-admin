@@ -2,21 +2,21 @@
   <MeModal ref="modalRef">
     <GraphqlCrud
       ref="$table"
-      size="small"
       v-model:filters="queryItems"
+      size="small"
       :condition="true"
       :scroll-x="-1"
       :columns="columns"
       :get-data="PAGE_ROLE"
       @on-checked="onChecked"
     >
-      <ConditionItem size="small" v-model:value="queryItems.name" type="string" label="角色名" :label-width="50" :content-width="150">
-        <n-input size="small" v-model:value="queryItems.name.value" type="text" placeholder="请输入角色名" clearable />
+      <ConditionItem v-model:value="queryItems.name" size="small" type="string" label="角色名" :label-width="50" :content-width="150">
+        <n-input v-model:value="queryItems.name.value" size="small" type="text" placeholder="请输入角色名" clearable />
       </ConditionItem>
-      <ConditionItem size="small" label="状态" v-model:value="queryItems.enable" type="string" :label-width="50" :content-width="150">
+      <ConditionItem v-model:value="queryItems.enable" size="small" label="状态" type="string" :label-width="50" :content-width="150">
         <n-select
-          size="small"
           v-model:value="queryItems.enable.value"
+          size="small"
           clearable
           :options="[
             { label: '启用', value: true },
@@ -29,12 +29,12 @@
 </template>
 
 <script setup>
-import api from '../api.js'
-import { MeModal } from '@/components'
-import { PAGE_ROLE, saveRole } from '@/views/pms/role/apollo.js'
-import { useModal } from '@/composables'
-import { ref } from 'vue'
 import { NSwitch } from 'naive-ui'
+import { ref } from 'vue'
+import { MeModal } from '@/components'
+import { useModal } from '@/composables'
+import { PAGE_ROLE, saveRole } from '@/views/pms/role/apollo.js'
+import api from '../api.js'
 
 const emit = defineEmits(['refresh'])
 
@@ -42,7 +42,7 @@ const $table = ref(null)
 /** QueryBar筛选参数（可选） */
 const queryItems = ref({
   name: {},
-  enable: {}
+  enable: {},
 })
 
 const [modalRef, okLoading] = useModal()
@@ -58,10 +58,11 @@ function onChecked(rowKeys) {
 }
 
 function handleOpen(options = {}) {
-  const { action, type, ids = [], service, ...rest  } = options
+  const { action, type, ids = [], service, ...rest } = options
   if (type === 'service') {
     graphqlService.value = service
-  } else {
+  }
+  else {
     graphqlIds.value = ids
   }
   modalType.value = type
@@ -70,31 +71,31 @@ function handleOpen(options = {}) {
 }
 
 async function onSave() {
-
   if (roleIds.value.length === 0) {
-      // $message.error('请选择角色')
-      return true
-    }
+    // $message.error('请选择角色')
+    return true
+  }
 
   okLoading.value = true
   try {
     if (modalAction.value === 'authorize') {
       if (modalType.value === 'service') {
-        await api.serviceAuthorize({service: graphqlService.value, roleIds: roleIds.value})
-      } else {
-        await api.functionAuthorize({graphqlIds: graphqlIds.value, roleIds: roleIds.value})
+        await api.serviceAuthorize({ service: graphqlService.value, roleIds: roleIds.value })
+      }
+      else {
+        await api.functionAuthorize({ graphqlIds: graphqlIds.value, roleIds: roleIds.value })
       }
     }
     else if (modalAction.value === 'cancelAuthorize') {
-
       if (modalType.value === 'service') {
-        await api.serviceCancelAuthorize({service: graphqlService.value, roleIds: roleIds.value})
-      } else {
-        await api.functionCancelAuthorize({graphqlIds: graphqlIds.value, roleIds: roleIds.value})
+        await api.serviceCancelAuthorize({ service: graphqlService.value, roleIds: roleIds.value })
+      }
+      else {
+        await api.functionCancelAuthorize({ graphqlIds: graphqlIds.value, roleIds: roleIds.value })
       }
     }
     okLoading.value = false
-    $message.success(modalAction.value === 'authorize' ? '授权成功' :'取消授权成功')
+    $message.success(modalAction.value === 'authorize' ? '授权成功' : '取消授权成功')
     emit('refresh')
   }
   catch (error) {
