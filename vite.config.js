@@ -11,18 +11,17 @@ import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
 import Unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
-import { NaiveUiResolver, ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig, loadEnv } from 'vite'
 import removeNoMatch from 'vite-plugin-router-warn'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import { pluginIcons, pluginPagePathes } from './build/plugin-isme'
 
-// import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, process.cwd())
   const { VITE_PUBLIC_PATH, VITE_PROXY_TARGET } = viteEnv
+  const API_PREFIX_REGEX = /^\/api/;
 
   return {
     base: VITE_PUBLIC_PATH || '/',
@@ -60,7 +59,7 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: VITE_PROXY_TARGET,
           changeOrigin: true,
-          rewrite: path => path.replace(/^\/api/, ''),
+          rewrite: path => path.replace(API_PREFIX_REGEX, ''),
           secure: false,
           configure: (proxy, options) => {
             // 配置此项可在响应头中看到请求的真实地址
@@ -70,6 +69,9 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
+    },
+    optimizeDeps: {
+      include: ['vue3-intro-step'],
     },
     build: {
       chunkSizeWarningLimit: 1024, // chunk 大小警告的限制（单位kb）

@@ -39,6 +39,7 @@ async function toggleDark({ clientX, clientY }) {
       duration: 500,
       easing: 'ease-in',
       pseudoElement: `::view-transition-${isDark.value ? 'old' : 'new'}(root)`,
+      fill: 'both',
     },
   )
 }

@@ -1,4 +1,5 @@
 import api from '@/api'
+import { cloneDeep } from 'lodash-es'
 import { basePermissions } from '@/settings'
 
 export async function getUserInfo() {
@@ -15,7 +16,7 @@ export async function getPermissions() {
   catch (error) {
     console.error(error)
   }
-  return basePermissions.concat(asyncPermissions)
+  return cloneDeep(basePermissions).concat(asyncPermissions)
 }
 
 export async function getPolicyRules() {

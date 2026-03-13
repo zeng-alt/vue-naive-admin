@@ -9,8 +9,8 @@
 <template>
   <n-config-provider
     class="wh-full"
-    :locale="zhCN"
-    :date-locale="dateZhCN"
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
     :theme="appStore.isDark ? darkTheme : undefined"
     :theme-overrides="appStore.naiveThemeOverrides"
   >
@@ -30,9 +30,14 @@
 
 <script setup>
 import { darkTheme, dateZhCN, zhCN } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 import { LayoutSetting } from '@/components'
 import { useAppStore, useTabStore } from '@/store'
 import { layoutSettingVisible } from './settings'
+
+const { locale } = useI18n()
+const naiveLocale = computed(() => (locale.value === 'zh_CN' ? zhCN : null))
+const naiveDateLocale = computed(() => (locale.value === 'zh_CN' ? dateZhCN : null))
 
 const layouts = new Map()
 function getLayout(name) {

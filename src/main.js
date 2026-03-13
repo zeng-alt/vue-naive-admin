@@ -13,45 +13,23 @@ import Builder from '@vueform/builder'
 import Vueform from '@vueform/vueform'
 
 import { createApp } from 'vue'
-import { createI18n } from 'vue-i18n'
 import App from './App.vue'
 import builderConfig from './camunda/form/builder.config.js'
 import vueformConfig from './camunda/form/vueform.config.js'
 import { setupDirectives } from './directives'
 import { setupBpmn } from './camunda/bpmn/index'
-
 import { setupRouter } from './router'
 import { setupStore } from './store'
+import { setupI18n } from './locales'
 import { createApolloProvider, setupNaiveDiscreteApi } from './utils'
-import { loadLocaleMessages } from './utils/common.js'
 import '@/styles/reset.css'
 import '@/styles/global.css'
 
 import 'uno.css'
 
-const en_US = await loadLocaleMessages('en_US')
-const zh_CN = await loadLocaleMessages('zh_CN')
-const messages = {
-  en_US,
-  zh_CN,
-}
-
-const savedLocale = localStorage.getItem('locale') || 'en_US'
-
-const i18n = createI18n({
-  legacy: false, // Vue3 推荐使用 composition API，所以设为 false
-  locale: savedLocale, // 默认语言
-  fallbackLocale: 'en_US', // 兜底语言
-  messages,
-  missing: (locale, key) => key, // 找不到就返回 key
-  warnHtmlInMessage: 'off',
-  missingWarn: false, // <== 禁用缺失 key 警告
-  fallbackWarn: false, // <== 禁用 fallback 警告
-})
-
 async function bootstrap() {
   const app = createApp(App)
-  app.use(i18n)
+  await setupI18n(app)
   app.use(VueMonacoEditorPlugin)
   setupStore(app)
   setupDirectives(app)
