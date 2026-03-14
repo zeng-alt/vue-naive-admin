@@ -1,5 +1,5 @@
 <template>
-  <div class="crud-wrapper">
+  <div class="h-full flex flex-col overflow-hidden">
     <AppCard v-if="$slots.default" bordered bg="#fafafc dark:black" class="mb-30 min-h-60 rounded-4">
       <form class="flex justify-between p-16" @submit.prevent="handleSearch()">
         <NScrollbar x-scrollable>
@@ -31,30 +31,60 @@
       </form>
     </AppCard>
 
-    <NDataTable
+    <!-- <NDataTable
       :row-key="(row) => row[rowKey]"
       :checked-row-keys="internalCheckedKeys"
       :columns="columns"
-      :data="dataList"
+      :data="tableData"
       :loading="loading"
       :scroll-x="scrollX"
       :remote="true"
       :size="size"
-      :pagination="paginationConfig"
+      :pagination="pagination"
       @update:checked-row-keys="onChecked"
+    /> -->
+
+    <ProDataTable
+      :row-key="(row) => row[rowKey]"
+      :columns="columns"
+      :data="tableData"
+      :loading="loading"
+      :scroll-x="scrollX"
+      :remote="remote"
+      :size="size"
+      :pagination="isPagination ? pagination : false"
+      flex-height
+      class="flex-1"
+      :drag-sort-options="dragSortOptions"
+      @update:checked-row-keys="onChecked"
+      @update:page="onPageChange"
     />
   </div>
 </template>
 
 <script setup>
 import { useQuery } from '@vue/apollo-composable'
-import { NButton, NDataTable, NScrollbar, NSpace } from 'naive-ui'
+import { ProDataTable } from 'pro-naive-ui'
 import { computed, getCurrentInstance, ref, watch } from 'vue'
 import { utils, writeFile } from 'xlsx'
 
 // props
 const props = defineProps({
   condition: { type: Boolean, default: false },
+  /**
+   * @remote true: 后端分页  false： 前端分页
+   */
+  remote: {
+    type: Boolean,
+    default: true,
+  },
+  /**
+   * @isPagination 是否分页
+   */
+  isPagination: {
+    type: Boolean,
+    default: true,
+  },
   scrollX: { type: Number, default: 1200 },
   rowKey: { type: String, default: 'id' },
   columns: { type: Array, required: true },
@@ -62,7 +92,7 @@ const props = defineProps({
   filters: { type: Object, default: () => ({}) },
   /** @type {import('graphql').DocumentNode} */
   getData: { type: Object, required: true },
-  pageSize: { type: Number, default: 5 },
+  pageSize: { type: Number, default: 10 },
   size: {
     type: String,
     default: 'medium',
@@ -72,6 +102,16 @@ const props = defineProps({
   checkedKeys: {
     type: Array,
     default: () => [],
+  },
+  /**
+   * 拖拽排序配置
+   * @columnPath 拖拽列的路径，传入则启用拖拽
+   * @handle 是否依赖手柄拖拽，false则整行可拖拽
+   * @onEnd 拖拽结束回调
+   */
+  dragSortOptions: {
+    type: Object,
+    default: null,
   },
 })
 
@@ -103,13 +143,7 @@ const { result, loading, refetch } = useQuery(props.getData, variables)
 const edges = computed(() => result.value?.[queryFunction]?.edges ?? [])
 const pageInfo = computed(() => result.value?.[queryFunction]?.pageInfo ?? {})
 
-// derive data list from edges
-// const dataList = computed(() => {
-//   let res = edges.value.map(e => e.node)
-//   emit('fetch', res) ?? res
-// })
-
-const dataList = ref([])
+const tableData = ref([])
 
 watch(edges, () => {
   const raw = edges.value.map(e => e.node)
@@ -121,14 +155,87 @@ watch(edges, () => {
   if (hasFetchListener) {
     // 如果监听了 fetch，则发出并等待回调（你设计为第三个参数）
     emit('fetch', raw, (processedData) => {
-      dataList.value = processedData
+      tableData.value = processedData
     })
   }
   else {
     // 否则，自己处理 fallback 逻辑
-    dataList.value = raw
+    tableData.value = raw
   }
 }, { immediate: true })
+
+function onPageChange(currentPage) {
+  pagination.page = currentPage
+  if (props.remote) {
+    handleQuery()
+  }
+}
+function onChecked(rowKeys) {
+  if (props.columns.some(item => item.type === 'selection')) {
+    emit('onChecked', rowKeys)
+  }
+}
+
+// 拖拽排序配置
+const dragSortOptions = computed(() => {
+  if (!props.dragSortOptions) return undefined
+
+  return {
+    ...props.dragSortOptions,
+    onEnd: (event) => {
+      const { newIndex, oldIndex } = event
+      if (newIndex === oldIndex) return
+
+      // 使用 map 创建新数组，确保元素可变
+      const list = tableData.value.map(item => ({ ...item }))
+
+      // 移动元素
+      const [movedItem] = list.splice(oldIndex, 1)
+      list.splice(newIndex, 0, movedItem)
+
+      // 重新计算受影响的 sort
+      const sortList = []
+      // 确定受影响的范围
+      const start = Math.min(oldIndex, newIndex)
+      const end = Math.max(oldIndex, newIndex)
+
+      // 检测排序方向
+      let isAsc = true
+      if (tableData.value.length > 1) {
+        const firstSort = tableData.value[0].sort
+        const lastSort = tableData.value[tableData.value.length - 1].sort
+        if (typeof firstSort === 'number' && typeof lastSort === 'number' && firstSort > lastSort) {
+          isAsc = false
+        }
+      }
+
+      // 收集受影响范围内的所有 sort 值
+      const sortValues = []
+      for (let i = start; i <= end; i++) {
+        sortValues.push(list[i].sort)
+      }
+      // 根据方向重新排序这些值
+      sortValues.sort((a, b) => isAsc ? a - b : b - a)
+
+      for (let i = start; i <= end; i++) {
+        const item = list[i]
+        const newSort = sortValues[i - start]
+
+        if (item.sort !== newSort) {
+          item.sort = newSort
+          sortList.push({ id: item.id, sort: newSort })
+        }
+      }
+
+      tableData.value = list
+      emit('onDataChange', list)
+
+      if (sortList.length > 0) {
+        props.dragSortOptions.onEnd?.(sortList)
+      }
+    },
+  }
+})
 
 // 是否展开
 const isExpanded = ref(false)
@@ -173,27 +280,11 @@ function handleSearch() {
   refetch()
 }
 
-// 添加内部状态来管理选中行
-const internalCheckedKeys = ref(props.checkedKeys)
-
-// 监听外部 checkedKeys 的变化
-watch(() => props.checkedKeys, (newVal) => {
-  internalCheckedKeys.value = newVal
-}, { deep: true })
-
-// 修改 onChecked 函数
-function onChecked(rowKeys) {
-  if (props.columns.some(item => item.type === 'selection')) {
-    internalCheckedKeys.value = rowKeys
-    emit('onChecked', rowKeys)
-  }
-}
-
 // emit data change
-watch(dataList, val => emit('onDataChange', val))
+watch(tableData, val => emit('onDataChange', val))
 
 // export Excel unchanged
-function handleExport(columns = props.columns, data = dataList.value) {
+function handleExport(columns = props.columns, data = tableData.value) {
   if (!data?.length)
     return $message.warning('没有数据')
   const columnsData = columns.filter(item => !!item.title && !item.hideInExcel)
@@ -206,8 +297,8 @@ function handleExport(columns = props.columns, data = dataList.value) {
   writeFile(workBook, '数据报表.xlsx')
 }
 
-// 修改 paginationConfig
-const paginationConfig = computed(() => ({
+// 修改 pagination
+const pagination = computed(() => ({
   page: pageNumber.value,
   pageSize: currentPageSize.value,
   pageCount: pageNumber.value + (pageInfo.value.hasNextPage ? 1 : 0),
@@ -233,10 +324,12 @@ const paginationConfig = computed(() => ({
 
 // 修改 handleReset 函数
 async function handleReset() {
-  const emptyFilters = Object.keys(props.filters).reduce((acc, key) => {
+  // let nextFilters = cloneDeep(originFilters)
+  let nextFilters = Object.keys(originFilters).reduce((acc, key) => {
     if (props.condition) {
+      const option = originFilters[key]?.option || 'EQ'
       acc[key] = {
-        option: 'EQ',
+        option: option,
         value: null,
       }
     }
@@ -245,12 +338,11 @@ async function handleReset() {
     }
     return acc
   }, {})
-
   after.value = null
   pageNumber.value = 1
   cursorHistory.value = []
   currentPageSize.value = props.pageSize // 重置为默认值
-  emit('update:filters', emptyFilters)
+  emit('update:filters', nextFilters)
   await nextTick()
   refetch(variables.value)
 }
@@ -264,20 +356,5 @@ defineExpose({
 </script>
 
 <style scoped>
-.crud-wrapper {
-  width: 100%;
-}
 
-:deep(.n-data-table) {
-  --n-table-color-striped: var(--n-item-color-active);
-}
-
-:deep(.n-data-table .n-data-table-td) {
-  padding: 8px 12px;
-}
-
-:deep(.n-data-table .n-data-table-th) {
-  padding: 8px 12px;
-  font-weight: 500;
-}
 </style>

@@ -7,7 +7,15 @@
  --------------------------------->
 
 <template>
-  <n-config-provider
+  <!-- <n-config-provider
+    class="wh-full"
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
+    :theme="appStore.isDark ? darkTheme : undefined"
+    :theme-overrides="appStore.naiveThemeOverrides"
+  > -->
+
+  <pro-config-provider
     class="wh-full"
     :locale="naiveLocale"
     :date-locale="naiveDateLocale"
@@ -25,19 +33,20 @@
 
       <LayoutSetting v-if="layoutSettingVisible" class="fixed right-12 top-1/2 z-999" />
     </router-view>
-  </n-config-provider>
+  </pro-config-provider>
 </template>
 
 <script setup>
-import { darkTheme, dateZhCN, zhCN } from 'naive-ui'
+import { darkTheme, dateEnUS, dateZhCN } from 'naive-ui'
+import { enUS, zhCN, ProConfigProvider } from 'pro-naive-ui'
 import { useI18n } from 'vue-i18n'
 import { LayoutSetting } from '@/components'
 import { useAppStore, useTabStore } from '@/store'
 import { layoutSettingVisible } from './settings'
 
 const { locale } = useI18n()
-const naiveLocale = computed(() => (locale.value === 'zh_CN' ? zhCN : null))
-const naiveDateLocale = computed(() => (locale.value === 'zh_CN' ? dateZhCN : null))
+const naiveLocale = computed(() => (locale.value === 'zh_CN' ? zhCN : enUS))
+const naiveDateLocale = computed(() => (locale.value === 'zh_CN' ? dateZhCN : dateEnUS))
 
 const layouts = new Map()
 function getLayout(name) {

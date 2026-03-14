@@ -39,7 +39,7 @@
       </form>
     </AppCard>
 
-    <NDataTable
+    <!-- <NDataTable
       :remote="remote"
       :loading="loading"
       :scroll-x="scrollX"
@@ -51,12 +51,27 @@
       class="flex-1"
       @update:checked-row-keys="onChecked"
       @update:page="onPageChange"
+    /> -->
+    <ProDataTable
+      :remote="remote"
+      :loading="loading"
+      :scroll-x="scrollX"
+      :columns="columns"
+      :data="tableData"
+      :row-key="(row) => row[rowKey]"
+      :pagination="isPagination ? pagination : false"
+      :drag-sort-options="dragSortOptions"
+      flex-height
+      class="flex-1"
+      @update:checked-row-keys="onChecked"
+      @update:page="onPageChange"
     />
   </div>
 </template>
 
 <script setup>
-import { NDataTable } from 'naive-ui'
+// import { NDataTable } from 'naive-ui'
+import { ProDataTable } from 'pro-naive-ui'
 import { utils, writeFile } from 'xlsx'
 
 const props = defineProps({
@@ -86,6 +101,7 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  pageSize: { type: Number, default: 10 },
   /** queryBar中的参数 */
   queryItems: {
     type: Object,
@@ -108,6 +124,16 @@ const props = defineProps({
   },
   /** 是否支持展开 */
   expand: Boolean,
+  /**
+   * 拖拽排序配置
+   * @columnPath 拖拽列的路径，传入则启用拖拽
+   * @handle 是否依赖手柄拖拽，false则整行可拖拽
+   * @onEnd 拖拽结束回调
+   */
+  dragSortOptions: {
+    type: Object,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['update:queryItems', 'onChecked', 'onDataChange'])
@@ -116,7 +142,7 @@ const initQuery = { ...props.queryItems }
 const tableData = ref([])
 const pagination = reactive({
   page: 1,
-  pageSize: 10,
+  pageSize: props.pageSize,
   prefix({ itemCount }) {
     return `共 ${itemCount} 条数据`
   },
@@ -124,6 +150,68 @@ const pagination = reactive({
 
 // 是否展开
 const isExpanded = ref(false)
+
+// 拖拽排序配置
+const dragSortOptions = computed(() => {
+  if (!props.dragSortOptions) return undefined
+
+  return {
+    ...props.dragSortOptions,
+    onEnd: (event) => {
+      const { newIndex, oldIndex } = event
+      if (newIndex === oldIndex) return
+
+      // 使用 map 创建新数组，确保元素可变
+      const list = tableData.value.map(item => ({ ...item }))
+
+      // 移动元素
+      const [movedItem] = list.splice(oldIndex, 1)
+      list.splice(newIndex, 0, movedItem)
+
+      // 重新计算受影响的 sort
+      const sortList = []
+      // 确定受影响的范围
+      const start = Math.min(oldIndex, newIndex)
+      const end = Math.max(oldIndex, newIndex)
+
+      // 检测排序方向
+      let isAsc = true
+      if (tableData.value.length > 1) {
+        const firstSort = tableData.value[0].sort
+        const lastSort = tableData.value[tableData.value.length - 1].sort
+        if (typeof firstSort === 'number' && typeof lastSort === 'number' && firstSort > lastSort) {
+          isAsc = false
+        }
+      }
+
+      // 收集受影响范围内的所有 sort 值
+      const sortValues = []
+      for (let i = start; i <= end; i++) {
+        sortValues.push(list[i].sort)
+      }
+      // 根据方向重新排序这些值
+      sortValues.sort((a, b) => isAsc ? a - b : b - a)
+
+      for (let i = start; i <= end; i++) {
+        const item = list[i]
+        const newSort = sortValues[i - start]
+
+        if (item.sort !== newSort) {
+          item.sort = newSort
+          sortList.push({ id: item.id, sort: newSort })
+        }
+      }
+
+      tableData.value = list
+      emit('onDataChange', list)
+
+      if (sortList.length > 0) {
+        props.dragSortOptions.onEnd?.(sortList)
+      }
+    },
+  }
+})
+
 
 function toggleExpand() {
   isExpanded.value = !isExpanded.value

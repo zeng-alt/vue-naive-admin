@@ -1,10 +1,11 @@
 import { createI18n } from 'vue-i18n'
 import { loadLocaleMessages } from '@/utils/common.js'
+import { lStorage } from '@/utils'
 
 export const DEFAULT_LOCALE = 'en_US'
 
 export async function setupI18n(app) {
-  const savedLocale = localStorage.getItem('locale') || DEFAULT_LOCALE
+  const savedLocale = lStorage.get('locale') || DEFAULT_LOCALE
 
   // 仅加载默认语言和当前保存的语言（如果不同）
   const messages = {
@@ -29,17 +30,17 @@ export async function setupI18n(app) {
 }
 
 export async function setI18nLanguage(i18n, locale) {
-  if (i18n.global.locale.value === locale) {
+  if (i18n.locale.value === locale) {
     return
   }
 
   // 如果语言包尚未加载，则进行加载
-  if (!i18n.global.availableLocales.includes(locale)) {
+  if (!i18n.availableLocales.includes(locale)) {
     const messages = await loadLocaleMessages(locale)
-    i18n.global.setLocaleMessage(locale, messages)
+    i18n.setLocaleMessage(locale, messages)
   }
 
-  i18n.global.locale.value = locale
-  localStorage.setItem('locale', locale)
+  i18n.locale.value = locale
+  lStorage.set('locale', locale)
   document.querySelector('html').setAttribute('lang', locale)
 }
